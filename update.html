@@ -6,6 +6,8 @@
 <style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#05070a;color:#e4ebf6;font-family:system-ui,sans-serif}.box{max-width:28rem;padding:2rem;text-align:center}.small{color:#9ca9b9;font-size:.9rem;line-height:1.7}</style>
 <main class="box"><h1>ルナビィv2を更新しています</h1><p id="status" class="small">最新版を確認しています。</p></main>
 <script>
+ // sw.js の APP_REV と同じ値に揃える（キャッシュバスティング用。動作には必須ではない）
+ const APP_REV = 'lunaby-v2-r27';
  (async () => {
    const status=document.getElementById('status');
    try {
@@ -37,7 +39,7 @@
        });
        if (!result || !result.ok) throw new Error('repair failed');
        status.textContent='必要なファイルを保存しました。起動しています。';
-       location.replace('./?updated=lunaby-v2-r27-'+Date.now().toString(36));
+       location.replace('./?updated=' + APP_REV + '-' + Date.now().toString(36));
        return;
      }
      throw new Error('service worker unavailable');

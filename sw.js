@@ -1,17 +1,20 @@
+// キャッシュ名は固定。バージョン上げはしない（更新バー抑制のため）。
+// 中身を差し替えるときは APP_REV を変え、index.html 側の ?rev= も同じ値に揃える。
+const APP_REV = 'lunaby-v2-r27';
 const CACHE_NAME = 'lunaby-static-v1';
 const STAGING_CACHE_NAME = 'lunaby-static-staging-v1';
 const SHELL = [
   './index.html',
-  './text-list.css?rev=lunaby-v2-r27',
-  './text-list-v2-only-entry.mjs?rev=lunaby-v2-r27',
-  './text-list-v2-only-gate.mjs?rev=lunaby-v2-r27',
-  './text-list.js?rev=lunaby-v2-r27',
-  './lunaby-v2-store.mjs?rev=lunaby-v2-r27',
-  './lunaby-v2-first-launch.mjs?rev=lunaby-v2-r27',
-  './abyss-runtime-core.mjs?rev=lunaby-v2-r27',
-  './starleap-lite-core.mjs?rev=lunaby-v2-r27',
-  './starleap-state.mjs?rev=lunaby-v2-r27',
-  './manifest.json?rev=lunaby-v2-r27',
+  './text-list.css?rev=' + APP_REV,
+  './text-list-v2-only-entry.mjs?rev=' + APP_REV,
+  './text-list-v2-only-gate.mjs?rev=' + APP_REV,
+  './text-list.js?rev=' + APP_REV,
+  './lunaby-v2-store.mjs?rev=' + APP_REV,
+  './lunaby-v2-first-launch.mjs?rev=' + APP_REV,
+  './abyss-runtime-core.mjs?rev=' + APP_REV,
+  './starleap-lite-core.mjs?rev=' + APP_REV,
+  './starleap-state.mjs?rev=' + APP_REV,
+  './manifest.json?rev=' + APP_REV,
   './lunaby-mascot-192.png',
   './lunaby-mascot-512.webp',
   './lunaby-mascot-maskable-512.webp'
@@ -70,7 +73,7 @@ async function repairShell() {
 function offlineMiss(request) {
   if (request.mode === 'navigate') {
     return new Response(
-      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>オフライン</title><main style="padding:2rem;font-family:system-ui,sans-serif"><h1>オフライン起動準備中</h1><p>必要なファイルがまだ保存されていません。通信できる状態でLUNABYを開いて修復してください。</p></main>',
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>オフライン</title><main style="padding:2rem;font-family:system-ui,sans-serif"><h1>オフライン起動準備中</h1><p>必要なファイルがまだ保存されていません。</p><p>通信できる状態で左上の <strong>LUNABY</strong> を押し、修復・更新を実行してください。</p></main>',
       { status:503, headers:{ 'Content-Type':'text/html; charset=utf-8' } }
     );
   }
