@@ -185,7 +185,7 @@ import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r27';
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
   function moveCursorToEnd(input){ const apply=()=>{ const end=input.value.length; input.setSelectionRange(end,end); }; apply(); requestAnimationFrame(apply); setTimeout(apply,0); }
-  function adjustStamInputWidth(input){ input.style.width = '33px'; }
+  function adjustStamInputWidth(input){ input.style.width = '36px'; }
   function closeEdit(cancel){
     if (!edit) return;
     const active = edit;

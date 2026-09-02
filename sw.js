@@ -36,18 +36,24 @@ self.addEventListener('fetch', event => {
   // SW自身はブラウザの更新確認に任せ、キャッシュしない。
   if (url.pathname.endsWith('/sw.js')) return;
 
+  if (request.mode === 'navigate' && url.pathname.endsWith('/update.html')) {
+    // 更新入口だけは常に通信する。
+    event.respondWith(fetch(request));
+    return;
+  }
+
   if (request.mode === 'navigate') {
-    // HTMLは更新を拾う。通信できない場合だけ、保存済みHTMLへ戻る。
+    // 通常起動は保存済みHTMLを優先し、初回や未保存時だけ通信する。
     event.respondWith(
-      fetch(request)
-        .then(response => {
+      caches.match(request)
+        .then(cached => cached || caches.match(INDEX_URL))
+        .then(cached => cached || fetch(request).then(response => {
           if (response && response.ok) {
             const copy = response.clone();
-            caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+            caches.open(CACHE_NAME).then(cache => cache.put(INDEX_URL, copy)).catch(() => {});
           }
           return response;
-        })
-        .catch(() => caches.match(request).then(cached => cached || caches.match(INDEX_URL)))
+        }))
     );
     return;
   }

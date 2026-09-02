@@ -26,6 +26,10 @@
        }
      }
    } catch (_) {}
+   try {
+     const names = await caches.keys();
+     await Promise.all(names.filter(name => name.startsWith('lunaby-shell-') || name.startsWith('lunaby-static-')).map(name => caches.delete(name)));
+   } catch (_) {}
    status.textContent='最新のルナビィv2を開いています。';
    location.replace('./?updated=lunaby-v2-r27-'+Date.now().toString(36));
  })();
