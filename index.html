@@ -5,27 +5,24 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
   <title>ルナビィ — v2専用</title>
   <meta name="theme-color" content="#05070a">
-  <link rel="manifest" href="manifest.json?rev=lunaby-v2-r27">
+  <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="lunaby-mascot-192.png">
   <link rel="apple-touch-icon" href="lunaby-mascot-192.png">
-    <!-- 起動時のES module依存を先読みして、復帰時のリクエスト待ちを短縮する -->
-    <link rel="modulepreload" href="text-list-v2-only-entry.mjs?rev=lunaby-v2-r27">
-    <link rel="modulepreload" href="text-list.js?rev=lunaby-v2-r27">
-    <link rel="modulepreload" href="lunaby-v2-store.mjs?rev=lunaby-v2-r27">
-    <link rel="modulepreload" href="abyss-runtime-core.mjs?rev=lunaby-v2-r27">
-    <link rel="modulepreload" href="starleap-lite-core.mjs?rev=lunaby-v2-r27">
-    <link rel="modulepreload" href="starleap-state.mjs?rev=lunaby-v2-r27">
-    <link rel="stylesheet" href="text-list.css?rev=lunaby-v2-r27">
+    <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
+    <link rel="modulepreload" href="text-list-v2-only-entry.mjs">
+    <link rel="modulepreload" href="text-list.js">
+    <link rel="modulepreload" href="lunaby-core.mjs">
+    <link rel="stylesheet" href="text-list.css">
 </head>
 <body>
   <main class="page">
     <header class="topbar">
-        <a class="edition version-link" href="update.html?rev=lunaby-v2-r27" aria-label="ルナビィv2専用候補の手動更新を実行">LUNABY</a>
+        <a class="edition version-link" href="update.html" aria-label="ルナビィv2専用候補の手動更新を実行">LUNABY</a>
     </header>
     <div id="list" class="account-list" aria-label="Dot Abyss テキストリスト"></div>
     <div id="starleap" aria-label="スターリープ テキストリスト"></div>
   </main>
-  <script type="module" src="text-list-v2-only-entry.mjs?rev=lunaby-v2-r27"></script>
+  <script type="module" src="text-list-v2-only-entry.mjs"></script>
   <!-- アプリ起動後に登録。SWの取得・インストールで初回描画をブロックしない -->
   <script>
     if ('serviceWorker' in navigator) {

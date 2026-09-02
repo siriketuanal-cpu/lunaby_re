@@ -1,20 +1,16 @@
 // キャッシュ名は固定。バージョン上げはしない（更新バー抑制のため）。
-// 中身を差し替えるときは APP_REV を変え、index.html 側の ?rev= も同じ値に揃える。
-const APP_REV = 'lunaby-v2-r27';
+// パス固定（?rev= なし）。中身の差し替えは LUNABY → REPAIR_SHELL のみ。
 const CACHE_NAME = 'lunaby-static-v1';
 const STAGING_CACHE_NAME = 'lunaby-static-staging-v1';
 const SHELL = [
   './index.html',
-  './text-list.css?rev=' + APP_REV,
-  './text-list-v2-only-entry.mjs?rev=' + APP_REV,
-  './text-list-v2-only-gate.mjs?rev=' + APP_REV,
-  './text-list.js?rev=' + APP_REV,
-  './lunaby-v2-store.mjs?rev=' + APP_REV,
-  './lunaby-v2-first-launch.mjs?rev=' + APP_REV,
-  './abyss-runtime-core.mjs?rev=' + APP_REV,
-  './starleap-lite-core.mjs?rev=' + APP_REV,
-  './starleap-state.mjs?rev=' + APP_REV,
-  './manifest.json?rev=' + APP_REV,
+  './text-list.css',
+  './text-list-v2-only-entry.mjs',
+  './text-list-v2-only-gate.mjs',
+  './text-list.js',
+  './lunaby-core.mjs',
+  './lunaby-v2-first-launch.mjs',
+  './manifest.json',
   './lunaby-mascot-192.png',
   './lunaby-mascot-512.webp',
   './lunaby-mascot-maskable-512.webp'

@@ -32,10 +32,11 @@ body{overflow:hidden;touch-action:pan-x;}
 .task-row:active{background:#080c12;}
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.28);}
 .stam-group{position:relative;display:flex;align-items:center;width:100%;height:18px;margin:0;flex:none;}
-/* 手入力: 左余白〜現在値、上下余白も含めて広く（/max は calc 側） */
+/* 手入力: 左余白〜現在値、上下余白も含めて広く */
 .stam-edit-hit{position:absolute;z-index:3;left:0;top:-4px;width:calc((100% - 82px)/2 + 36px);height:26px;cursor:text;}
-/* 40計算: 上限値(/max)から放置報酬タイマー手前まで。left は現在値の右端＝/max の開始位置 */
-.stam-calc-hit{position:absolute;z-index:2;left:calc((100% - 82px)/2 + 36px);right:6px;top:-4px;height:26px;cursor:pointer;}
+/* 40計算: 表示位置は動かさず、::before で上下のタップ範囲だけ広げる */
+.stam-calc-hit{position:absolute;z-index:2;left:calc((100% - 82px)/2 + 36px);right:6px;top:0;height:18px;cursor:pointer;}
+.stam-calc-hit::before{content:'';position:absolute;left:0;right:0;top:-4px;bottom:-4px;}
 .stam-current,.stam-edit,.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
 .stam-current,.stam-edit{position:relative;z-index:auto;top:0;width:36px;margin-left:calc((100% - 82px)/2);text-align:right;vertical-align:middle;align-self:center;}
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:1px;text-align:center;}

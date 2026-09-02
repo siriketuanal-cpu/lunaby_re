@@ -1,6 +1,5 @@
-import { SLOT_COUNT, normalizeSlot } from './abyss-runtime-core.mjs?rev=lunaby-v2-r27';
-import { createSLState } from './starleap-state.mjs?rev=lunaby-v2-r27';
-import { V2_STORAGE_KEY, V2_VERSION, loadExistingV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r27';
+/** Initial-launch-only module. Do not import from normal runtime paths. */
+import { SLOT_COUNT, normalizeSlot, createSLState, V2_STORAGE_KEY, V2_VERSION, loadExistingV2Store } from './lunaby-core.mjs';
 
 const packInitialSlot = slot => [slot.label, slot.rank, slot.stamCurrent, slot.stamStart || 0, slot.idleStart || 0, 0];
 
@@ -18,5 +17,3 @@ export function initializeV2Store(storage) {
 }
 
 export default initializeV2Store;
-
-/** Initial-launch-only module. Do not import from normal runtime paths. */

@@ -1,10 +1,19 @@
-import { applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam, remainingAfter40, restartIdle, setLabel, setRank, formatClock } from './abyss-runtime-core.mjs?rev=lunaby-v2-r27';
-import { saveV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r27';
-import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r27';
+import {
+  applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam,
+  remainingAfter40, restartIdle, setLabel, setRank, formatClock, saveV2Store,
+  getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
+  applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
+} from './lunaby-core.mjs';
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const escape = value => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+
+  // starleap API を従来の namespace形に束ねる（呼び出し側の差分を最小化）
+  const slRuntime = {
+    getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
+    applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
+  };
 
   let state = { slots:createSlots(), sl:null };
   let storageEnvelope = {};
@@ -13,7 +22,6 @@ import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r27';
   let edit = null;
   let slEdit = null;
   let slRefs = null;
-  let slRuntime = starleapRuntime;
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
