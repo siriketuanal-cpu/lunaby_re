@@ -1,5 +1,5 @@
-import { SLOT_COUNT, normalizeSlot } from './abyss-runtime-core.mjs?rev=lunaby-v2-r21';
-import { createSLState } from './starleap-state.mjs?rev=lunaby-v2-r21';
+import { SLOT_COUNT, normalizeSlot } from './abyss-runtime-core.mjs?rev=lunaby-v2-r22';
+import { createSLState } from './starleap-state.mjs?rev=lunaby-v2-r22';
 
 export const V2_STORAGE_KEY = 'lunaby:state:v2';
 export const V2_VERSION = 2;
