@@ -34,13 +34,13 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit-hit{position:absolute;z-index:2;left:0;top:0;width:36px;height:18px;cursor:text;}
 .stam-calc-hit{position:absolute;z-index:2;left:36px;right:0;top:0;height:18px;cursor:pointer;}
 .stam-current,.stam-edit,.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
-.stam-current,.stam-edit{position:absolute;z-index:3;left:0;right:auto;top:1px;width:36px;text-align:right;}
+.stam-current,.stam-edit{position:static;z-index:auto;width:36px;text-align:right;}
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:1px;text-align:center;}
 .stam-current{min-width:0;color:#ffb96c;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;cursor:text;}
 .stam-cell.is-near-full .stam-current{color:#ff7070;}
 .stam-edit,.stam-edit:focus{width:33px;min-width:33px;height:16px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;background-image:none!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:right;caret-color:transparent!important;text-decoration:none!important;-webkit-text-decoration-line:none!important;appearance:none;-webkit-appearance:none;}
-.task-slash{position:absolute;z-index:3;left:39px;right:auto;top:1px;width:8px;margin:0;color:#73839a;font:700 15px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;text-align:center;}
-.task-max{position:absolute;z-index:3;left:49px;right:auto;top:1px;width:33px;margin:0;color:#51d8e8;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:left;white-space:nowrap;}
+.task-slash{position:absolute;z-index:3;left:3px;right:auto;top:1px;width:8px;margin:0;color:#73839a;font:700 15px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;text-align:center;}
+.task-max{position:absolute;z-index:3;left:13px;right:auto;top:1px;width:33px;margin:0;color:#51d8e8;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:left;white-space:nowrap;}
 .stam-full{color:#ff7070;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.03em;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}

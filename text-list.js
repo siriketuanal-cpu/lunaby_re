@@ -1,6 +1,6 @@
-import { applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam, remainingAfter40, restartIdle, setLabel, setRank, formatClock } from './abyss-runtime-core.mjs?rev=lunaby-v2-r25';
-import { saveV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r25';
-import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r25';
+import { applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam, remainingAfter40, restartIdle, setLabel, setRank, formatClock } from './abyss-runtime-core.mjs?rev=lunaby-v2-r27';
+import { saveV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r27';
+import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r27';
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;

@@ -1,16 +1,16 @@
-const CACHE_NAME = 'lunaby-shell-r25';
+const CACHE_NAME = 'lunaby-shell-r27';
 const SHELL = [
   './index.html',
-  './text-list.css?rev=lunaby-v2-r25',
-  './text-list-v2-only-entry.mjs?rev=lunaby-v2-r25',
-  './text-list-v2-only-gate.mjs?rev=lunaby-v2-r25',
-  './text-list.js?rev=lunaby-v2-r25',
-  './lunaby-v2-store.mjs?rev=lunaby-v2-r25',
-  './lunaby-v2-first-launch.mjs?rev=lunaby-v2-r25',
-  './abyss-runtime-core.mjs?rev=lunaby-v2-r25',
-  './starleap-lite-core.mjs?rev=lunaby-v2-r25',
-  './starleap-state.mjs?rev=lunaby-v2-r25',
-  './manifest.json?rev=lunaby-v2-r25',
+  './text-list.css?rev=lunaby-v2-r27',
+  './text-list-v2-only-entry.mjs?rev=lunaby-v2-r27',
+  './text-list-v2-only-gate.mjs?rev=lunaby-v2-r27',
+  './text-list.js?rev=lunaby-v2-r27',
+  './lunaby-v2-store.mjs?rev=lunaby-v2-r27',
+  './lunaby-v2-first-launch.mjs?rev=lunaby-v2-r27',
+  './abyss-runtime-core.mjs?rev=lunaby-v2-r27',
+  './starleap-lite-core.mjs?rev=lunaby-v2-r27',
+  './starleap-state.mjs?rev=lunaby-v2-r27',
+  './manifest.json?rev=lunaby-v2-r27',
   './lunaby-mascot-192.png',
   './lunaby-mascot-512.webp',
   './lunaby-mascot-maskable-512.webp'
