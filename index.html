@@ -30,7 +30,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?rev=lunaby-v2-r27', { scope: './' }).catch(() => {});
+        navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
       }, { once: true });
     }
   </script>

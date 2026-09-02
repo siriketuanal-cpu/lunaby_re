@@ -1,29 +1,12 @@
-const CACHE_NAME = 'lunaby-shell-r27';
-const SHELL = [
-  './index.html',
-  './text-list.css?rev=lunaby-v2-r27',
-  './text-list-v2-only-entry.mjs?rev=lunaby-v2-r27',
-  './text-list-v2-only-gate.mjs?rev=lunaby-v2-r27',
-  './text-list.js?rev=lunaby-v2-r27',
-  './lunaby-v2-store.mjs?rev=lunaby-v2-r27',
-  './lunaby-v2-first-launch.mjs?rev=lunaby-v2-r27',
-  './abyss-runtime-core.mjs?rev=lunaby-v2-r27',
-  './starleap-lite-core.mjs?rev=lunaby-v2-r27',
-  './starleap-state.mjs?rev=lunaby-v2-r27',
-  './manifest.json?rev=lunaby-v2-r27',
-  './lunaby-mascot-192.png',
-  './lunaby-mascot-512.webp',
-  './lunaby-mascot-maskable-512.webp'
-];
+const CACHE_NAME = 'lunaby-static-v1';
 const APP_PATH = new URL('./', self.location).pathname;
 const INDEX_URL = new URL('./index.html', self.location).href;
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL))
-      // 待機状態を残さず、ページの強制リロードは行わない。
-      .then(() => self.skipWaiting())
+    // 初回インストールで大量の先読みをせず、必要な静的ファイルだけ
+    // fetch時にキャッシュする。待機状態は残さない。
+    self.skipWaiting()
   );
 });
 
@@ -32,43 +15,55 @@ self.addEventListener('activate', event => {
     caches.keys()
       .then(keys => Promise.all(
         keys
-          .filter(key => key.startsWith('lunaby-shell-') && key !== CACHE_NAME)
+          .filter(key => (key.startsWith('lunaby-shell-') || key.startsWith('lunaby-static-')) && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
   );
 });
 
+function isStaticAsset(url, request) {
+  if (url.pathname.startsWith(APP_PATH) === false) return false;
+  if (request.destination === 'script' || request.destination === 'style' || request.destination === 'image') return true;
+  return /\.(?:js|mjs|css|json|png|webp|svg|ico|woff2?)$/i.test(url.pathname);
+}
+
 self.addEventListener('fetch', event => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== self.location.origin) return;
 
-  // SW自身はブラウザの更新確認に任せる。古いSWをキャッシュしない。
+  // SW自身はブラウザの更新確認に任せ、キャッシュしない。
   if (url.pathname.endsWith('/sw.js')) return;
 
-  if (request.mode === 'navigate' && (url.pathname === APP_PATH || url.pathname === APP_PATH + 'index.html')) {
+  if (request.mode === 'navigate') {
+    // HTMLは更新を拾う。通信できない場合だけ、保存済みHTMLへ戻る。
     event.respondWith(
-      caches.match(INDEX_URL)
-        .then(cached => cached || fetch(request))
+      fetch(request)
+        .then(response => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+          }
+          return response;
+        })
+        .catch(() => caches.match(request).then(cached => cached || caches.match(INDEX_URL)))
     );
     return;
   }
 
-  // 更新ページは常にネットワークから取得し、古い更新処理を再利用しない。
-  if (request.mode === 'navigate') {
-    event.respondWith(fetch(request));
-    return;
-  }
+  if (!isStaticAsset(url, request)) return;
 
+  // 静的ファイルは復帰を優先。index.html側の?rev=変更で新URLを使う。
   event.respondWith(
     caches.match(request)
       .then(cached => {
         if (cached) return cached;
         return fetch(request).then(response => {
-          if (!response || !response.ok) return response;
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(request, copy)).catch(() => {});
+          }
           return response;
         });
       })
