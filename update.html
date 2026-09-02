@@ -10,27 +10,39 @@
    const status=document.getElementById('status');
    try {
      if ('serviceWorker' in navigator) {
-       const registration=await navigator.serviceWorker.getRegistration('./');
-       if (registration) {
-         await registration.update();
-         const installing=registration.installing;
-         if (installing) {
-           await new Promise(resolve => {
-             const finish=()=>resolve();
-             installing.addEventListener('statechange', () => {
-               if (installing.state === 'activated' || installing.state === 'redundant') finish();
-             }, { once:false });
-             setTimeout(finish, 5000);
+       let registration=await navigator.serviceWorker.getRegistration('./');
+       if (!registration) registration=await navigator.serviceWorker.register('./sw.js', { scope:'./' });
+       await registration.update();
+       const installing=registration.installing;
+       if (installing) {
+         await new Promise((resolve, reject) => {
+           const timeout=setTimeout(() => reject(new Error('service worker update timeout')), 10000);
+           const finish=() => { clearTimeout(timeout); resolve(); };
+           if (installing.state === 'activated') finish();
+           else if (installing.state === 'redundant') reject(new Error('service worker update rejected'));
+           else installing.addEventListener('statechange', () => {
+             if (installing.state === 'activated') finish();
+             else if (installing.state === 'redundant') reject(new Error('service worker update rejected'));
            });
-         }
+         });
        }
+       await navigator.serviceWorker.ready;
+       const worker=registration.active || navigator.serviceWorker.controller;
+       if (!worker) throw new Error('service worker is not active');
+       const result=await new Promise((resolve, reject) => {
+         const channel=new MessageChannel();
+         const timeout=setTimeout(() => reject(new Error('repair timeout')), 30000);
+         channel.port1.onmessage=event => { clearTimeout(timeout); resolve(event.data); };
+         worker.postMessage({ type:'REPAIR_SHELL' }, [channel.port2]);
+       });
+       if (!result || !result.ok) throw new Error('repair failed');
+       status.textContent='必要なファイルを保存しました。起動しています。';
+       location.replace('./?updated=lunaby-v2-r27-'+Date.now().toString(36));
+       return;
      }
-   } catch (_) {}
-   try {
-     const names = await caches.keys();
-     await Promise.all(names.filter(name => name.startsWith('lunaby-shell-') || name.startsWith('lunaby-static-')).map(name => caches.delete(name)));
-   } catch (_) {}
-   status.textContent='最新のルナビィv2を開いています。';
-   location.replace('./?updated=lunaby-v2-r27-'+Date.now().toString(36));
+     throw new Error('service worker unavailable');
+   } catch (_) {
+     status.textContent='通信できなかったため、現在のデータは変更していません。通信状態を確認して、もう一度LUNABYを押してください。';
+   }
  })();
 </script>
