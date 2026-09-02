@@ -1,5 +1,5 @@
-import { SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS } from './starleap-state.mjs?rev=lunaby-v2-r24';
-export { createSLState, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS } from './starleap-state.mjs?rev=lunaby-v2-r24';
+import { SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS } from './starleap-state.mjs?rev=lunaby-v2-r25';
+export { createSLState, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS } from './starleap-state.mjs?rev=lunaby-v2-r25';
 
 const finite = (value, fallback) => { const number = Number(value); return Number.isFinite(number) ? number : fallback; };
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));

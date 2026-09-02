@@ -1,6 +1,6 @@
-import { applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam, remainingAfter40, restartIdle, setLabel, setRank, formatClock } from './abyss-runtime-core.mjs?rev=lunaby-v2-r24';
-import { saveV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r24';
-import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r24';
+import { applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam, remainingAfter40, restartIdle, setLabel, setRank, formatClock } from './abyss-runtime-core.mjs?rev=lunaby-v2-r25';
+import { saveV2Store } from './lunaby-v2-store.mjs?rev=lunaby-v2-r25';
+import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r25';
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
@@ -50,7 +50,7 @@ import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r24';
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<span class="timer-cell stam-cell" data-i="' + index + '" data-task="stam" role="button" tabindex="0">' +
-        '<span class="stam-group"><span class="stam-edit-hit" data-stam-edit="' + index + '" aria-hidden="true"></span><span class="stam-plan" data-stam-plan="' + index + '" aria-label="全回復予定時刻"><span class="stam-plan-hour"></span><span class="stam-plan-minute"></span></span><span class="stam-current stam-number" data-stam-number="' + index + '" data-stam-edit="' + index + '"></span>' +
+        '<span class="stam-group"><span class="stam-edit-hit" data-stam-edit="' + index + '" aria-hidden="true"></span><span class="stam-current stam-number" data-stam-number="' + index + '" data-stam-edit="' + index + '"></span>' +
         '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
         '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span><span class="stam-calc-hit" data-stam-confirm="' + index + '"><span class="task-slash">/</span><span class="task-max" data-stam-number="' + index + '"></span></span></span>' +
         '</span>' +
@@ -73,7 +73,7 @@ import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r24';
         nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
-        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-hit'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'), stamPlan:stamRow.querySelector('.stam-plan'), stamPlanHour:stamRow.querySelector('.stam-plan-hour'), stamPlanMinute:stamRow.querySelector('.stam-plan-minute'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-hit'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
         snapshot:{ stam:{ current:0, plan:'—:—' }, idle:{ value:'未開始', plan:'—:—', full:false, low:false } }
       };
@@ -123,9 +123,6 @@ import * as starleapRuntime from './starleap-lite-core.mjs?rev=lunaby-v2-r24';
     if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, ''); }
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
-    const showStamPlan = slot.stamRunning && !stamFull && snapshot.stam.plan !== '—:—';
-    setHidden(ref.stamPlan, !showStamPlan);
-    if (showStamPlan) { const planTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamPlanHour, planTime.hour); setText(ref.stamPlanMinute, planTime.minute); }
     const idleValue = valueForIdle(snapshot, index);
     setText(ref.idleValue, idleValue);
     setClass(ref.idleValue, 'is-clock', /^\d{1,2}:\d{2}$/.test(idleValue));
