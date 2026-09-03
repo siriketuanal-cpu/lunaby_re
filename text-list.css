@@ -26,8 +26,8 @@ body{overflow:hidden;touch-action:pan-x;}
 .timer-row{display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;}
 .timer-cell{min-width:0;min-height:24px;display:flex;align-items:center;cursor:pointer;}
 .stam-cell{position:relative;display:flex;align-items:center;justify-content:center;grid-column:1;padding:0;}
-.idle-cell{position:relative;display:flex;align-items:center;justify-content:center;grid-column:2;margin-left:0;padding:0;border-left:0;cursor:pointer;}
-.idle-action{position:relative;z-index:2;width:100%;min-height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
+.idle-cell{position:relative;display:flex;align-items:center;justify-content:center;grid-column:2;margin-left:0;padding:0;border-left:0;cursor:pointer;height:100%;}
+.idle-action{position:relative;z-index:2;width:100%;height:100%;min-height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;}
 .idle-cell.is-selected .idle-action{justify-content:center;}
 .task-row:active{background:#080c12;}
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.28);}
@@ -36,8 +36,8 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 手入力: 左端から数値部分まで */
 .stam-edit-hit{position:absolute;z-index:3;left:0;top:-4px;width:calc(50% - 1px);height:26px;cursor:text;}
 
-/* 40計算: 「/」の直前から、放置報酬タイマー直前（スタミナセル右端いっぱい）まで拡張 */
-.stam-calc-hit{position:absolute;z-index:2;left:calc(50% - 1px);right:0;top:0;height:18px;cursor:pointer;}
+/* 40計算: 「/」の直前からスタミナセルの右端境界（中央線）まで拡大 */
+.stam-calc-hit{position:absolute;z-index:2;left:calc(50% - 1px);right:-6px;top:0;height:18px;cursor:pointer;}
 .stam-calc-hit::before{content:'';position:absolute;left:0;right:0;top:-4px;bottom:-4px;}
 
 .stam-current,.stam-edit,.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
@@ -49,7 +49,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-cell.is-near-full .stam-current{color:#ff7070;}
 .stam-edit,.stam-edit:focus{width:36px;min-width:36px;height:18px;margin:0 0 0 calc(50% - 37px);padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;background-image:none!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:right;caret-color:transparent!important;text-decoration:none!important;-webkit-text-decoration-line:none!important;appearance:none;-webkit-appearance:none;}
 
-/* 「/」と「上限値」の位置（中央軸基準でズレを解消） */
+/* 「/」と「上限値」の位置（中央軸基準で補正） */
 .task-slash{position:absolute;z-index:3;left:calc(50% - 1px);right:auto;top:1px;width:8px;margin:0;color:#73839a;font:700 15px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;text-align:center;}
 .task-max{position:absolute;z-index:3;left:calc(50% + 7px);right:auto;top:1px;width:33px;margin:0;color:#51d8e8;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:left;white-space:nowrap;}
 
