@@ -59,10 +59,10 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
 .idle-zone{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;}
 .idle-pre{min-width:0;min-height:26px;cursor:pointer;}
-.idle-action{display:flex;align-items:center;justify-content:center;min-width:6.5ch;min-height:24px;cursor:pointer;}
+.idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;}
 .idle-post{min-width:0;min-height:26px;cursor:pointer;}
 .task-value{margin:0;color:var(--violet);font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap;}
-.task-value.is-clock{min-width:6ch;width:auto;text-align:center;font-variant-numeric:tabular-nums;}
+.task-value.is-clock{font-variant-numeric:tabular-nums;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);font-variant-numeric:tabular-nums;white-space:nowrap;}
 .task-plan.is-full{margin-left:0;color:#ff7070;font:800 16px/.95 var(--timer-number-font);letter-spacing:-.03em;}
 .task-plan.is-full:not(:empty)::after{content:'満';margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
@@ -71,7 +71,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .idle-zone.is-selected .task-value,
 .idle-zone.is-selected .task-plan,
 .idle-zone.is-selected .task-plan.is-full{
-  width:auto;min-width:6ch;margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
+  margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
 }
 .idle-zone.is-selected .task-value{color:#e9ddff;}
 .idle-zone.is-selected .task-plan,
