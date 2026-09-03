@@ -119,7 +119,7 @@ export function displaySnapshot(slot, now, view) {
   stam.current = stamCurrent;
   stam.plan = stamFullAt ? cachedClock(slot, 'stam', stamFullAt) : '—:—';
   stam.low = stamFullAt != null && stamFullAt > now && stamFullAt - now < STAM_WARNING_MS;
-  idle.value = idleRemaining == null ? '未開始' : (idleRemaining ? Math.floor(idleMinutes / 60) + '：' + String(idleMinutes % 60).padStart(2, '0') : 'MAX');
+  idle.value = idleRemaining == null ? '未開始' : (idleRemaining ? Math.floor(idleMinutes / 60) + ':' + String(idleMinutes % 60).padStart(2, '0') : 'MAX');
   idle.plan = idleRunning ? cachedClock(slot, 'idle', idleFullAtFor(slot)) : '—:—';
   idle.full = idleRemaining === 0;
   idle.low = idleRemaining != null && idleRemaining > 0 && idleMinutes < IDLE_WARNING_MINUTES;
