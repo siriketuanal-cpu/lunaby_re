@@ -146,7 +146,7 @@ import {
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     setText(ref.idleValue, idleValue);
-    setClass(ref.idleValue, 'is-clock', /^\d{1,2}:\d{2}$/.test(idleValue));
+    setClass(ref.idleValue, 'is-clock', /^\d{1,2}\s*:\s*\d{2}$/.test(idleValue));
     setText(ref.idlePlan, planForIdle(snapshot, index));
     setHidden(ref.idleValue, snapshot.idle.full);
     setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
