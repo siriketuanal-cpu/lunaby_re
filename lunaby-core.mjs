@@ -12,11 +12,11 @@
 // SECTION: abyss-runtime  (was abyss-runtime-core.mjs)
 // =============================================================================
 export const SLOT_COUNT = 6;
-export const STAM_STEP_MS = 3 * 60 * 1000;
-export const STAM_WARNING_MS = 2 * 60 * 60 * 1000;
-export const IDLE_CAP_MS = 12 * 60 * 60 * 1000;
-export const IDLE_LEAD_MS = 5 * 60 * 1000;
-export const IDLE_WARNING_MINUTES = 2 * 60;
+const STAM_STEP_MS = 3 * 60 * 1000;
+const STAM_WARNING_MS = 2 * 60 * 60 * 1000;
+const IDLE_CAP_MS = 12 * 60 * 60 * 1000;
+const IDLE_LEAD_MS = 5 * 60 * 1000;
+const IDLE_WARNING_MINUTES = 2 * 60;
 const STAM_BASE = 240;
 const STAM_PER_RANK = 5;
 const displayClockCache = new WeakMap();
@@ -25,13 +25,13 @@ const finite = (value, fallback) => { const number = Number(value); return Numbe
 const integer = (value, fallback) => { const number = parseInt(String(value ?? '').trim(), 10); return Number.isFinite(number) ? number : fallback; };
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
-export const maxForRank = rank => Math.min(999, STAM_BASE + (clamp(Math.floor(finite(rank, 1)), 1, 200) - 1) * STAM_PER_RANK);
-export const rankForMax = max => clamp(1 + Math.round((Math.max(STAM_BASE, finite(max, STAM_BASE)) - STAM_BASE) / STAM_PER_RANK), 1, 200);
+const maxForRank = rank => Math.min(999, STAM_BASE + (clamp(Math.floor(finite(rank, 1)), 1, 200) - 1) * STAM_PER_RANK);
+const rankForMax = max => clamp(1 + Math.round((Math.max(STAM_BASE, finite(max, STAM_BASE)) - STAM_BASE) / STAM_PER_RANK), 1, 200);
 export const formatClock = timestamp => {
   const date = new Date(timestamp);
   return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
 };
-export const formatMinute = milliseconds => {
+const formatMinute = milliseconds => {
   const minutes = Math.max(1, Math.ceil(Math.max(0, finite(milliseconds, 0)) / 60000));
   return Math.floor(minutes / 60) + ':' + String(minutes % 60).padStart(2, '0');
 };
@@ -53,7 +53,7 @@ function refreshTimeline(slot) {
 }
 const stamFullAtFor = slot => Object.prototype.hasOwnProperty.call(slot, 'stamFullAt') ? slot.stamFullAt : (slot.stamRunning && slot.stamStart ? slot.stamStart + Math.max(0, slot.stamMax - slot.stamCurrent) * STAM_STEP_MS : null);
 const idleFullAtFor = slot => Object.prototype.hasOwnProperty.call(slot, 'idleFullAt') ? slot.idleFullAt : (slot.idleRunning && slot.idleStart ? slot.idleStart + slot.idleCapMs : null);
-export const emptySlot = () => runtimeSlot({ ...SLOT_DEFAULTS });
+const emptySlot = () => runtimeSlot({ ...SLOT_DEFAULTS });
 export const createSlots = () => Array.from({ length:SLOT_COUNT }, emptySlot);
 
 export function normalizeSlot(source) {
@@ -70,7 +70,7 @@ export function normalizeSlot(source) {
     enabled: input.enabled !== false
   });
 }
-export function computeStam(slot, now) {
+function computeStam(slot, now) {
   const current = clamp(finite(slot.stamCurrent, 0), 0, slot.stamMax);
   if (!slot.stamRunning || !slot.stamStart) return { current, fullAt:null, isFull:current >= slot.stamMax };
   const elapsed = Math.max(0, now - slot.stamStart);
@@ -80,7 +80,7 @@ export function computeStam(slot, now) {
   const nextIn = STAM_STEP_MS - (elapsed % STAM_STEP_MS);
   return { current:next, fullAt:now + (slot.stamMax - next - 1) * STAM_STEP_MS + nextIn, isFull:false };
 }
-export function computeIdle(slot, now) {
+function computeIdle(slot, now) {
   if (!slot.idleRunning || !slot.idleStart) return { value:'未開始', plan:'—:—', isFull:false, remaining:null };
   const cap = finite(slot.idleCapMs, IDLE_CAP_MS);
   const remaining = Math.max(0, cap - Math.max(0, now - slot.idleStart));

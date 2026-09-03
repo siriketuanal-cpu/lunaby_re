@@ -26,7 +26,7 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;}
 .task-row:active{background:#080c12;}
-.task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.28);}
+.task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
 .stam-side{position:relative;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
@@ -61,7 +61,6 @@ body{overflow:hidden;touch-action:pan-x;}
 .idle-pre{min-width:0;min-height:26px;cursor:pointer;}
 .idle-action{display:flex;align-items:center;justify-content:center;min-width:5.5ch;min-height:24px;cursor:pointer;}
 .idle-post{min-width:0;min-height:26px;cursor:pointer;}
-.idle-zone.is-selected .idle-action{justify-content:center;}
 .task-value{margin:0;color:var(--violet);font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap;}
 .task-value.is-clock{width:5ch;text-align:right;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);font-variant-numeric:tabular-nums;white-space:nowrap;}
@@ -69,13 +68,18 @@ body{overflow:hidden;touch-action:pan-x;}
 .task-plan.is-full:not(:empty)::after{content:'満';margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 .idle-zone.is-near-full .task-value,.idle-zone.is-near-full.is-selected .task-value{color:#ff7070;}
 .stam-side.is-selected .stam-current,.stam-side.is-selected .task-max{color:#fff0c6;}
-.idle-zone.is-selected{z-index:auto;border:0;border-radius:0;background:transparent;box-shadow:none;}
-.idle-zone.is-selected .task-value{color:#e9ddff;font-size:12px;font-weight:800;letter-spacing:.02em;}
-.idle-zone.is-selected .task-plan{color:#ffd581;font-size:12px;font-weight:800;letter-spacing:.02em;}
-.idle-zone.is-selected .task-plan.is-full{font-size:12px;font-weight:800;letter-spacing:.02em;}
+.idle-zone.is-selected .task-value,
+.idle-zone.is-selected .task-plan,
+.idle-zone.is-selected .task-plan.is-full{
+  width:5ch;margin-left:0;text-align:right;font-size:12px;font-weight:800;letter-spacing:.02em;
+}
+.idle-zone.is-selected .task-value{color:#e9ddff;}
+.idle-zone.is-selected .task-plan,
+.idle-zone.is-selected .task-plan.is-full{color:#ffd581;}
+.idle-zone.is-selected .task-plan.is-full:not(:empty)::after{content:none;}
 .starleap-line{display:grid;grid-template-columns:minmax(0,146px) minmax(0,154px);justify-content:start;align-items:center;gap:2px;margin-top:6px;padding:3px 2px;border-top:2px solid #52617a;border-bottom:1px solid var(--line);color:var(--ink);font-size:10px;}
 .sl-item{min-width:0;min-height:34px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:baseline;align-content:center;gap:3px;padding:3px 4px;border:0;border-radius:0;cursor:pointer;}
-.sl-item.is-selected{border-color:#b9aaff;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.22);}
+.sl-item.is-selected{border-color:#b9aaff;background:#010307;box-shadow:none;}
 .sl-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8da0b4;font-size:8px;}
 .sl-value{white-space:nowrap;color:#51d8e8;font:800 14px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;}
 .sl-edit,.sl-edit:focus{width:4ch;min-width:4ch;margin:0;padding:0;border:0;outline:0;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 14px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;caret-color:transparent;}
