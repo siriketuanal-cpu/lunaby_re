@@ -57,12 +57,21 @@ import {
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
-        '<span class="timer-cell stam-cell" data-i="' + index + '" data-task="stam" role="button" tabindex="0">' +
-        '<span class="stam-group"><span class="stam-edit-hit" data-stam-edit="' + index + '" aria-hidden="true"></span><span class="stam-current stam-number" data-stam-number="' + index + '" data-stam-edit="' + index + '"></span>' +
-        '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
-        '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span><span class="stam-calc-hit" data-stam-confirm="' + index + '"><span class="task-slash">/</span><span class="task-max" data-stam-number="' + index + '"></span></span></span>' +
-        '</span>' +
-        '<span class="timer-cell idle-cell" data-i="' + index + '" data-task="idle"><span class="idle-action" role="button" tabindex="0"><strong class="task-value"></strong><span class="task-plan"></span></span></span>' +
+        '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
+          '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
+            '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
+            '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
+          '</span>' +
+          '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
+            '<span class="task-slash">/</span>' +
+            '<span class="task-max" data-stam-number="' + index + '"></span>' +
+            '<span class="stam-calc-gap" aria-hidden="true"></span>' +
+          '</span>' +
+          '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
+        '</div>' +
+        '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
+          '<span class="idle-action" role="button" tabindex="0"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
+        '</div>' +
       '</div>' +
     '</section>';
   }
@@ -74,14 +83,14 @@ import {
     refs = new Array(state.slots.length);
     for (const index of visibleIndices) {
       const root = list.querySelector('[data-slot="' + index + '"]');
-      const stamRow = root.querySelector('.stam-cell');
-      const idleRow = root.querySelector('.idle-cell');
+      const stamRow = root.querySelector('.stam-side');
+      const idleRow = root.querySelector('.idle-zone');
       refs[index] = {
         root,
         nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
-        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-hit'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
         snapshot:{ stam:{ current:0, plan:'—:—' }, idle:{ value:'未開始', plan:'—:—', full:false, low:false } }
       };
