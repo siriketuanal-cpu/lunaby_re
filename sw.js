@@ -68,8 +68,9 @@ async function repairShell() {
 
 function offlineMiss(request) {
   if (request.mode === 'navigate') {
+    // 既存の更新入口（update.html）へのリンクのみ。追加処理はしない。
     return new Response(
-      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>オフライン</title><main style="padding:2rem;font-family:system-ui,sans-serif"><h1>オフライン起動準備中</h1><p>必要なファイルがまだ保存されていません。</p><p>通信できる状態で左上の <strong>LUNABY</strong> を押し、修復・更新を実行してください。</p></main>',
+      '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>オフライン</title><style>body{margin:0;background:#05070a;color:#e4ebf6;font-family:system-ui,sans-serif}a.lunaby{display:inline-block;padding:10px 4px;color:#f1f5fb;font:800 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-decoration:none}a.lunaby:active{color:#72dbea}main{padding:1.25rem 1.5rem 2rem}h1{font-size:1.25rem;font-weight:700;margin:1.25rem 0 .75rem}p{color:#9ca9b9;font-size:.95rem;line-height:1.65;margin:.5rem 0}</style><header><a class="lunaby" href="./update.html" aria-label="修復・更新を実行">LUNABY</a></header><main><h1>オフライン起動準備中</h1><p>必要なファイルがまだ保存されていません。</p><p>通信できる状態で上の <strong>LUNABY</strong> を押し、修復・更新を実行してください。</p></main>',
       { status:503, headers:{ 'Content-Type':'text/html; charset=utf-8' } }
     );
   }
