@@ -32,7 +32,9 @@ body{overflow:hidden;touch-action:pan-x;}
 .idle-cell.is-selected .idle-action{justify-content:center;}
 .task-row:active{background:#080c12;}
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.28);}
-.stam-group{position:relative;display:flex;align-items:center;width:100%;height:18px;margin:0;flex:none;}
+
+/* スタミナ全体グループ：Flexで要素を横並び制御 */
+.stam-group{position:relative;display:flex;align-items:center;justify-content:flex-start;width:100%;height:18px;margin:0;flex:none;}
 
 /* タップ判定エリア */
 .stam-edit-hit{position:absolute;z-index:3;left:0;top:-4px;width:38%;height:26px;cursor:text;}
@@ -41,16 +43,18 @@ body{overflow:hidden;touch-action:pan-x;}
 
 .stam-current,.stam-edit,.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
 
-/* スタミナ数値・入力欄（フレックス流し込みで相対位置を完全維持） */
-.stam-current,.stam-edit{position:relative;z-index:2;width:36px;margin-left:10px;text-align:right;vertical-align:middle;}
+/* スタミナ数値と手入力インプット：絶対配置位置指定を完全削除 */
+.stam-current,.stam-edit{position:relative;z-index:2;width:32px;margin-left:8px;text-align:right;}
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:1px;text-align:center;}
 .stam-current{min-width:0;color:#ffb96c;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;cursor:text;}
 .stam-cell.is-near-full .stam-current{color:#ff7070;}
-.stam-edit,.stam-edit:focus{position:absolute;left:10px;top:0;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 
-/* 「/」と「上限値」の位置（左端固定ではなく数値の直後に自然に配置） */
-.task-slash{position:relative;z-index:2;margin-left:2px;color:#73839a;font:700 15px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;text-align:center;}
-.task-max{position:relative;z-index:2;margin-left:1px;color:#51d8e8;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:left;white-space:nowrap;}
+/* 手入力input：数値の上に重なるよう調整しつつ位置指定は解除 */
+.stam-edit,.stam-edit:focus{position:absolute;left:8px;top:0;width:32px;min-width:32px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+
+/* 「/」と「上限値」：絶対配置(absolute)をやめ、数値の「すぐ右隣」に自然追従 */
+.task-slash{position:relative;z-index:2;left:auto;margin-left:2px;color:#73839a;font:700 15px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;text-align:center;}
+.task-max{position:relative;z-index:2;left:auto;margin-left:1px;color:#51d8e8;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;text-align:left;white-space:nowrap;}
 
 .stam-full{color:#ff7070;font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.03em;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
@@ -62,7 +66,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 放置報酬受取：文字サイズを抑える (13px) */
+/* 放置報酬受取：文字サイズを小さく抑える (13px) */
 .task-value{margin:0;color:var(--violet);font:800 13px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap;}
 .task-value.is-clock{width:5ch;text-align:right;font-size:16px;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);font-variant-numeric:tabular-nums;white-space:nowrap;}
