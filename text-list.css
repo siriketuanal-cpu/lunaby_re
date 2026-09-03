@@ -23,16 +23,16 @@ body{overflow:hidden;touch-action:pan-x;}
 .name-input{width:62px;font-size:11px;line-height:1.15;}
 .rank-input{width:3ch;text-align:right;color:var(--orange);font:800 11px/1.15 ui-monospace,monospace;}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
-/* 1枚カード: 左=スタミナ(手入力+40計算) / 右=放置報酬。セル分割なし */
-.timer-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:0;min-height:28px;}
+/* 1枚カード: 左右半々。各半分の中央に数字を寄せる（中余白を抑える） */
+.timer-row{display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;}
 .task-row:active{background:#080c12;}
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:inset 0 0 0 1px rgba(183,203,229,.28);}
 
-/* 左サイド: 現在値 | /上限+伸びる隙間(40計算) */
-.stam-side{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
-.stam-edit-zone{position:relative;display:inline-grid;grid-template-columns:1fr;align-items:center;justify-items:end;min-width:40px;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
-.stam-calc-zone{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;padding:4px 4px 4px 0;cursor:pointer;}
-.stam-calc-gap{min-width:8px;height:100%;}
+/* 左半分: 現在値+/上限をまとめて中央寄せ。40計算は上限の右に適度な余白だけ */
+.stam-side{position:relative;display:flex;align-items:center;justify-content:center;min-width:0;min-height:26px;}
+.stam-edit-zone{position:relative;display:inline-grid;align-items:center;justify-items:end;min-width:40px;min-height:26px;padding:4px 2px 4px 4px;cursor:text;flex:0 0 auto;}
+.stam-calc-zone{display:flex;align-items:center;min-height:26px;padding:4px 14px 4px 0;cursor:pointer;flex:0 0 auto;}
+.stam-calc-gap{display:none;}
 
 /* 数字表示は通常フロー（絶対配置しない） */
 .stam-current,.stam-edit,.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
@@ -55,9 +55,9 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド: 放置報酬タイマー〜右端 */
-.idle-zone{display:flex;align-items:center;justify-content:flex-end;min-height:26px;padding:0 2px 0 6px;cursor:pointer;}
-.idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;}
+/* 右サイド: 右半分の中央にタイマー（以前に近い配置） */
+.idle-zone{display:flex;align-items:center;justify-content:center;min-height:26px;padding:0 2px;cursor:pointer;}
+.idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;width:100%;cursor:pointer;}
 .idle-zone.is-selected .idle-action{justify-content:center;}
 .task-value{margin:0;color:var(--violet);font:800 16px/.95 var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.04em;white-space:nowrap;}
 .task-value.is-clock{width:5ch;text-align:right;}
