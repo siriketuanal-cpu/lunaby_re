@@ -91,7 +91,7 @@ import {
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
           '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
-            '<span class="task-slash">⁄</span>' +
+            '<span class="task-slash">/</span>' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
           '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
