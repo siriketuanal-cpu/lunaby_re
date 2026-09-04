@@ -135,7 +135,7 @@ import {
   function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
   function planForIdle(snapshot, index){
     if (!selected || selected.index !== index || selected.task !== 'idle') return snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '';
-    return snapshot.idle.full ? '受取' : (snapshot.idle.value === '未開始' ? '開始' : '');
+    return snapshot.idle.full ? '受取' : '';
   }
   function valueForIdle(snapshot, index){ return selected && selected.index === index && selected.task === 'idle' && !snapshot.idle.full && snapshot.idle.value !== '未開始' ? '受取' : snapshot.idle.value; }
   function fullAtLabel(plan){ const [hour, minute] = String(plan || '').trim().split(':'); return /^\d{1,2}$/.test(hour) && /^\d{2}$/.test(minute) ? String(Number(hour)) + ':' + minute : ''; }

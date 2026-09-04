@@ -39,7 +39,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-current{grid-area:1/1;box-sizing:border-box;width:36px;min-width:36px;height:18px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 16px/18px var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.02em;cursor:text;}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 .task-slash{width:8px;margin:0;color:#73839a;font:700 15px/.95;font-variant-numeric:tabular-nums;text-align:center;}
-.task-max{min-width:2ch;margin:0;color:#51d8e8;font:800 16px/.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:left;white-space:nowrap;}
+.task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:var(--timer-number-font);font-size:16px;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:left;white-space:nowrap;}
 
 /* 透明 input = 現在値と同一メトリクス */
 .stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/18px var(--timer-number-font);font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
@@ -81,7 +81,7 @@ body{overflow:hidden;touch-action:pan-x;}
 /* スターリープ: 2列固定グリッド + セル内重ね入力（壊れにくい） */
 .starleap-line{display:flex;justify-content:flex-start;align-items:center;gap:12px;margin-top:6px;padding:6px 4px;border-top:2px solid #52617a;border-bottom:1px solid var(--line);width:100%;}
 .sl-item{min-width:0;min-height:28px;padding:2px 0;cursor:pointer;flex:0 0 auto;}
-.sl-item[data-sl-task="stamina"]{display:grid;grid-template-columns:2.5ch auto 5.5ch;align-items:center;column-gap:2px;width:12.5rem;}
+.sl-item[data-sl-task="stamina"]{display:grid;grid-template-columns:2.5ch auto 5.5ch;align-items:center;column-gap:2px;width:auto;}
 .sl-item[data-sl-task="orb"]{display:grid;grid-template-columns:auto 9ch;align-items:center;column-gap:6px;width:auto;}
 .sl-cur{display:grid;grid-template-columns:2.5ch;grid-template-rows:18px;place-items:stretch;justify-items:end;}
 .sl-cur .sl-value,.sl-cur .sl-edit{grid-area:1/1;box-sizing:border-box;width:100%;height:18px;margin:0;padding:0;border:0;text-align:right;font:800 13px/18px var(--timer-number-font);font-variant-numeric:tabular-nums;}
