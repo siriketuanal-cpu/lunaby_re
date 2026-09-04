@@ -116,23 +116,24 @@ body{overflow:hidden;touch-action:pan-x;}
 .task-plan,
 .sl-value,
 .sl-edit {
-  letter-spacing: 0.005em;
+  letter-spacing: 0.01em;
   line-height: 1;
   text-rendering: geometricPrecision;
   -webkit-font-smoothing: antialiased;
   display: inline-block;
 }
 
-/* 時計だけコロン周辺の圧迫感を少し逃がす */
+/* 時計はコロンの圧迫感を避け、数字間の呼吸を少し広げる */
 .task-value.is-clock,
 .task-plan,
 .sl-plan-wrap .sl-plan,
 .sl-plan-wrap .sl-edit {
-  letter-spacing: -0.015em;
+  letter-spacing: 0.01em;
 }
 
-/* 区切り記号は数字よりわずかに細く、幅を固定 */
+/* スラッシュは数字の間で中央に見えるよう少しだけ幅を確保 */
 .task-slash {
+  width: 9px;
   letter-spacing: 0;
   line-height: 1;
 }
