@@ -91,7 +91,7 @@ import {
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
           '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
-            '<span class="task-slash">/</span>' +
+            '<span class="task-slash">⁄</span>' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
           '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
@@ -173,8 +173,10 @@ import {
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
-    setText(ref.idleValue, idleValue);
-    setClass(ref.idleValue, 'is-clock', /^\d{1,2}:\d{2}$/.test(idleValue));
+    const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
+    // 1桁時の前に数字幅の空白を1つだけ補い、時計の「:」位置を2桁時と揃える。
+    setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
+    setClass(ref.idleValue, 'is-clock', idleClock);
     setText(ref.idlePlan, planForIdle(snapshot, index));
     setHidden(ref.idleValue, snapshot.idle.full);
     setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
