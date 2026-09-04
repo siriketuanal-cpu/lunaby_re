@@ -15,10 +15,10 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
-.account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1 inherit;text-align:left;}
-.name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15 ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
+.name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
 .rank-display{flex:none;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);cursor:text;}
-.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;}
+.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 .name-input{width:62px;font-size:11px;line-height:1.15;}
 .rank-input{width:3ch;text-align:right;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);}
@@ -95,7 +95,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .sl-plan{color:#9aabbf;font:700 11px/16px var(--timer-number-font);white-space:nowrap;margin:0;}
 .sl-value{color:#51d8e8;font:800 13px/18px var(--timer-number-font);white-space:nowrap;}
 .sl-item[data-sl-task="orb"] .sl-value{color:#d9abff;}
-.sl-edit,.sl-edit:focus{outline:0;border-radius:0;box-shadow:none;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;caret-color:#ffd581;appearance:none;-webkit-appearance:none;}
+.sl-edit,.sl-edit:focus{outline:0;border-radius:0;box-shadow:none;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .sl-plan-wrap .sl-edit,.sl-plan-wrap .sl-edit:focus{text-align:left;}
 .sl-item.is-selected .sl-value,.sl-item.is-selected .sl-max,.sl-item.is-selected .sl-plan{color:#fff0c6;}
 
