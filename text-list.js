@@ -31,22 +31,32 @@ import {
     try { saveV2Store(localStorage, storageEnvelope, state.slots, index, state.sl); } catch (_) {}
   }
   function writeSL(){ try { saveV2Store(localStorage, storageEnvelope, state.slots, undefined, state.sl); } catch (_) {} }
-  function slMarkup(){ return '<section class="starleap-line" aria-label="スターリープ"><span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼"><span class="sl-value" data-sl-value="stamina"></span><input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden><span class="sl-max" data-sl-max="stamina"></span><span class="sl-plan" data-sl-plan="stamina"></span></span><span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み"><span class="sl-value" data-sl-value="orb"></span><span class="sl-plan" data-sl-plan="orb"></span><input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></section>'; }
+  function slMarkup(){
+    return '<section class="starleap-line" aria-label="スターリープ">'
+      + '<span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼">'
+      + '<span class="sl-cur"><span class="sl-value" data-sl-value="stamina"></span>'
+      + '<input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden></span>'
+      + '<span class="sl-max" data-sl-max="stamina"></span>'
+      + '<span class="sl-plan" data-sl-plan="stamina"></span></span>'
+      + '<span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み">'
+      + '<span class="sl-value" data-sl-value="orb"></span>'
+      + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="orb"></span>'
+      + '<input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></span>'
+      + '</section>';
+  }
   function setHidden(element, value){ const hidden = !!value; if (element.hidden !== hidden) element.hidden = hidden; }
   function setClass(element, name, value){ const enabled = !!value; if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled); }
   function refreshSLItem(ref, isEditing, value, plan, maxText){
     setClass(ref.root,'is-selected',isEditing);
     if (ref.max) {
-      // スタミナ: 現在値だけ入力に差し替え。/max と計画時間は残す
+      // スタミナ: 現在値セルに透明inputを重ねる（/max・計画は固定）
       setHidden(ref.value, isEditing);
       setHidden(ref.input, !isEditing);
       if (!isEditing) setText(ref.value, value);
       setText(ref.max, maxText || '');
-      setHidden(ref.plan, false);
       setText(ref.plan, plan);
     } else {
-      // オーブ: 玉は残す。計画時間の位置を入力に差し替え
-      setHidden(ref.value, false);
+      // オーブ: 玉は固定。計画セルに透明inputを重ねる
       setText(ref.value, value);
       setHidden(ref.plan, isEditing);
       setHidden(ref.input, !isEditing);
