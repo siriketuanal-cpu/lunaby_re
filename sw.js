@@ -51,9 +51,10 @@ async function repairShell() {
       await staging.put(request, response);
     }
 
-    // 全ファイル取得後にだけ本キャッシュへ反映する。
-    const current = await caches.open(CACHE_NAME);
+    // 全ファイル取得後: 本キャッシュを一度消してから入れ直す（古いエントリ残留防止）
     const entries = await staging.keys();
+    await caches.delete(CACHE_NAME);
+    const current = await caches.open(CACHE_NAME);
     for (const request of entries) {
       const response = await staging.match(request);
       if (response) await current.put(request, response);
