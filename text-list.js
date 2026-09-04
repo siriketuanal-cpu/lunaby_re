@@ -229,12 +229,10 @@ import {
     const ref = refs[index];
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
     input.value = type === 'name' ? state.slots[index].label : type === 'rank' ? String(state.slots[index].rank) : '';
-    if (type === 'stam') adjustStamInputWidth(input);
     input.focus({ preventScroll:true });
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
   function moveCursorToEnd(input){ const apply=()=>{ const end=input.value.length; input.setSelectionRange(end,end); }; apply(); requestAnimationFrame(apply); setTimeout(apply,0); }
-  function adjustStamInputWidth(input){ input.style.width = '36px'; }
   function closeEdit(cancel){
     if (!edit) return;
     const active = edit;
@@ -314,7 +312,7 @@ import {
     });
     list.addEventListener('input', event => {
       const input = event.target;
-      if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); adjustStamInputWidth(input); }
+      if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
       if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
       if (input.matches('[data-sl-editor="orb"]')) { const raw=String(input.value||'').replace(/：/g,':'); let next=''; let digits=0; for(const char of raw){ if(/\d/.test(char) && digits<4){ next+=char; digits+=1; } else if(char===':' && !next.includes(':')) next+=char; } input.value=next; }
     });

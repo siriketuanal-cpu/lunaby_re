@@ -97,7 +97,6 @@ body{overflow:hidden;touch-action:pan-x;}
 .sl-plan-wrap .sl-edit,.sl-plan-wrap .sl-edit:focus{text-align:left;}
 .sl-item.is-selected .sl-value,.sl-item.is-selected .sl-max,.sl-item.is-selected .sl-plan{color:#fff0c6;}
 
-.footnote{margin:16px 2px 0;color:#536176;font-size:9px;line-height:1.45;}
 .pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
