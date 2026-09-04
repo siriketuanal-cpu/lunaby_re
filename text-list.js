@@ -34,12 +34,12 @@ import {
   function slMarkup(){
     return '<section class="starleap-line" aria-label="スターリープ">'
       + '<span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼">'
-      + '<span class="sl-cur"><span class="sl-value" data-sl-value="stamina"></span>'
+      + '<span class="sl-main"><span class="sl-cur"><span class="sl-value" data-sl-value="stamina"></span>'
       + '<input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden></span>'
-      + '<span class="sl-max" data-sl-max="stamina"></span>'
-      + '<span class="sl-plan" data-sl-plan="stamina"></span></span>'
+      + '<span class="sl-max" data-sl-max="stamina"></span></span>'
+      + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="stamina"></span></span></span>'
       + '<span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み">'
-      + '<span class="sl-value" data-sl-value="orb"></span>'
+      + '<span class="sl-main"><span class="sl-value" data-sl-value="orb"></span></span>'
       + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="orb"></span>'
       + '<input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></span>'
       + '</section>';
