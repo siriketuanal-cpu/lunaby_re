@@ -137,3 +137,34 @@ body{overflow:hidden;touch-action:pan-x;}
   letter-spacing: 0;
   line-height: 1;
 }
+
+/* スタミナ入力は現在値と完全に同じメトリクスで重ねる */
+.stam-current,
+.stam-edit,
+.stam-edit:focus {
+  width: 36px;
+  min-width: 36px;
+  height: 18px;
+  line-height: 18px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-align: right;
+}
+
+/* 入力中の数字も現在値と同じ色にする */
+.stam-edit,
+.stam-edit:focus {
+  color: #b4becc;
+  -webkit-text-fill-color: #b4becc;
+}
+.stam-side.is-near-full .stam-edit,
+.stam-side.is-near-full .stam-edit:focus {
+  color: #ff7070;
+  -webkit-text-fill-color: #ff7070;
+}
+.stam-side.is-selected .stam-edit,
+.stam-side.is-selected .stam-edit:focus {
+  color: #fff0c6;
+  -webkit-text-fill-color: #fff0c6;
+}
