@@ -31,21 +31,39 @@ import {
     try { saveV2Store(localStorage, storageEnvelope, state.slots, index, state.sl); } catch (_) {}
   }
   function writeSL(){ try { saveV2Store(localStorage, storageEnvelope, state.slots, undefined, state.sl); } catch (_) {} }
-  function slMarkup(){ return '<section class="starleap-line" aria-label="スターリープ"><span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼"><span class="sl-value" data-sl-value="stamina"></span><input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden><span class="sl-plan" data-sl-plan="stamina"></span></span><span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み"><span class="sl-value" data-sl-value="orb"></span><input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden><span class="sl-plan" data-sl-plan="orb"></span></span></section>'; }
+  function slMarkup(){ return '<section class="starleap-line" aria-label="スターリープ"><span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼"><span class="sl-value" data-sl-value="stamina"></span><input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden><span class="sl-max" data-sl-max="stamina"></span><span class="sl-plan" data-sl-plan="stamina"></span></span><span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み"><span class="sl-value" data-sl-value="orb"></span><span class="sl-plan" data-sl-plan="orb"></span><input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></section>'; }
   function setHidden(element, value){ const hidden = !!value; if (element.hidden !== hidden) element.hidden = hidden; }
   function setClass(element, name, value){ const enabled = !!value; if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled); }
-  function refreshSLItem(ref, isEditing, value, plan){ setHidden(ref.value,isEditing); setHidden(ref.input,!isEditing); if(!isEditing) setText(ref.value,value); setText(ref.plan,plan); setClass(ref.root,'is-selected',isEditing); }
+  function refreshSLItem(ref, isEditing, value, plan, maxText){
+    setClass(ref.root,'is-selected',isEditing);
+    if (ref.max) {
+      // スタミナ: 現在値だけ入力に差し替え。/max と計画時間は残す
+      setHidden(ref.value, isEditing);
+      setHidden(ref.input, !isEditing);
+      if (!isEditing) setText(ref.value, value);
+      setText(ref.max, maxText || '');
+      setHidden(ref.plan, false);
+      setText(ref.plan, plan);
+    } else {
+      // オーブ: 玉は残す。計画時間の位置を入力に差し替え
+      setHidden(ref.value, false);
+      setText(ref.value, value);
+      setHidden(ref.plan, isEditing);
+      setHidden(ref.input, !isEditing);
+      if (!isEditing) setText(ref.plan, plan);
+    }
+  }
   function refreshSL(now){
     if (!slRuntime || !slRefs || !state.sl) return;
     const { getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration } = slRuntime;
     const stamina = getTimerInfo(state.sl.stamina, SL_STAM_MAX, SL_STAM_STEP_MS, now, slSnapshot.stamina);
     const orb = getTimerInfo(state.sl.orb, SL_ORB_MAX, SL_ORB_STEP_MS, now, slSnapshot.orb);
-    refreshSLItem(slRefs.stamina, slEdit==='stamina', stamina.current+'/'+SL_STAM_MAX, stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'));
+    refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
   function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; const now=Date.now(); refreshSL(now); const input=slRefs[type].input; if(type==='stamina'){ const { getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS }=slRuntime; const cur=getTimerInfo(state.sl.stamina,SL_STAM_MAX,SL_STAM_STEP_MS,now,slSnapshot.stamina); input.value=String(cur.current); } else { input.value=''; } input.focus({preventScroll:true}); if(typeof input.select==='function') try{ input.select(); }catch(_){} }
   function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; writeSL(); syncAll(); }
-  function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), plan:root.querySelector('[data-sl-plan]') }; } }
+  function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
   function connectStarLeap(){ buildSL(); }
 
   function accountMarkup(slot, index){
