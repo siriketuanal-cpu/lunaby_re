@@ -85,6 +85,8 @@ import {
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
+        '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
+        '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
@@ -121,6 +123,8 @@ import {
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
+        idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
         snapshot:{ stam:{ current:0, plan:'—:—' }, idle:{ value:'未開始', plan:'—:—', full:false, low:false } }
       };
@@ -170,12 +174,20 @@ import {
     if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
     if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
     if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, ''); }
+    const stamClock=fullTimeParts(snapshot.stam.plan);
+    const stamClockVisible=/^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
+    if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
+    if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
     // 1桁時の前に数字幅の空白を1つだけ補い、時計の「:」位置を2桁時と揃える。
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
+    const idleFullTime=fullTimeParts(snapshot.idle.plan);
+    const idleFullClockVisible=/^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
+    if (ref.idleFullClock) setHidden(ref.idleFullClock, !idleFullClockVisible);
+    if (idleFullClockVisible) { setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2,'0')); setText(ref.idleFullClockMinute, idleFullTime.minute); }
     setClass(ref.idleValue, 'is-clock', idleClock);
     setText(ref.idlePlan, planForIdle(snapshot, index));
     setHidden(ref.idleValue, snapshot.idle.full);

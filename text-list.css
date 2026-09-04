@@ -26,6 +26,15 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
+
+/* 試作：左右の余白に全快予定時刻を小さなデジタル時計として表示。中央の既存レイアウトは動かさない。 */
+.full-clock{position:absolute;top:50%;z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:22px;height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
+.full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
+.full-clock-hour{font-size:9px;color:#91a5bb;}
+.full-clock-minute{font-size:9px;color:#a8b7c8;}
+.full-clock-stam{left:6px;}
+.full-clock-idle{right:6px;}
+
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
