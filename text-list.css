@@ -1,4 +1,4 @@
-:root{color-scheme:dark;--bg:#05070a;--line:#273346;--line-soft:#182231;--ink:#e4ebf6;--muted:#8290a5;--cyan:#72dbea;--orange:#f1a66a;--violet:#c6b5ff;--green:#70eab2;--focus:#b9aaff;--group-moon:#6685b5;--group-lilac:#d8dee8;--group-tide:#68a39b;--timer-number-font:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+:root{color-scheme:dark;--bg:#05070a;--line:#273346;--line-soft:#182231;--ink:#e4ebf6;--muted:#8290a5;--cyan:#72dbea;--orange:#f1a66a;--violet:#c6b5ff;--green:#70eab2;--focus:#b9aaff;--group-moon:#6685b5;--group-lilac:#d8dee8;--group-tide:#68a39b;--timer-number-font:"Helvetica Neue",Helvetica,Arial,"Segoe UI",Roboto,"Hiragino Sans",Meiryo,sans-serif;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 [hidden]{display:none!important;}
 html,body{min-height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;overscroll-behavior-y:none;}
@@ -81,7 +81,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .sl-item{display:inline-flex;align-items:baseline;gap:6px;min-height:24px;padding:2px 0;cursor:pointer;}
 .sl-item.is-selected .sl-value,.sl-item.is-selected .sl-plan{color:#fff0c6;}
 .sl-value{white-space:nowrap;color:#51d8e8;font:800 13px/1.1 var(--timer-number-font);font-variant-numeric:tabular-nums;}
-.sl-edit,.sl-edit:focus{width:4ch;min-width:2ch;margin:0;padding:0;border:0;outline:0;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 13px/1.1 var(--timer-number-font);font-variant-numeric:tabular-nums;caret-color:transparent;}
+.sl-edit,.sl-edit:focus{display:inline-block;width:4ch;min-width:2ch;margin:0;padding:0;border:0;outline:0;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 13px/1.1 var(--timer-number-font);font-variant-numeric:tabular-nums;caret-color:#ffd581;}
 .sl-item[data-sl-task="stamina"] .sl-edit,.sl-item[data-sl-task="stamina"] .sl-edit:focus{width:2ch;min-width:2ch;}
 .sl-plan{white-space:nowrap;color:#9aabbf;font:700 11px/1.1 var(--timer-number-font);font-variant-numeric:tabular-nums;}
 .sl-item[data-sl-task="orb"] .sl-value{color:#d9abff;}
