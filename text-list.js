@@ -9,7 +9,6 @@ import {
   const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const escape = value => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 
-  // starleap API を従来の namespace形に束ねる（呼び出し側の差分を最小化）
   const slRuntime = {
     getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
     applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
@@ -25,7 +24,16 @@ import {
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
+  let pageEl = null;
+
   function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
+
+  function updateDimState(){
+    if (!pageEl) pageEl = document.querySelector('.page');
+    if (!pageEl) return;
+    const isDimmed = !!(selected || edit || slEdit);
+    pageEl.classList.toggle('is-dimmed', isDimmed);
+  }
 
   function write(index){
     try { saveV2Store(localStorage, storageEnvelope, state.slots, index, state.sl); } catch (_) {}
@@ -49,14 +57,12 @@ import {
   function refreshSLItem(ref, isEditing, value, plan, maxText){
     setClass(ref.root,'is-selected',isEditing);
     if (ref.max) {
-      // スタミナ: 現在値セルに透明inputを重ねる（/max・計画は固定）
       setHidden(ref.value, isEditing);
       setHidden(ref.input, !isEditing);
       if (!isEditing) setText(ref.value, value);
       setText(ref.max, maxText || '');
       setText(ref.plan, plan);
     } else {
-      // オーブ: 玉は固定。計画セルに透明inputを重ねる
       setText(ref.value, value);
       setHidden(ref.plan, isEditing);
       setHidden(ref.input, !isEditing);
@@ -71,7 +77,7 @@ import {
     refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
-  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
+  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); updateDimState(); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
   function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; writeSL(); syncAll(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
   function connectStarLeap(){ buildSL(); }
@@ -88,7 +94,7 @@ import {
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
-          '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
+          '<span class="stam-edit-zone" data-stam-edit-zone="' + index + '">' +
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
@@ -121,7 +127,7 @@ import {
         root,
         nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
-      stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
+        stamRow, stamEditZone:stamRow.querySelector('[data-stam-edit-zone]'), stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
         idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
@@ -161,6 +167,8 @@ import {
     setHidden(ref.rankInput, !rankEditing);
     if (!rankEditing) setText(ref.rankDisplay, 'Lv.' + slot.rank);
 
+    if (ref.stamEditZone) setClass(ref.stamEditZone, 'is-editing', stamEditing);
+
     const stamFull = !stamEditing && snapshot.stam.current >= slot.stamMax;
     const stamSelectionPreview = stamFull && stamSelected;
     setHidden(ref.stamNumber, stamEditing || (stamFull && !stamSelectionPreview));
@@ -182,7 +190,6 @@ import {
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
-    // 1桁時の前に数字幅の空白を1つだけ補い、時計の「:」位置を2桁時と揃える。
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
     const idleFullTime=fullTimeParts(snapshot.idle.plan);
     const idleFullClockVisible=/^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
@@ -195,6 +202,7 @@ import {
     setClass(ref.idleRow, 'is-near-full', snapshot.idle.low);
     setSelected(ref.idleRow, idleSelected);
   }
+
   function scheduleRefresh(){
     if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
     if (document.hidden || edit || slEdit) return;
@@ -210,6 +218,7 @@ import {
     const now = Date.now();
     refreshSL(now);
     for (let index = 0; index < state.slots.length; index += 1) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
+    updateDimState();
     scheduleRefresh();
   }
   function syncTimedSlots(){
@@ -224,10 +233,9 @@ import {
   function syncIndices(...indices){
     const now = Date.now();
     for (const index of new Set(indices.filter(Number.isFinite))) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
+    updateDimState();
   }
   function syncAfterResume(){
-    // Android/iOSでは復帰時に visibilitychange と focus が連続して発火する。
-    // 両イベントの役割は残しつつ、近接した同一復帰だけを抑制する。
     if (document.hidden) return;
     const now = Date.now();
     if (now - lastResumeSyncAt < 250) return;
