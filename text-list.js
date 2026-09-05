@@ -375,7 +375,6 @@ import {
       } else syncAfterResume();
     });
     window.addEventListener('focus', syncAfterResume);
-    window.addEventListener('pageshow', syncAfterResume);
   }
 
   export function startLunaby(loaded) {

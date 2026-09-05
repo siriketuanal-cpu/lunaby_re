@@ -46,32 +46,30 @@ body{overflow:hidden;touch-action:pan-x;}
 .page-dim{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);}
 .page.is-dimmed .page-dim{display:block;}
 
-/* 40計算中：スタミナ部分だけ暗転の外へ。 */
-.stam-side.is-selected{z-index:20;background:#010307;}
+/* 選択中の操作領域を暗転レイヤーより前へ。 */
+.page.is-dimmed .stam-side.is-selected,
+.page.is-dimmed .idle-zone.is-selected{z-index:20;background:#010307;}
 
-/* 放置報酬操作中：放置報酬部分だけ暗転の外へ。 */
-.idle-zone.is-selected{z-index:20;background:#010307;}
-
-/* スタミナ手入力中：カード全体ではなく入力欄だけ暗転の外へ。 */
-.stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
-.stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
+/* スタミナ手入力中は入力欄だけ操作レイヤーを前へ。 */
+.page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
+.page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
 
 /* 左半分：数値を中央寄りに配置。右の1frが40計算の領域。 */
 .stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
-.stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
+.stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:40px;grid-template-rows:20px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{grid-column:4;min-width:0;min-height:26px;cursor:pointer;}
 
 /* 数字表示（input と同一ボックスで重ねてズレを減らす） */
 .task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
-.stam-current{grid-area:1/1;box-sizing:border-box;width:36px;min-width:36px;height:18px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 16px/18px var(--timer-number-font);letter-spacing:-.02em;cursor:text;}
+.stam-current{grid-area:1/1;box-sizing:border-box;width:40px;min-width:40px;height:20px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 18px/20px var(--timer-number-font);letter-spacing:-.02em;cursor:text;}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
-.task-slash{width:8px;height:18px;margin:0;color:#73839a;font:800 16px/18px var(--timer-number-font);text-align:center;display:inline-flex;align-items:center;justify-content:center;}
-.task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:16px;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:left;white-space:nowrap;}
+.task-slash{width:9px;height:20px;margin:0;color:#73839a;font:800 18px/20px var(--timer-number-font);text-align:center;display:inline-flex;align-items:center;justify-content:center;}
+.task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:18px;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:left;white-space:nowrap;}
 .task-max.is-idle-selected{position:relative;z-index:21;}
 
 /* 透明 input = 現在値と同一メトリクス */
-.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/18px var(--timer-number-font);letter-spacing:-.02em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:40px;min-width:40px;height:20px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/18px var(--timer-number-font);letter-spacing:-.02em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 16px/.95 var(--timer-number-font);letter-spacing:-.03em;cursor:text;white-space:nowrap;}
@@ -90,7 +88,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .idle-pre{min-width:0;min-height:26px;cursor:pointer;}
 .idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;}
 .idle-post{min-width:0;min-height:26px;cursor:pointer;}
-.task-value{margin:0;color:var(--violet);font:800 16px/.95 var(--timer-number-font);letter-spacing:-.02em;white-space:nowrap;}
+.task-value{margin:0;color:var(--violet);font:800 18px/.95 var(--timer-number-font);letter-spacing:-.02em;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.02em;}
 .task-plan.is-full{margin-left:0;color:#ff7070;font:800 16px/.95 var(--timer-number-font);letter-spacing:-.03em;}
