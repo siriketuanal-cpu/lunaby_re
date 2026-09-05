@@ -181,7 +181,6 @@ import {
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
     setClass(ref.idleFullClock, 'is-selected', idleSelected);
-    setClass(ref.stamMax, 'is-idle-selected', idleSelected);
     if (ref.stamInput && ref.stamInput.parentElement) setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
