@@ -29,6 +29,7 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 試作：左右の余白に全快予定時刻を小さなデジタル時計として表示。中央の既存レイアウトは動かさない。 */
 .full-clock{position:absolute;top:50%;z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:22px;height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
+.full-clock-stam,.full-clock-idle{top:50%;transform:translateY(-50%);}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
@@ -41,15 +42,14 @@ body{overflow:hidden;touch-action:pan-x;}
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
 
 
-/* 40計算・受取待機中だけ、選択中の側を軽く暗転。レイアウトやタイマー処理には干渉しない。 */
-.stam-side.is-selected::after,
-.idle-zone.is-selected::after{
+/* 40計算・受取待機中は、選択したタイマー以外を軽く暗転して選択対象を強調。CSSレイヤーだけで処理するためタイマー処理は増えない。 */
+.account-list:has(.stam-side.is-selected, .idle-zone.is-selected) .task-row:not(:has(.is-selected))::after{
   content:'';
   position:absolute;
   inset:0;
   z-index:5;
   pointer-events:none;
-  background:rgba(0,0,0,.18);
+  background:rgba(0,0,0,.46);
 }
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
