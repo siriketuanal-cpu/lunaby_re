@@ -136,11 +136,6 @@ import {
     if (element.textContent !== text) element.textContent = text;
   }
   function setSelected(element, value){ setClass(element, 'is-selected', value); }
-  function syncDimState(){
-    const page = document.querySelector('.page');
-    if (!page) return;
-    setClass(page, 'is-dimmed', !!selected || !!(edit && edit.type === 'stam'));
-  }
   function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
   function planForIdle(snapshot, index){
     if (!selected || selected.index !== index || selected.task !== 'idle') return snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '';
@@ -184,7 +179,6 @@ import {
     if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
-    setClass(ref.stamEditZone, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
@@ -216,7 +210,6 @@ import {
     const now = Date.now();
     refreshSL(now);
     for (let index = 0; index < state.slots.length; index += 1) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
-    syncDimState();
     scheduleRefresh();
   }
   function syncTimedSlots(){
@@ -231,7 +224,6 @@ import {
   function syncIndices(...indices){
     const now = Date.now();
     for (const index of new Set(indices.filter(Number.isFinite))) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
-    syncDimState();
   }
   function syncAfterResume(){
     // Android/iOSでは復帰時に visibilitychange と focus が連続して発火する。
