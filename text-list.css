@@ -39,20 +39,24 @@ body{overflow:hidden;touch-action:pan-x;}
 .full-clock-stam{left:2px;}
 .full-clock-idle{right:6px;}
 
-.task-row.is-selected{z-index:6;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
+.task-row.is-selected{z-index:20;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
 
-
-/* 40計算・受取待機中は、操作タイマー以外のページ全体を一括で暗転。
-   選択中のタイマーだけを前面に出す。単一のCSSレイヤーなので個別暗転より構造がシンプル。 */
+/* 操作中だけページ全体を一枚だけ暗転。
+   選択中のタイマー／入力欄はこのレイヤーより前に出す。
+   タイマー処理とは独立したCSS表示なので実行負荷はほぼ増えない。 */
 .page{position:relative;}
-.page:has(.stam-side.is-selected, .idle-zone.is-selected)::after{
-  content:'';
-  position:absolute;
-  inset:0;
-  z-index:5;
-  pointer-events:none;
-  background:rgba(0,0,0,.58);
-}
+.page-dim{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);}
+.page:has(.stam-side.is-selected, .idle-zone.is-selected, .stam-edit:not([hidden])) .page-dim{display:block;}
+
+/* 40計算中：スタミナ部分だけ暗転の外へ。 */
+.stam-side.is-selected{z-index:20;background:#010307;}
+
+/* 放置報酬操作中：放置報酬部分だけ暗転の外へ。 */
+.idle-zone.is-selected{z-index:20;background:#010307;}
+
+/* スタミナ手入力中：カード全体ではなく入力欄だけ暗転の外へ。 */
+.stam-edit-zone:has(.stam-edit:not([hidden])){position:relative;z-index:20;background:#010307;border-radius:2px;}
+.stam-edit-zone:has(.stam-edit:not([hidden])) .stam-edit{position:relative;z-index:21;}
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
 .stam-side{position:relative;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
