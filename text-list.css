@@ -36,7 +36,7 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
-.full-clock-stam{left:2px;}
+.full-clock-stam{left:6px;}
 .full-clock-idle{right:6px;}
 
 /* 操作中だけページ全体を一枚だけ暗転。
