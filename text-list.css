@@ -27,7 +27,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
-/* 試作：左右の余白に全快予定時刻を小さなデジタル時計として表示。中央の既存レイアウトは動かさない。 */
+/* 全快予定時刻：左右端に固定表示。 */
 .full-clock{position:absolute;top:50%;z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:22px;height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
 .full-clock-stam,.full-clock-idle{top:50%;transform:translateY(-50%);}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
@@ -55,7 +55,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
 .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
 
-/* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
+/* 左半分：数値を中央寄りに配置。右の1frが40計算の領域。 */
 .stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
 .stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
@@ -82,7 +82,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド: 右半分の中央にタイマー（以前に近い配置） */
+/* 右サイド：右半分の中央にタイマー。 */
 /* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
 .idle-zone{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;}
 .idle-pre{min-width:0;min-height:26px;cursor:pointer;}
