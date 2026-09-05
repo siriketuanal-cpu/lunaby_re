@@ -73,14 +73,14 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/.95 var(--timer-number-font);letter-spacing:-.03em;cursor:text;white-space:nowrap;}
-.stam-full-time{display:inline-flex;align-items:baseline;}
+.stam-full-time{position:relative;display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
 .stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
 .stam-full-hour::before,.stam-full-minute::before{content:'';position:absolute;top:-6px;bottom:-6px;}
 .stam-full-hour::before{left:-8px;right:-3px;}
 .stam-full-minute::before{left:-3px;right:-6px;}
 .stam-full-colon{pointer-events:none;}
-.stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
+.stam-full-label{position:absolute;left:100%;top:50%;margin-left:3px;transform:translateY(-50%);color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;white-space:nowrap;}
 
 /* 右サイド：右半分の中央にタイマー。 */
 /* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
@@ -92,7 +92,8 @@ body{overflow:hidden;touch-action:pan-x;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.02em;}
 .task-plan.is-full{margin-left:0;color:#ff7070;font:800 18px/.95 var(--timer-number-font);letter-spacing:-.03em;}
-.task-plan.is-full:not(:empty)::after{content:'満';margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
+.task-plan.is-full:not(:empty){position:relative;}
+.task-plan.is-full:not(:empty)::after{content:'満';position:absolute;left:100%;top:50%;margin-left:3px;transform:translateY(-50%);color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;white-space:nowrap;}
 .idle-zone.is-near-full .task-value,.idle-zone.is-near-full.is-selected .task-value{color:#ff7070;}
 .stam-side.is-selected .stam-current,.stam-side.is-selected .task-max{color:#fff0c6;}
 .idle-zone.is-selected .task-value,
