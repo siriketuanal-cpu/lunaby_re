@@ -170,7 +170,6 @@ import {
     setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
     setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
     if (ref.stamCalcGap) setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
-    if (ref.idlePre) setHidden(ref.idlePre, stamFull && !stamSelectionPreview);
     setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
     if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
     if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
