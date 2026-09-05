@@ -16,4 +16,3 @@ export function initializeV2Store(storage) {
   return { envelope, slots, sl, source:'initial', migrated:false };
 }
 
-export default initializeV2Store;

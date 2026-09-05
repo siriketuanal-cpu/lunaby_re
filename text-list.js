@@ -75,7 +75,6 @@ import {
   function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; setPageDimmed(false); slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
   function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; writeSL(); syncAll(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
-  function connectStarLeap(){ buildSL(); }
 
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
@@ -380,6 +379,6 @@ import {
     applyLoaded(loaded);
     buildStaticList();
     setupEvents();
-    connectStarLeap();
+    buildSL();
     syncAll();
   }
