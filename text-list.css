@@ -59,7 +59,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
 .stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
-.stam-calc-gap{grid-column:4;min-width:0;min-height:26px;cursor:pointer;}
+.stam-calc-gap{grid-column:4;min-width:0;min-height:26px;width:calc(100% + 6px);position:relative;z-index:2;cursor:pointer;}
 
 /* 数字表示（input と同一ボックスで重ねてズレを減らす） */
 .task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}
@@ -85,7 +85,7 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 右サイド：右半分の中央にタイマー。 */
 /* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
 .idle-zone{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;}
-.idle-pre{min-width:0;min-height:26px;cursor:pointer;}
+.idle-pre{min-width:0;min-height:26px;width:calc(100% - 6px);justify-self:end;cursor:pointer;}
 .idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;}
 .idle-post{min-width:0;min-height:26px;cursor:pointer;}
 .task-value{margin:0;color:var(--violet);font:800 18px/.95 var(--timer-number-font);letter-spacing:-.02em;white-space:nowrap;}
