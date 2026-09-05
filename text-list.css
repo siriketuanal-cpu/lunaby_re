@@ -32,10 +32,25 @@ body{overflow:hidden;touch-action:pan-x;}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
-.full-clock-stam{left:6px;}
+/* 放置報酬側は淡い紫灰で差別化 */
+.full-clock-idle .full-clock-hour{color:#a99fba;}
+.full-clock-idle .full-clock-minute{color:#bbb1ca;}
+.full-clock-stam{left:2px;}
 .full-clock-idle{right:6px;}
 
 .task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
+
+
+/* 40計算・受取待機中だけ、選択中の側を軽く暗転。レイアウトやタイマー処理には干渉しない。 */
+.stam-side.is-selected::after,
+.idle-zone.is-selected::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  background:rgba(0,0,0,.18);
+}
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
 .stam-side{position:relative;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
@@ -66,7 +81,7 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 右サイド: 右半分の中央にタイマー（以前に近い配置） */
 /* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
-.idle-zone{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;}
+.idle-zone{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;}
 .idle-pre{min-width:0;min-height:26px;cursor:pointer;}
 .idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;}
 .idle-post{min-width:0;min-height:26px;cursor:pointer;}
