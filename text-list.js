@@ -21,8 +21,8 @@ import {
   let selected = null;
   let edit = null;
   let slEdit = null;
-  let slRefs = null;
   let pageEl = null;
+  let slRefs = null;
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
@@ -72,7 +72,7 @@ import {
     refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
-  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
+  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; setPageDimmed(false); slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
   function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; writeSL(); syncAll(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
   function connectStarLeap(){ buildSL(); }
@@ -137,7 +137,6 @@ import {
     if (element.textContent !== text) element.textContent = text;
   }
   function setSelected(element, value){ setClass(element, 'is-selected', value); }
-  function setPageDimmed(value){ if (pageEl) setClass(pageEl, 'is-dimmed', value); }
   function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
   function planForIdle(snapshot, index){
     if (!selected || selected.index !== index || selected.task !== 'idle') return snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '';
@@ -181,7 +180,7 @@ import {
     if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
-    setClass(ref.stamEditZone, 'is-editing', stamEditing);
+    if (ref.stamInput && ref.stamInput.parentElement) setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
@@ -237,6 +236,8 @@ import {
     lastResumeSyncAt = now;
     syncAll();
   }
+
+  function setPageDimmed(value){ if (pageEl) setClass(pageEl, 'is-dimmed', value); }
 
   function beginEdit(type, index){
     const previous = selected ? selected.index : NaN;
