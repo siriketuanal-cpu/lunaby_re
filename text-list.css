@@ -39,11 +39,13 @@ body{overflow:hidden;touch-action:pan-x;}
 .full-clock-stam{left:2px;}
 .full-clock-idle{right:6px;}
 
-.task-row.is-selected{z-index:2;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
+.task-row.is-selected{z-index:6;border:1px solid var(--focus);border-radius:3px;background:#010307;box-shadow:none;}
 
 
-/* 40計算・受取待機中は、選択したタイマー以外を軽く暗転して選択対象を強調。CSSレイヤーだけで処理するためタイマー処理は増えない。 */
-.account-list:has(.stam-side.is-selected, .idle-zone.is-selected) .task-row:not(:has(.is-selected))::after{
+/* 40計算・受取待機中は、操作タイマー以外のページ全体を一括で暗転。
+   選択中のタイマーだけを前面に出す。単一のCSSレイヤーなので個別暗転より構造がシンプル。 */
+.page{position:relative;}
+.page:has(.stam-side.is-selected, .idle-zone.is-selected)::after{
   content:'';
   position:absolute;
   inset:0;
