@@ -34,8 +34,8 @@ body{overflow:hidden;touch-action:pan-x;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
 /* 放置報酬側は淡い紫灰で差別化 */
-.full-clock-idle .full-clock-hour{color:#a99fba;}
-.full-clock-idle .full-clock-minute{color:#bbb1ca;}
+.full-clock-idle .full-clock-hour{color:#58b89a;}
+.full-clock-idle .full-clock-minute{color:#68c3a4;}
 .full-clock-stam{left:2px;}
 .full-clock-idle{right:6px;}
 
@@ -49,7 +49,7 @@ body{overflow:hidden;touch-action:pan-x;}
   inset:0;
   z-index:5;
   pointer-events:none;
-  background:rgba(0,0,0,.46);
+  background:rgba(0,0,0,.58);
 }
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
