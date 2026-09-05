@@ -22,6 +22,7 @@ import {
   let edit = null;
   let slEdit = null;
   let slRefs = null;
+  let pageEl = null;
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
@@ -136,6 +137,7 @@ import {
     if (element.textContent !== text) element.textContent = text;
   }
   function setSelected(element, value){ setClass(element, 'is-selected', value); }
+  function setPageDimmed(value){ if (pageEl) setClass(pageEl, 'is-dimmed', value); }
   function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
   function planForIdle(snapshot, index){
     if (!selected || selected.index !== index || selected.task !== 'idle') return snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '';
@@ -179,6 +181,7 @@ import {
     if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
+    setClass(ref.stamEditZone, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
@@ -239,6 +242,7 @@ import {
     const previous = selected ? selected.index : NaN;
     selected = null;
     edit = { type, index, original:type === 'stam' ? liveStam(state.slots[index], Date.now()) : null };
+    setPageDimmed(type === 'stam');
     syncIndices(previous, index);
     const ref = refs[index];
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
@@ -253,7 +257,7 @@ import {
     const ref = refs[active.index];
     const input = active.type === 'name' ? ref.nameInput : active.type === 'rank' ? ref.rankInput : ref.stamInput;
     if (!cancel) commitEdit(active, input.value);
-    else { edit = null; syncIndices(active.index); scheduleRefresh(); }
+    else { edit = null; setPageDimmed(false); syncIndices(active.index); scheduleRefresh(); }
   }
   function commitEdit(active, raw){
     const slot = state.slots[active.index];
@@ -273,6 +277,7 @@ import {
       }
     }
     edit = null;
+    setPageDimmed(false);
     syncAll();
   }
 
@@ -281,6 +286,7 @@ import {
     selected = task === 'stam'
       ? { index, task, value:remainingAfter40(liveStam(state.slots[index], Date.now())) }
       : { index, task };
+    setPageDimmed(true);
     syncIndices(previous, index);
   }
   function confirmTask(index, task){
@@ -289,6 +295,7 @@ import {
     else if (task === 'idle') restartIdle(slot, Date.now());
     write(index);
     selected = null;
+    setPageDimmed(false);
     syncAll();
   }
   function activate(index, task){
@@ -299,6 +306,7 @@ import {
 
   function setupEvents(){
     const list = document.querySelector('.page');
+    pageEl = list;
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', event => event.preventDefault());
     document.addEventListener('cut', event => event.preventDefault());
@@ -346,6 +354,7 @@ import {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
       const index = selected.index;
       selected = null;
+      setPageDimmed(false);
       syncIndices(index);
     });
     document.addEventListener('visibilitychange', () => {
