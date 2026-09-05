@@ -47,8 +47,9 @@ body{overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .page-dim{display:block;}
 
 /* 選択中の操作領域を暗転レイヤーより前へ。 */
-.page.is-dimmed .stam-side.is-selected,
-.page.is-dimmed .idle-zone.is-selected{z-index:20;background:#010307;}
+.page.is-dimmed .stam-side.is-selected{z-index:20;background:#010307;}
+.page.is-dimmed .idle-zone.is-selected{z-index:20;background:transparent;}
+.page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;background:#010307;}
 
 /* スタミナ手入力中は入力欄だけ操作レイヤーを前へ。 */
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
