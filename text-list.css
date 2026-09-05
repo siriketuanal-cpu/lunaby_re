@@ -68,6 +68,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 .task-slash{width:8px;height:18px;margin:0;color:#73839a;font:800 16px/18px var(--timer-number-font);text-align:center;display:inline-flex;align-items:center;justify-content:center;}
 .task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:16px;font-weight:800;line-height:.95;font-variant-numeric:tabular-nums;letter-spacing:-.02em;text-align:left;white-space:nowrap;}
+.task-max.is-idle-selected{position:relative;z-index:21;}
 
 /* 透明 input = 現在値と同一メトリクス */
 .stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/18px var(--timer-number-font);letter-spacing:-.02em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}

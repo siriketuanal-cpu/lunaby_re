@@ -181,6 +181,7 @@ import {
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
     setClass(ref.idleFullClock, 'is-selected', idleSelected);
+    setClass(ref.stamMax, 'is-idle-selected', idleSelected);
     if (ref.stamInput && ref.stamInput.parentElement) setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
@@ -318,7 +319,7 @@ import {
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
     document.addEventListener('touchmove', event => { const point = event.touches[0]; if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault(); }, { passive:false });
     list.addEventListener('pointerdown', event => { const input=event.target; if (input.matches('[data-name-editor],[data-rank-editor]')) { event.preventDefault(); input.focus({ preventScroll:true }); moveCursorToEnd(input); } });
-    list.addEventListener('click', event => {
+    function handleAction(event){
       const target = event.target;
       if (target.matches('input')) return;
       const name = target.closest('[data-name-edit]');
@@ -333,6 +334,15 @@ import {
       if (sl) { beginSLEdit(sl.dataset.slTask); return; }
       const row = target.closest('[data-task]');
       if (row && row.dataset.task !== 'stam') activate(Number(row.dataset.i), row.dataset.task);
+    }
+    // タッチ復帰直後にclick合成が欠ける端末でも、実タップを確実に拾う。
+    list.addEventListener('pointerup', event => {
+      if (event.pointerType) handleAction(event);
+    });
+    // キーボード操作など、pointerupを伴わないclickだけ受ける。
+    list.addEventListener('click', event => {
+      if (event.detail !== 0) return;
+      handleAction(event);
     });
     list.addEventListener('input', event => {
       const input = event.target;
@@ -365,6 +375,7 @@ import {
       } else syncAfterResume();
     });
     window.addEventListener('focus', syncAfterResume);
+    window.addEventListener('pageshow', syncAfterResume);
   }
 
   export function startLunaby(loaded) {
