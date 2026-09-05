@@ -4,7 +4,7 @@
 html,body{min-height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior-y:none;}
 body{overflow:hidden;touch-action:pan-x;}
 .page,.page *{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
-.page{width:min(760px,100%);margin:0 auto;padding:10px 12px 28px;}
+.page{position:relative;width:min(760px,100%);margin:0 auto;padding:10px 12px 28px;}
 .topbar{position:relative;height:28px;display:flex;align-items:center;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px;}
 .edition{font:800 9px/1 var(--timer-number-font);letter-spacing:.12em;color:#aebbd1;}
 .version-link{margin-left:-8px;padding:8px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
@@ -42,7 +42,6 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 操作中だけページ全体を一枚だけ暗転。
    選択中のタイマー／入力欄はこのレイヤーより前に出す。
    タイマー処理とは独立したCSS表示なので実行負荷はほぼ増えない。 */
-.page{position:relative;}
 .page-dim{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);}
 .page.is-dimmed .page-dim{display:block;}
 

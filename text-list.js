@@ -174,7 +174,7 @@ import {
     setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
     if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
     if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
-    if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, ''); }
+    if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, '満'); }
     const stamClock=fullTimeParts(snapshot.stam.plan);
     const stamClockVisible=/^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
     if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
