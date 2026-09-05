@@ -56,7 +56,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
 
 /* 左半分: 数字は中央。右の 1fr が40計算（左半分の右端まで） */
-.stam-side{position:relative;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
+.stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
 .stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{grid-column:4;min-width:0;min-height:26px;cursor:pointer;}
