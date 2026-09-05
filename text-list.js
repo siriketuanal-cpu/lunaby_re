@@ -175,7 +175,7 @@ import {
     if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, '満'); }
     const stamClock=fullTimeParts(snapshot.stam.plan);
     const stamClockVisible=/^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
-    if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
+    if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible || (stamFull && !stamSelectionPreview));
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
@@ -188,7 +188,7 @@ import {
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
     const idleFullTime=fullTimeParts(snapshot.idle.plan);
     const idleFullClockVisible=/^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
-    if (ref.idleFullClock) setHidden(ref.idleFullClock, !idleFullClockVisible);
+    if (ref.idleFullClock) setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
     if (idleFullClockVisible) { setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2,'0')); setText(ref.idleFullClockMinute, idleFullTime.minute); }
     setClass(ref.idleValue, 'is-clock', idleClock);
     setText(ref.idlePlan, planForIdle(snapshot, index));
