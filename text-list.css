@@ -33,6 +33,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
+.full-clock.is-selected{z-index:21;}
 /* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}

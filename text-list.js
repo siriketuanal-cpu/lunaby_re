@@ -179,6 +179,8 @@ import {
     if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible);
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
+    setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
+    setClass(ref.idleFullClock, 'is-selected', idleSelected);
     if (ref.stamInput && ref.stamInput.parentElement) setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
