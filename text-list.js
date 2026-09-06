@@ -88,7 +88,8 @@ import {
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
-          '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
+          '<span class="stam-margin" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
+          '<span class="stam-edit-zone" data-stam-confirm="' + index + '">' +
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
