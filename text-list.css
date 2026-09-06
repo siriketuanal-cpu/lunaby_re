@@ -72,7 +72,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#ffd581;-webkit-text-fill-color:#ffd581;font:800 16px/18px var(--timer-number-font);letter-spacing:-.02em;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 
 /* 満タン表示は左サイド全体に重ねる */
-.stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 16px/.95 var(--timer-number-font);letter-spacing:-.03em;cursor:text;white-space:nowrap;}
+.stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:-.03em;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
 .stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
