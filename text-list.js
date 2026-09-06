@@ -88,7 +88,8 @@ import {
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
-          '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
+          '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
+          '<span class="stam-edit-zone" data-stam-confirm="' + index + '">' +
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
@@ -97,7 +98,7 @@ import {
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
           '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
-          '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
+          '<span class="stam-full" data-stam-confirm="' + index + '" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-confirm="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
           '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
