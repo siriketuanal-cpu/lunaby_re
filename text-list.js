@@ -34,12 +34,12 @@ import {
   function writeSL(){ try { saveV2Store(localStorage, storageEnvelope, state.slots, undefined, state.sl); } catch (_) {} }
   function slMarkup(){
     return '<section class="starleap-line" aria-label="スターリープ">'
-      + '<span class="sl-item" data-sl-task="stamina" role="button" tabindex="0" aria-label="討伐依頼">'
+      + '<span class="sl-item" data-sl-task="stamina" aria-label="討伐依頼">'
       + '<span class="sl-main"><span class="sl-cur"><span class="sl-value" data-sl-value="stamina"></span>'
       + '<input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden></span>'
       + '<span class="sl-max" data-sl-max="stamina"></span></span>'
       + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="stamina"></span></span></span>'
-      + '<span class="sl-item" data-sl-task="orb" role="button" tabindex="0" aria-label="御大樹の恵み">'
+      + '<span class="sl-item" data-sl-task="orb" aria-label="御大樹の恵み">'
       + '<span class="sl-main"><span class="sl-value" data-sl-value="orb"></span></span>'
       + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="orb"></span>'
       + '<input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></span>'
@@ -81,15 +81,14 @@ import {
       '<div class="account-head">' +
         '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
         '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
-        '<span class="rank-display" data-rank-edit="' + index + '" role="button" tabindex="0">Lv.' + slot.rank + '</span>' +
+        '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
-          '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
-          '<span class="stam-edit-zone" data-stam-confirm="' + index + '">' +
+          '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
@@ -98,11 +97,11 @@ import {
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
           '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
-          '<span class="stam-full" data-stam-confirm="' + index + '" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-confirm="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
+          '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
           '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
-          '<span class="idle-action" role="button" tabindex="0"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
+          '<span class="idle-action"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
           '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
@@ -317,7 +316,7 @@ import {
     let touchStartY = 0;
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
     document.addEventListener('touchmove', event => { const point = event.touches[0]; if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault(); }, { passive:false });
-    list.addEventListener('pointerdown', event => { const input=event.target; if (input.matches('[data-name-editor],[data-rank-editor]')) { event.preventDefault(); input.focus({ preventScroll:true }); moveCursorToEnd(input); } });
+    list.addEventListener('pointerdown', event => { const input=event.target; if (input.matches('[data-name-editor],[data-rank-editor]')) { event.preventDefault(); input.focus({ preventScroll:true }); moveCursorToEnd(input); return; } if (input.closest('[data-stam-edit],[data-sl-task]')) event.preventDefault(); });
     function handleAction(event){
       const target = event.target;
       if (target.matches('input')) return;
@@ -338,11 +337,6 @@ import {
     list.addEventListener('pointerup', event => {
       if (event.pointerType) handleAction(event);
     });
-    // キーボード操作など、pointerupを伴わないclickだけ受ける。
-    list.addEventListener('click', event => {
-      if (event.detail !== 0) return;
-      handleAction(event);
-    });
     list.addEventListener('input', event => {
       const input = event.target;
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
@@ -355,11 +349,6 @@ import {
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
       if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) closeEdit(false);
-    });
-    list.addEventListener('keydown', event => {
-      if (!event.target.matches('input')) return;
-      if (event.key === 'Enter') { event.preventDefault(); event.target.blur(); }
-      if (event.key === 'Escape') { event.preventDefault(); if (slEdit) { slEdit=null; syncAll(); } else closeEdit(true); }
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;

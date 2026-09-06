@@ -57,8 +57,7 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 左半分：数値を中央寄りに配置。右の1frが40計算の領域。 */
 .stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
-.stam-edit-gap{grid-column:1;min-width:0;min-height:26px;position:relative;z-index:2;cursor:text;}
-.stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
+.stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{grid-column:4;min-width:0;min-height:26px;width:calc(100% + 6px);position:relative;z-index:2;cursor:pointer;}
 
@@ -76,7 +75,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:-.03em;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
-.stam-full-hour{min-width:2ch;text-align:right;cursor:pointer;}
+.stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
 .stam-full-hour::before,.stam-full-minute::before{content:'';position:absolute;top:-6px;bottom:-6px;}
 .stam-full-hour::before{left:-8px;right:-3px;}
 .stam-full-minute::before{left:-3px;right:-6px;}
