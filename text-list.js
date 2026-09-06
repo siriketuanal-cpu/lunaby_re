@@ -89,7 +89,7 @@ import {
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
-            '<span class="stam-current stam-number" data-stam-number="' + index + '" data-stam-confirm="' + index + '"></span>' +
+            '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
           '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
@@ -328,16 +328,18 @@ import {
       if (stamConfirm) { activate(Number(stamConfirm.dataset.stamConfirm), 'stam'); return; }
       const stamEdit = target.closest('[data-stam-edit]');
       if (stamEdit) { beginEdit('stam', Number(stamEdit.dataset.stamEdit)); return; }
+      // v37: レイアウトはv36のまま。スタミナ欄の「現在値より左」を手入力、
+      // 現在値より右を40計算として、タップ境界だけを少しずらす。
       const stamSide = target.closest('.stam-side');
-      if (stamSide) {
-        const index = Number(stamSide.dataset.i);
+      if (stamSide && Number.isFinite(event.clientX)) {
         const current = stamSide.querySelector('.stam-current');
-        if (Number.isFinite(index) && current && Number.isFinite(event.clientX)) {
-          const rect = current.getBoundingClientRect();
-          if (event.clientX < rect.left) beginEdit('stam', index);
-          else activate(index, 'stam');
-        }
-        return;
+        const calc = stamSide.querySelector('.stam-calc-zone');
+        const rect = current ? current.getBoundingClientRect() : null;
+        const calcRect = calc ? calc.getBoundingClientRect() : null;
+        const x = event.clientX;
+        const index = Number(stamSide.dataset.i);
+        if (rect && x < rect.left) { beginEdit('stam', index); return; }
+        if ((rect && x >= rect.left) || (calcRect && x >= calcRect.left)) { activate(index, 'stam'); return; }
       }
       const sl=target.closest('[data-sl-task]');
       if (sl) { beginSLEdit(sl.dataset.slTask); return; }
