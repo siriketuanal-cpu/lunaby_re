@@ -89,10 +89,10 @@ import {
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-zone" data-stam-edit="' + index + '">' +
+            '<span class="stam-current stam-number" data-stam-number="' + index + '" data-stam-confirm="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
           '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
-            '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<span class="task-slash">/</span>' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
@@ -324,10 +324,10 @@ import {
       if (name) { beginEdit('name', Number(name.dataset.nameEdit)); return; }
       const rank = target.closest('[data-rank-edit]');
       if (rank) { beginEdit('rank', Number(rank.dataset.rankEdit)); return; }
-      const stamEdit = target.closest('[data-stam-edit]');
-      if (stamEdit) { beginEdit('stam', Number(stamEdit.dataset.stamEdit)); return; }
       const stamConfirm = target.closest('[data-stam-confirm]');
       if (stamConfirm) { activate(Number(stamConfirm.dataset.stamConfirm), 'stam'); return; }
+      const stamEdit = target.closest('[data-stam-edit]');
+      if (stamEdit) { beginEdit('stam', Number(stamEdit.dataset.stamEdit)); return; }
       const sl=target.closest('[data-sl-task]');
       if (sl) { beginSLEdit(sl.dataset.slTask); return; }
       const row = target.closest('[data-task]');
