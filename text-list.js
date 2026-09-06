@@ -328,6 +328,17 @@ import {
       if (stamConfirm) { activate(Number(stamConfirm.dataset.stamConfirm), 'stam'); return; }
       const stamEdit = target.closest('[data-stam-edit]');
       if (stamEdit) { beginEdit('stam', Number(stamEdit.dataset.stamEdit)); return; }
+      const stamSide = target.closest('.stam-side');
+      if (stamSide) {
+        const index = Number(stamSide.dataset.i);
+        const current = stamSide.querySelector('.stam-current');
+        if (Number.isFinite(index) && current && Number.isFinite(event.clientX)) {
+          const rect = current.getBoundingClientRect();
+          if (event.clientX < rect.left) beginEdit('stam', index);
+          else activate(index, 'stam');
+        }
+        return;
+      }
       const sl=target.closest('[data-sl-task]');
       if (sl) { beginSLEdit(sl.dataset.slTask); return; }
       const row = target.closest('[data-task]');
