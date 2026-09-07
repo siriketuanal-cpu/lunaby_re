@@ -83,7 +83,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit-zone.is-editing .stam-edit,.stam-edit-zone.is-editing .stam-edit:focus{color:#b4becc;-webkit-text-fill-color:#b4becc;}
 .stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
 /* 文字色は変えず、下線だけで「編集中/選択中」を控えめに示す（静止表示のみ・アニメーションなし） */
-.stam-edit-zone.is-editing,.stam-side.is-selected .stam-edit-zone,.stam-side.is-selected .stam-calc-zone{box-shadow:0 1px 0 0 #8290a5;}
+/* スタミナ手入力中・40計算選択中の下線は表示しない。 */
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;cursor:text;white-space:nowrap;}
