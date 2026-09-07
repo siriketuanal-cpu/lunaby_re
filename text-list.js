@@ -82,7 +82,7 @@ import {
         '<span class="name-display" data-name-edit="' + index + '"><span class="name-display-text">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span></span>' +
         '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
         '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
-        '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
+        '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off" maxlength="3">' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
@@ -375,6 +375,7 @@ import {
     list.addEventListener('input', event => {
       const input = event.target;
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
+      if (input.matches('[data-rank-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
       if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
       if (input.matches('[data-sl-editor="orb"]')) { const raw=String(input.value||'').replace(/：/g,':'); let next=''; let digits=0; for(const char of raw){ if(/\d/.test(char) && digits<4){ next+=char; digits+=1; } else if(char===':' && !next.includes(':')) next+=char; } input.value=next; }
     });
