@@ -16,16 +16,16 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
-.name-display{position:relative;z-index:3;min-width:0;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.name-display{position:relative;z-index:3;min-width:0;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
 .name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 /* 見た目・文字サイズは変えず、当たり判定だけを上と名前⇔ランクの隙間側に拡張（stam-full-hour等と同じ手法） */
-.name-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-49px;}
+.name-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-4px;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
-.rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-49px;right:-4px;}
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
-.name-input{width:62px;font-size:11px;line-height:1.15;}
+.name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
 /* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
