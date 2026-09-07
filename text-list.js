@@ -79,13 +79,13 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-slot">' +
-          '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
-          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
+        '<span class="name-slot" data-name-edit="' + index + '">' +
+          '<span class="name-display">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
+          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false" enterkeyhint="done">' +
         '</span>' +
-        '<span class="rank-slot">' +
-          '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
-          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
+        '<span class="rank-slot" data-rank-edit="' + index + '">' +
+          '<span class="rank-display">Lv.' + slot.rank + '</span>' +
+          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off" enterkeyhint="done">' +
         '</span>' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
@@ -124,8 +124,8 @@ import {
       const idleRow = root.querySelector('.idle-zone');
       refs[index] = {
         root,
-        nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
-        rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
+        nameDisplay:root.querySelector('.name-display'), nameInput:root.querySelector('[data-name-editor]'),
+        rankDisplay:root.querySelector('.rank-display'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
@@ -253,10 +253,17 @@ import {
     const ref = refs[index];
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
     input.value = type === 'name' ? state.slots[index].label : type === 'rank' ? String(state.slots[index].rank) : '';
+    // hidden 解除直後でも同一ジェスチャ内で focus を取り切る（モバイルのキーボード用）
     input.focus({ preventScroll:true });
+    if (document.activeElement !== input) input.focus();
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
-  function moveCursorToEnd(input){ const apply=()=>{ const end=input.value.length; input.setSelectionRange(end,end); }; apply(); requestAnimationFrame(apply); setTimeout(apply,0); }
+  function moveCursorToEnd(input){
+    try {
+      const end = input.value.length;
+      input.setSelectionRange(end, end);
+    } catch (_) {}
+  }
   function closeEdit(cancel){
     if (!edit) return;
     const active = edit;
