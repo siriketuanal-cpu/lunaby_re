@@ -73,6 +73,8 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 数字表示（input と同一ボックスで重ねてズレを減らす。letter-spacing/line-height/アンチエイリアスは丸文字の見た目調整込みでここに一本化） */
 .task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;}
 .stam-current{grid-area:1/1;box-sizing:border-box;width:36px;min-width:36px;height:18px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;cursor:pointer;}
+/* 手入力・40計算選択中：暖色の白ではなく、少し青みのある明るいグレーで数字の膨張感を抑える */
+.stam-edit-zone.is-editing .stam-edit,.stam-edit-zone.is-editing .stam-edit:focus,.stam-side.is-selected .stam-current{color:#dbe2ea;-webkit-text-fill-color:#dbe2ea;}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 .task-slash{width:9px;height:18px;margin:0;color:#73839a;font:800 18px/18px var(--timer-number-font);letter-spacing:0;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
 .task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:18px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-align:left;white-space:nowrap;}
@@ -80,7 +82,6 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 透明 input = 現在値と同一メトリクス。編集中は is-editing 側で色だけ上書き（下の1ルールのみ） */
 .stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-.stam-edit-zone.is-editing .stam-edit,.stam-edit-zone.is-editing .stam-edit:focus{color:#b4becc;-webkit-text-fill-color:#b4becc;}
 .stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
 /* 文字色は変えず、下線だけで「編集中/選択中」を控えめに示す（静止表示のみ・アニメーションなし） */
 /* スタミナ手入力中・40計算選択中の下線は表示しない。 */
