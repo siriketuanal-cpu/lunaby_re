@@ -16,11 +16,15 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
-.name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.name-display{position:relative;min-width:0;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* 見た目・文字サイズは変えず、当たり判定だけを上と名前⇔ランクの隙間側に拡張（stam-full-hour等と同じ手法） */
+.name-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-49px;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
-.rank-display{flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;}
+.rank-display{position:relative;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-49px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
-.name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
+.name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:manipulation;}
 .name-input{width:62px;font-size:11px;line-height:1.15;}
 /* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
@@ -60,9 +64,9 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
 .stam-side{position:relative;left:14px;display:flex;align-items:center;min-width:0;min-height:26px;}
 /* 手入力ヒット：flex幅は維持し、::before だけで枠左端まで伸ばす（数字位置は動かさない） */
-.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;}
+.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:0;bottom:0;right:0;left:-28px;}
-.stam-edit-zone{flex:0 0 auto;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
+.stam-edit-zone{flex:0 0 auto;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;touch-action:manipulation;}
 .stam-calc-zone{flex:0 0 auto;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{flex:1 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:-6px;position:relative;z-index:2;cursor:pointer;}
 
@@ -114,7 +118,7 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* スターリープ: 左寄せ + 数値の下に予定時刻 */
 .starleap-line{display:flex;justify-content:flex-start;align-items:flex-start;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;gap:18px;margin-top:6px;padding:6px 4px;border-top:2px solid #52617a;border-bottom:1px solid var(--line);width:100%;}
-.sl-item{min-width:0;min-height:34px;padding:2px 0;cursor:pointer;flex:0 0 auto;display:grid;grid-template-rows:18px 16px;row-gap:2px;align-items:center;}
+.sl-item{min-width:0;min-height:34px;padding:2px 0;cursor:pointer;touch-action:manipulation;flex:0 0 auto;display:grid;grid-template-rows:18px 16px;row-gap:2px;align-items:center;}
 .sl-main{display:flex;align-items:center;justify-content:flex-start;height:18px;min-width:0;}
 .sl-item[data-sl-task="stamina"] .sl-main{gap:0;}
 .sl-item[data-sl-task="stamina"] .sl-plan-wrap{padding-left:1ch;}

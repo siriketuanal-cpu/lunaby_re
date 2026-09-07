@@ -79,7 +79,7 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
+        '<span class="name-display" data-name-edit="' + index + '"><span class="name-display-text">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span></span>' +
         '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
         '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
@@ -120,7 +120,7 @@ import {
       const idleRow = root.querySelector('.idle-zone');
       refs[index] = {
         root,
-        nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
+        nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
@@ -157,7 +157,7 @@ import {
 
     setHidden(ref.nameDisplay, nameEditing);
     setHidden(ref.nameInput, !nameEditing);
-    if (!nameEditing) setText(ref.nameDisplay, slot.label || ('スロット ' + (index + 1)));
+    if (!nameEditing) setText(ref.nameDisplayText, slot.label || ('スロット ' + (index + 1)));
     setHidden(ref.rankDisplay, rankEditing);
     setHidden(ref.rankInput, !rankEditing);
     if (!rankEditing) setText(ref.rankDisplay, 'Lv.' + slot.rank);
@@ -335,7 +335,9 @@ import {
       const target = event.target;
       if (target.matches('input')) {
         if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
-          event.preventDefault();
+          // ここは実際の <input> 自身へのタップなので preventDefault はしない。
+          // pointerdown で preventDefault すると、端末によっては直後の focus() が
+          // 「素のユーザー操作」と見なされずソフトキーボードが開かないことがあるため。
           target.focus({ preventScroll:true });
         }
         return;
