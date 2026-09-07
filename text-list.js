@@ -248,11 +248,10 @@ import {
     syncIndices(previous, index);
     const ref = refs[index];
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
-    input.value = type === 'name' ? state.slots[index].label : type === 'rank' ? String(state.slots[index].rank) : '';
+    // 名前は既存文字を表示。ランク/スタミナはスタミナと同じく空欄から入力
+    input.value = type === 'name' ? state.slots[index].label : '';
     input.focus({ preventScroll:true });
-    if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
-  function moveCursorToEnd(input){ const apply=()=>{ const end=input.value.length; input.setSelectionRange(end,end); }; apply(); requestAnimationFrame(apply); setTimeout(apply,0); }
   function closeEdit(cancel){
     if (!edit) return;
     const active = edit;
@@ -267,9 +266,13 @@ import {
       setLabel(slot, raw);
       write(active.index);
     } else if (active.type === 'rank') {
-      const rank = clamp(Math.floor(num(String(raw || '').replace(/[^0-9]/g, ''), slot.rank)), 1, 200);
-      setRank(slot, rank, Date.now());
-      write(active.index);
+      // スタミナと同様：空欄のまま確定なら変更しない
+      const digits = String(raw || '').replace(/[^0-9]/g, '');
+      if (digits) {
+        const rank = clamp(Math.floor(num(digits, slot.rank)), 1, 200);
+        setRank(slot, rank, Date.now());
+        write(active.index);
+      }
     } else {
       const digits = String(raw || '').replace(/[^0-9]/g, '');
       if (digits) {
@@ -327,20 +330,24 @@ import {
     // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
     // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
     // 名前/ランクは基準版どおり pointerup で開く（pointerdown だと選択ハンドルや focus が不安定になりやすい）
+    // 名前/ランク/スタミナ/40計算/SL すべて pointerdown で共通化
     list.addEventListener('pointerdown', event => {
       const target = event.target;
-      // 名前/ランク入力中の再タップ（基準版と同じ）
-      if (target.matches('[data-name-editor],[data-rank-editor]')) {
-        event.preventDefault();
-        target.focus({ preventScroll:true });
-        moveCursorToEnd(target);
-        return;
-      }
       if (target.matches('input')) {
-        if (target.matches('[data-stam-editor],[data-sl-editor]')) {
+        if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
           event.preventDefault();
           target.focus({ preventScroll:true });
         }
+        return;
+      }
+      const nameEdit = target.closest('[data-name-edit]');
+      if (nameEdit) {
+        beginEdit('name', Number(nameEdit.dataset.nameEdit));
+        return;
+      }
+      const rankEdit = target.closest('[data-rank-edit]');
+      if (rankEdit) {
+        beginEdit('rank', Number(rankEdit.dataset.rankEdit));
         return;
       }
       const stamEdit = target.closest('[data-stam-edit]');
@@ -365,15 +372,6 @@ import {
         activate(Number(row.dataset.i), row.dataset.task);
         return;
       }
-    });
-    list.addEventListener('pointerup', event => {
-      if (!event.pointerType) return;
-      const target = event.target;
-      if (target.matches('input')) return;
-      const name = target.closest('[data-name-edit]');
-      if (name) { beginEdit('name', Number(name.dataset.nameEdit)); return; }
-      const rank = target.closest('[data-rank-edit]');
-      if (rank) { beginEdit('rank', Number(rank.dataset.rankEdit)); return; }
     });
     list.addEventListener('input', event => {
       const input = event.target;
