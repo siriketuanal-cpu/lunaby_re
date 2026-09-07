@@ -58,6 +58,7 @@ body{overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;background:#010307;}
 
 /* スタミナ手入力中は入力欄だけ操作レイヤーを前へ。 */
+.page.is-dimmed .stam-side:has(.stam-edit-zone.is-editing){z-index:20;}
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
 
