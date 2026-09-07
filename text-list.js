@@ -249,16 +249,22 @@ import {
     const ref = refs[index];
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
     input.value = type === 'name' ? state.slots[index].label : type === 'rank' ? String(state.slots[index].rank) : '';
-    // hidden 解除直後でも同一ジェスチャ内で focus を取り切る（モバイルのキーボード用）
+    // preventScroll でキーボード時のブラウザ自動スクロールを抑止
     input.focus({ preventScroll:true });
-    if (document.activeElement !== input) input.focus();
+    if (document.activeElement !== input) input.focus({ preventScroll:true });
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
   function moveCursorToEnd(input){
-    try {
-      const end = input.value.length;
-      input.setSelectionRange(end, end);
-    } catch (_) {}
+    const apply = () => {
+      try {
+        const end = input.value.length;
+        if (input.selectionStart === end && input.selectionEnd === end) return;
+        input.setSelectionRange(end, end);
+      } catch (_) {}
+    };
+    apply();
+    requestAnimationFrame(apply);
+    setTimeout(apply, 0);
   }
   function closeEdit(cancel){
     if (!edit) return;
@@ -322,18 +328,15 @@ import {
     document.addEventListener('selectstart', event => event.preventDefault());
     document.addEventListener('dragstart', event => event.preventDefault());
     let touchStartY = 0;
-    const lockScroll = () => { if (window.scrollY) window.scrollTo(0, 0); };
+    // 編集終了時だけ原点へ戻す。編集中に scrollTo(0) し続けると入力欄が画面外に飛ばされる
+    const resetScroll = () => { window.scrollTo(0, 0); };
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
-    // キーボード表示中はブラウザが下方向へ余分にスクロールしがちなので止める
     document.addEventListener('touchmove', event => {
-      if (edit || slEdit) { event.preventDefault(); lockScroll(); return; }
+      // 編集中の指スクロールは止める（ブラウザの自動パンは focus preventScroll 側で抑制）
+      if (edit || slEdit) { event.preventDefault(); return; }
       const point = event.touches[0];
       if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault();
     }, { passive:false });
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => { if (edit || slEdit) lockScroll(); });
-      window.visualViewport.addEventListener('scroll', () => { if (edit || slEdit) lockScroll(); });
-    }
     // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
     // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
     list.addEventListener('pointerdown', event => {
@@ -383,15 +386,22 @@ import {
     list.addEventListener('input', event => {
       const input = event.target;
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
+      if (input.matches('[data-name-editor],[data-rank-editor]')) moveCursorToEnd(input);
       if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
       if (input.matches('[data-sl-editor="orb"]')) { const raw=String(input.value||'').replace(/：/g,':'); let next=''; let digits=0; for(const char of raw){ if(/\d/.test(char) && digits<4){ next+=char; digits+=1; } else if(char===':' && !next.includes(':')) next+=char; } input.value=next; }
     });
+    // 名前/ランクはカーソルを常に末尾へ（選択・移動を実質無効）
+    document.addEventListener('selectionchange', () => {
+      if (!edit || (edit.type !== 'name' && edit.type !== 'rank')) return;
+      const el = document.activeElement;
+      if (el && el.matches && el.matches('[data-name-editor],[data-rank-editor]')) moveCursorToEnd(el);
+    });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); lockScroll(); return; }
+      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
-      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); lockScroll(); }
+      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); }
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;

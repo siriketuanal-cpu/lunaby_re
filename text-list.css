@@ -18,11 +18,11 @@ body{overflow:hidden;touch-action:pan-x;}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
 .name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
 .rank-display{flex:none;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);cursor:text;}
-.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;caret-color:#ffd581;}
+.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;caret-color:transparent!important;}
 .name-input{width:62px;font-size:11px;line-height:1.15;font-weight:800;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
 .rank-input{width:3ch;text-align:right;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);}
-/* input だけ user-select を許可（.page * の none だと一部端末で focus が不安定） */
-.name-input,.rank-input,.stam-edit,.sl-edit{-webkit-user-select:text;user-select:text;appearance:none;-webkit-appearance:none;}
+/* 長押しハイライト・選択を出さない（キャレットも非表示） */
+.name-input,.rank-input,.stam-edit,.sl-edit{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
