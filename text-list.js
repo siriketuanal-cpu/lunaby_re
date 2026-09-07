@@ -79,14 +79,10 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-slot">' +
-          '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
-          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
-        '</span>' +
-        '<span class="rank-slot">' +
-          '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
-          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
-        '</span>' +
+        '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
+        '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
+        '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
+        '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
@@ -124,8 +120,8 @@ import {
       const idleRow = root.querySelector('.idle-zone');
       refs[index] = {
         root,
-        nameDisplay:root.querySelector('.name-display'), nameInput:root.querySelector('[data-name-editor]'),
-        rankDisplay:root.querySelector('.rank-display'), rankInput:root.querySelector('[data-rank-editor]'),
+        nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
+        rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
@@ -326,8 +322,18 @@ import {
     document.addEventListener('selectstart', event => event.preventDefault());
     document.addEventListener('dragstart', event => event.preventDefault());
     let touchStartY = 0;
+    const lockScroll = () => { if (window.scrollY) window.scrollTo(0, 0); };
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
-    document.addEventListener('touchmove', event => { const point = event.touches[0]; if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault(); }, { passive:false });
+    // キーボード表示中はブラウザが下方向へ余分にスクロールしがちなので止める
+    document.addEventListener('touchmove', event => {
+      if (edit || slEdit) { event.preventDefault(); lockScroll(); return; }
+      const point = event.touches[0];
+      if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault();
+    }, { passive:false });
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => { if (edit || slEdit) lockScroll(); });
+      window.visualViewport.addEventListener('scroll', () => { if (edit || slEdit) lockScroll(); });
+    }
     // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
     // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
     list.addEventListener('pointerdown', event => {
@@ -340,15 +346,14 @@ import {
         }
         return;
       }
+      // 名前/ランクは preventDefault しない（hidden→表示直後の focus が端末で落ちやすいため）
       const nameEdit = target.closest('[data-name-edit]');
       if (nameEdit) {
-        event.preventDefault();
         beginEdit('name', Number(nameEdit.dataset.nameEdit));
         return;
       }
       const rankEdit = target.closest('[data-rank-edit]');
       if (rankEdit) {
-        event.preventDefault();
         beginEdit('rank', Number(rankEdit.dataset.rankEdit));
         return;
       }
@@ -383,10 +388,10 @@ import {
     });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); return; }
+      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); lockScroll(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
-      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) closeEdit(false);
+      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); lockScroll(); }
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
