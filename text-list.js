@@ -79,13 +79,13 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-slot" data-name-edit="' + index + '">' +
-          '<span class="name-display">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
-          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false" enterkeyhint="done">' +
+        '<span class="name-slot">' +
+          '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
+          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
         '</span>' +
-        '<span class="rank-slot" data-rank-edit="' + index + '">' +
-          '<span class="rank-display">Lv.' + slot.rank + '</span>' +
-          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off" enterkeyhint="done">' +
+        '<span class="rank-slot">' +
+          '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
+          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
         '</span>' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +

@@ -15,18 +15,18 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
-.account-head{min-height:22px;padding:2px 4px;display:flex;align-items:center;justify-content:space-between;gap:6px;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
-/* スロット全体をヒット領域に（文字15pxのままパディングでタップしやすく） */
-.name-slot{min-width:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;min-height:22px;padding:4px 0;cursor:text;}
-.rank-slot{flex:none;display:grid;grid-template-columns:auto;align-items:center;justify-items:end;min-height:22px;padding:4px 0;cursor:text;}
-.name-display,.name-input{grid-area:1/1;box-sizing:border-box;min-width:0;width:100%;margin:0;padding:0;border:0;outline:0;font-weight:800;font-size:11px;line-height:15px;height:15px;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;vertical-align:middle;}
-.name-display{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:inherit;background:transparent;pointer-events:none;}
-.name-input{color:#fff;background:transparent;caret-color:#ffd581;}
-.rank-display,.rank-input{grid-area:1/1;box-sizing:border-box;margin:0;padding:0;border:0;outline:0;color:var(--orange);font:800 11px/15px var(--timer-number-font);height:15px;vertical-align:middle;}
-.rank-display{background:transparent;pointer-events:none;white-space:nowrap;}
+.account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
+/* 表示テキストだけがヒット対象。slotは重ね用の薄い枠のみ */
+.name-slot{min-width:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;min-height:0;}
+.rank-slot{flex:none;display:grid;grid-template-columns:auto;align-items:center;justify-items:end;min-height:0;}
+.name-display,.name-input{grid-area:1/1;box-sizing:border-box;min-width:0;margin:0;padding:0;border:0;outline:0;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.name-display{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;color:inherit;background:transparent;}
+.name-input{width:62px;max-width:100%;color:#fff;background:transparent;caret-color:#ffd581;}
+.rank-display,.rank-input{grid-area:1/1;box-sizing:border-box;margin:0;padding:0;border:0;outline:0;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);}
+.rank-display{cursor:text;background:transparent;white-space:nowrap;}
 .rank-input{width:3ch;text-align:right;background:transparent;caret-color:#ffd581;}
-/* input に user-select:none だと一部モバイルで focus/キーボードが死ぬ */
-.name-input,.rank-input,.stam-edit,.sl-edit{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;appearance:none;-webkit-appearance:none;}
+/* input だけ user-select を許可（.page * の none だと一部端末で focus が不安定） */
+.name-input,.rank-input,.stam-edit,.sl-edit{-webkit-user-select:text;user-select:text;appearance:none;-webkit-appearance:none;}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
