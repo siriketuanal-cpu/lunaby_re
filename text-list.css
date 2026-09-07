@@ -55,12 +55,12 @@ body{overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
 
-/* 左半分：1列目が手入力ヒット、数値は40計算。右の1frが40計算の続き。1frはレイアウト維持用のまま。 */
-.stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
-.stam-edit-gap{grid-column:1;min-width:0;min-height:26px;margin-left:-14px;cursor:text;}
-.stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
-.stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
-.stam-calc-gap{grid-column:4;min-width:0;min-height:26px;width:calc(100% + 6px);position:relative;z-index:2;cursor:pointer;}
+/* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
+.stam-side{position:relative;left:14px;display:flex;align-items:center;min-width:0;min-height:26px;}
+.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;margin-left:-14px;cursor:text;}
+.stam-edit-zone{flex:0 0 auto;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
+.stam-calc-zone{flex:0 0 auto;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
+.stam-calc-gap{flex:1 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:-6px;position:relative;z-index:2;cursor:pointer;}
 
 /* 数字表示（input と同一ボックスで重ねてズレを減らす） */
 .task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}

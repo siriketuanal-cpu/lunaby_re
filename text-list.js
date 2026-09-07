@@ -317,16 +317,33 @@ import {
     let touchStartY = 0;
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
     document.addEventListener('touchmove', event => { const point = event.touches[0]; if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault(); }, { passive:false });
-    list.addEventListener('pointerdown', event => { const input=event.target; if (input.matches('[data-name-editor],[data-rank-editor]')) { event.preventDefault(); input.focus({ preventScroll:true }); moveCursorToEnd(input); return; } if (input.closest('[data-stam-edit],[data-sl-task]')) event.preventDefault(); });
+    // スタミナ手入力は pointerdown 内で beginEdit→focus まで完結させる。
+    // pointerup まで遅らせると preventDefault 後にモバイルで focus が落ちることがある。
+    list.addEventListener('pointerdown', event => {
+      const input = event.target;
+      if (input.matches('[data-name-editor],[data-rank-editor]')) {
+        event.preventDefault();
+        input.focus({ preventScroll:true });
+        moveCursorToEnd(input);
+        return;
+      }
+      const stamEdit = input.closest('[data-stam-edit]');
+      if (stamEdit) {
+        event.preventDefault();
+        beginEdit('stam', Number(stamEdit.dataset.stamEdit));
+        return;
+      }
+      if (input.closest('[data-sl-task]')) event.preventDefault();
+    });
     function handleAction(event){
       const target = event.target;
       if (target.matches('input')) return;
+      // pointerdown で既に開いている手入力は pointerup で二重起動しない
+      if (target.closest('[data-stam-edit]')) return;
       const name = target.closest('[data-name-edit]');
       if (name) { beginEdit('name', Number(name.dataset.nameEdit)); return; }
       const rank = target.closest('[data-rank-edit]');
       if (rank) { beginEdit('rank', Number(rank.dataset.rankEdit)); return; }
-      const stamEdit = target.closest('[data-stam-edit]');
-      if (stamEdit) { beginEdit('stam', Number(stamEdit.dataset.stamEdit)); return; }
       const stamConfirm = target.closest('[data-stam-confirm]');
       if (stamConfirm) { activate(Number(stamConfirm.dataset.stamConfirm), 'stam'); return; }
       const sl=target.closest('[data-sl-task]');
