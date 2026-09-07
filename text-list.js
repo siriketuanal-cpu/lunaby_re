@@ -93,7 +93,7 @@ import {
             '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
             '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
           '</span>' +
-          '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
+          '<span class="stam-calc-zone" data-stam-confirm="' + index + '">'
             '<span class="task-slash">/</span>' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
@@ -321,24 +321,6 @@ import {
     function handleAction(event){
       const target = event.target;
       if (target.matches('input')) return;
-
-      // スタミナは見た目の子要素ではなく「現在値の左端」を境界にする。
-      // 1fr の空白も .stam-side 自体が受け、現在値の左側=手入力、
-      // 現在値の位置から右側=/最大値側=40計算として扱う。
-      // これで padding や 1fr の境目に無反応帯を作らない。
-      const stamSide = target.closest('.stam-side');
-      if (stamSide && Number.isFinite(event.clientX)) {
-        const current = stamSide.querySelector('.stam-current');
-        if (current && !current.hidden) {
-          const index = Number(stamSide.dataset.i);
-          if (Number.isFinite(index)) {
-            const boundaryX = current.getBoundingClientRect().left;
-            if (event.clientX < boundaryX) { beginEdit('stam', index); return; }
-            activate(index, 'stam'); return;
-          }
-        }
-      }
-
       const name = target.closest('[data-name-edit]');
       if (name) { beginEdit('name', Number(name.dataset.nameEdit)); return; }
       const rank = target.closest('[data-rank-edit]');
