@@ -74,8 +74,8 @@ body{overflow:hidden;touch-action:pan-x;}
 .stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;}
 .stam-edit-gap::before{content:'';position:absolute;top:0;bottom:0;right:0;left:var(--edit-extend);}
 .stam-edit-zone{flex:0 0 auto;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
-/* /max + 右余白を1枚に（旧 calc-zone + calc-gap）。中身先頭固定で位置・40計算範囲は同じ */
-.stam-calc-zone{flex:1 1 0%;min-width:0;align-self:stretch;display:flex;align-items:center;min-height:26px;padding:4px 0;margin-right:var(--calc-overhang);position:relative;z-index:2;cursor:pointer;}
+.stam-calc-zone{flex:0 0 auto;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
+.stam-calc-gap{flex:1 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:var(--calc-overhang);position:relative;z-index:2;cursor:pointer;}
 
 /* 数字表示（input と同一ボックスで重ねてズレを減らす） */
 .task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:.95;}

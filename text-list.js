@@ -100,6 +100,7 @@ import {
             '<span class="task-slash">/</span>' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
           '</span>' +
+          '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
           '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
@@ -125,7 +126,7 @@ import {
         nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
-        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
         idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
@@ -171,6 +172,7 @@ import {
     setHidden(ref.stamSlash, stamFull && !stamSelectionPreview);
     setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
     setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
+    if (ref.stamCalcGap) setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
     setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
     if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
     if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
