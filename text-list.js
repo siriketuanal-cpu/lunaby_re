@@ -255,6 +255,7 @@ import {
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
   function moveCursorToEnd(input){
+    // 起動時だけ末尾へ。常時 selectionchange で回すと選択ハンドル（青い雫）が点滅する
     const apply = () => {
       try {
         const end = input.value.length;
@@ -265,6 +266,12 @@ import {
     apply();
     requestAnimationFrame(apply);
     setTimeout(apply, 0);
+  }
+  function clearPageSelection(){
+    try {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount) sel.removeAllRanges();
+    } catch (_) {}
   }
   function closeEdit(cancel){
     if (!edit) return;
@@ -341,6 +348,7 @@ import {
     // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
     list.addEventListener('pointerdown', event => {
       const target = event.target;
+      if (!target.matches('input')) clearPageSelection();
       if (target.matches('input')) {
         if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
           event.preventDefault();
@@ -386,22 +394,15 @@ import {
     list.addEventListener('input', event => {
       const input = event.target;
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
-      if (input.matches('[data-name-editor],[data-rank-editor]')) moveCursorToEnd(input);
       if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
       if (input.matches('[data-sl-editor="orb"]')) { const raw=String(input.value||'').replace(/：/g,':'); let next=''; let digits=0; for(const char of raw){ if(/\d/.test(char) && digits<4){ next+=char; digits+=1; } else if(char===':' && !next.includes(':')) next+=char; } input.value=next; }
     });
-    // 名前/ランクはカーソルを常に末尾へ（選択・移動を実質無効）
-    document.addEventListener('selectionchange', () => {
-      if (!edit || (edit.type !== 'name' && edit.type !== 'rank')) return;
-      const el = document.activeElement;
-      if (el && el.matches && el.matches('[data-name-editor],[data-rank-editor]')) moveCursorToEnd(el);
-    });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); return; }
+      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); clearPageSelection(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
-      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); }
+      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); clearPageSelection(); }
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
