@@ -52,14 +52,13 @@ body{overflow:hidden;touch-action:pan-x;}
 .page-dim{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);}
 .page.is-dimmed .page-dim{display:block;}
 
-/* 選択中の操作領域を暗転レイヤーより前へ。 */
-.page.is-dimmed .stam-side.is-selected{z-index:20;background:#010307;}
+/* 選択中・手入力中の操作領域を暗転レイヤーより前へ（数字が暗転の下に潜らないように）。 */
+.page.is-dimmed .stam-side.is-selected,
+.page.is-dimmed .stam-side:has(.stam-edit-zone.is-editing){z-index:20;background:#010307;}
 .page.is-dimmed .idle-zone.is-selected{z-index:20;background:transparent;}
 .page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;background:#010307;}
-
-/* スタミナ手入力中は入力欄だけ操作レイヤーを前へ。 */
-.page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:20;background:#010307;border-radius:2px;}
-.page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:21;}
+.page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
+.page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
 
 /* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
 .stam-side{position:relative;left:14px;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
@@ -80,10 +79,16 @@ body{overflow:hidden;touch-action:pan-x;}
 /* 透明 input = 現在値と同一メトリクス。編集中は is-editing 側で色だけ上書き（下の1ルールのみ） */
 .stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-.stam-edit-zone.is-editing .stam-edit,.stam-edit-zone.is-editing .stam-edit:focus{color:#b4becc;-webkit-text-fill-color:#b4becc;}
-.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-/* 文字色は変えず、下線だけで「編集中/選択中」を控えめに示す（静止表示のみ・アニメーションなし） */
-.stam-edit-zone.is-editing,.stam-side.is-selected .stam-edit-zone,.stam-side.is-selected .stam-calc-zone{box-shadow:0 1px 0 0 #8290a5;}
+/* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
+.stam-edit-zone.is-editing .stam-edit,
+.stam-edit-zone.is-editing .stam-edit:focus,
+.stam-side.is-selected .stam-current{color:#d0d8e4;-webkit-text-fill-color:#d0d8e4;}
+.stam-side.is-selected .task-slash{color:#8a9aad;}
+.stam-side.is-selected .task-max{color:#6edfed;}
+.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,
+.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus,
+.stam-side.is-near-full.is-selected .stam-current{color:#ff8a8a;-webkit-text-fill-color:#ff8a8a;}
+.stam-side.is-near-full.is-selected .task-max{color:#ff9a9a;}
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased;cursor:text;white-space:nowrap;}
