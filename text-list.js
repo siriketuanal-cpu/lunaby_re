@@ -26,6 +26,8 @@ import {
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
+  // 編集開始直後の互換マウス(mousedown等)による誤blurを無視する期限
+  let suppressEditBlurUntil = 0;
   function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
 
   function write(index){
@@ -79,7 +81,7 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-display" data-name-edit="' + index + '"><span class="name-display-text">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span></span>' +
+        '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
         '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
         '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
@@ -87,6 +89,7 @@ import {
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
+        /* data-stam-edit=手入力 / data-stam-confirm=40計算（満タン時 hour=edit・minute=confirm、idle-pre も40計算の続き） */
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
           '<span class="stam-edit-zone" data-stam-confirm="' + index + '">' +
@@ -101,9 +104,9 @@ import {
           '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
-          '<span class="idle-pre" aria-hidden="true"></span>' +
+          '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
           '<span class="idle-action"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
-          '<span class="idle-post" aria-hidden="true"></span>' +
+          '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
     '</section>';
@@ -120,7 +123,7 @@ import {
       const idleRow = root.querySelector('.idle-zone');
       refs[index] = {
         root,
-        nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
+        nameDisplay:root.querySelector('[data-name-edit]'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
@@ -157,7 +160,7 @@ import {
 
     setHidden(ref.nameDisplay, nameEditing);
     setHidden(ref.nameInput, !nameEditing);
-    if (!nameEditing) setText(ref.nameDisplayText, slot.label || ('スロット ' + (index + 1)));
+    if (!nameEditing) setText(ref.nameDisplay, slot.label || ('スロット ' + (index + 1)));
     setHidden(ref.rankDisplay, rankEditing);
     setHidden(ref.rankInput, !rankEditing);
     if (!rankEditing) setText(ref.rankDisplay, 'Lv.' + slot.rank);
@@ -250,6 +253,8 @@ import {
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
     // 名前は既存文字を表示。ランク/スタミナはスタミナと同じく空欄から入力
     input.value = type === 'name' ? state.slots[index].label : '';
+    // 直後の互換クリックが余白に当たって blur→即閉じ するのを防ぐ
+    suppressEditBlurUntil = performance.now() + 450;
     input.focus({ preventScroll:true });
   }
   function closeEdit(cancel){
@@ -327,25 +332,19 @@ import {
       const point = event.touches[0];
       if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault();
     }, { passive:false });
-    // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
-    // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
-    // 名前/ランクは基準版どおり pointerup で開く（pointerdown だと選択ハンドルや focus が不安定になりやすい）
-    // 名前/ランク/スタミナ/40計算/SL すべて pointerdown で共通化
+    // 名前/ランク/スタミナ手入力/40計算/放置/SL はすべて pointerdown で処理
     list.addEventListener('pointerdown', event => {
       const target = event.target;
       if (target.matches('input')) {
         if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
-          // ここは実際の <input> 自身へのタップなので preventDefault はしない。
-          // pointerdown で preventDefault すると、端末によっては直後の focus() が
-          // 「素のユーザー操作」と見なされずソフトキーボードが開かないことがあるため。
+          event.preventDefault();
           target.focus({ preventScroll:true });
         }
         return;
       }
       const nameEdit = target.closest('[data-name-edit]');
       if (nameEdit) {
-        // preventDefault で互換マウスイベントを止め、余白への誤ヒット→blur を防ぐ（スタミナと同じ）
-        event.preventDefault();
+        event.preventDefault(); // 互換マウスによる誤blur防止
         beginEdit('name', Number(nameEdit.dataset.nameEdit));
         return;
       }
@@ -355,6 +354,7 @@ import {
         beginEdit('rank', Number(rankEdit.dataset.rankEdit));
         return;
       }
+      // data-stam-edit → 手入力 / data-stam-confirm → 40計算（範囲・意味は CSS/マークアップ側で固定）
       const stamEdit = target.closest('[data-stam-edit]');
       if (stamEdit) {
         event.preventDefault();
@@ -390,6 +390,11 @@ import {
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
       if (type !== edit.type || Number(input.dataset[type + 'Editor']) !== edit.index) return;
+      // 開始直後の誤blur（互換マウスが余白ヒット）なら focus を取り戻して編集継続
+      if (performance.now() < suppressEditBlurUntil) {
+        input.focus({ preventScroll:true });
+        return;
+      }
       closeEdit(false);
       resetScroll();
     });
