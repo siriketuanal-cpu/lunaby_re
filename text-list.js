@@ -26,6 +26,8 @@ import {
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let lastResumeSyncAt = -Infinity;
+  // 編集開始直後の互換マウス(mousedown等)による誤blurを無視する期限
+  let suppressEditBlurUntil = 0;
   function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
 
   function write(index){
@@ -250,6 +252,8 @@ import {
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
     // 名前は既存文字を表示。ランク/スタミナはスタミナと同じく空欄から入力
     input.value = type === 'name' ? state.slots[index].label : '';
+    // 直後の互換クリックが余白に当たって blur→即閉じ するのを防ぐ
+    suppressEditBlurUntil = performance.now() + 450;
     input.focus({ preventScroll:true });
   }
   function closeEdit(cancel){
@@ -342,11 +346,14 @@ import {
       }
       const nameEdit = target.closest('[data-name-edit]');
       if (nameEdit) {
+        // preventDefault で互換マウスイベントを止め、余白への誤ヒット→blur を防ぐ（スタミナと同じ）
+        event.preventDefault();
         beginEdit('name', Number(nameEdit.dataset.nameEdit));
         return;
       }
       const rankEdit = target.closest('[data-rank-edit]');
       if (rankEdit) {
+        event.preventDefault();
         beginEdit('rank', Number(rankEdit.dataset.rankEdit));
         return;
       }
@@ -384,7 +391,14 @@ import {
       if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
-      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); }
+      if (type !== edit.type || Number(input.dataset[type + 'Editor']) !== edit.index) return;
+      // 開始直後の誤blur（互換マウスが余白ヒット）なら focus を取り戻して編集継続
+      if (performance.now() < suppressEditBlurUntil) {
+        input.focus({ preventScroll:true });
+        return;
+      }
+      closeEdit(false);
+      resetScroll();
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
