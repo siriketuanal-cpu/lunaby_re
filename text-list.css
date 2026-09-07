@@ -17,12 +17,13 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-2{border-top-color:var(--group-tide);}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
 .name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
-.rank-display{flex:none;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);cursor:text;}
-.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;}
+/* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
+.rank-display{flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;}
+.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
 .name-input{width:62px;font-size:11px;line-height:1.15;}
-/* display「Lv.xx」幅に近づけ、切替直後も同じ座標が input に載るようにする */
-.rank-input{width:5ch;min-height:15px;text-align:right;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);}
+/* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
+.rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
