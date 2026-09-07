@@ -253,12 +253,6 @@ import {
     if (type === 'name' || type === 'rank') moveCursorToEnd(input);
   }
   function moveCursorToEnd(input){ const apply=()=>{ const end=input.value.length; input.setSelectionRange(end,end); }; apply(); requestAnimationFrame(apply); setTimeout(apply,0); }
-  function clearPageSelection(){
-    try {
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount) sel.removeAllRanges();
-    } catch (_) {}
-  }
   function closeEdit(cancel){
     if (!edit) return;
     const active = edit;
@@ -335,7 +329,7 @@ import {
     // 名前/ランクは基準版どおり pointerup で開く（pointerdown だと選択ハンドルや focus が不安定になりやすい）
     list.addEventListener('pointerdown', event => {
       const target = event.target;
-      if (!target.matches('input')) clearPageSelection();
+      // 名前/ランク入力中の再タップ（基準版と同じ）
       if (target.matches('[data-name-editor],[data-rank-editor]')) {
         event.preventDefault();
         target.focus({ preventScroll:true });
@@ -389,10 +383,10 @@ import {
     });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); clearPageSelection(); return; }
+      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
-      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); clearPageSelection(); }
+      if (type === edit.type && Number(input.dataset[type + 'Editor']) === edit.index) { closeEdit(false); resetScroll(); }
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
