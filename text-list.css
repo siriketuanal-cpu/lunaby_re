@@ -57,7 +57,7 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 左半分：数値を中央寄りに配置。右の1frが40計算の領域。 */
 .stam-side{position:relative;left:14px;display:grid;grid-template-columns:1fr auto auto minmax(0,1fr);align-items:center;min-width:0;min-height:26px;}
-.stam-margin{grid-column:1;align-self:stretch;min-width:22px;min-height:26px;cursor:text;}
+.stam-margin{position:absolute;left:-14px;top:0;bottom:0;width:36px;cursor:text;}
 .stam-edit-zone{grid-column:2;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:text;}
 .stam-calc-zone{grid-column:3;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{grid-column:4;min-width:0;min-height:26px;width:calc(100% + 6px);position:relative;z-index:2;cursor:pointer;}
