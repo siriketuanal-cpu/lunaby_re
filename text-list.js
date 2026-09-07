@@ -103,7 +103,7 @@ import {
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
           '<span class="idle-pre" aria-hidden="true"></span>' +
           '<span class="idle-action"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
-          '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
+          '<span class="idle-post" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
     '</section>';
