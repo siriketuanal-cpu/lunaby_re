@@ -79,10 +79,14 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
-        '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
-        '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
-        '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
+        '<span class="name-slot">' +
+          '<span class="name-display" data-name-edit="' + index + '">' + escape(slot.label || ('スロット ' + (index + 1))) + '</span>' +
+          '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
+        '</span>' +
+        '<span class="rank-slot">' +
+          '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
+          '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off">' +
+        '</span>' +
       '</div>' +
       '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
         '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
@@ -317,43 +321,52 @@ import {
     let touchStartY = 0;
     document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
     document.addEventListener('touchmove', event => { const point = event.touches[0]; if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault(); }, { passive:false });
-    // スタミナ手入力は pointerdown 内で beginEdit→focus まで完結させる。
-    // pointerup まで遅らせると preventDefault 後にモバイルで focus が落ちることがある。
+    // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
+    // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
     list.addEventListener('pointerdown', event => {
-      const input = event.target;
-      if (input.matches('[data-name-editor],[data-rank-editor]')) {
-        event.preventDefault();
-        input.focus({ preventScroll:true });
-        moveCursorToEnd(input);
+      const target = event.target;
+      if (target.matches('input')) {
+        if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
+          event.preventDefault();
+          target.focus({ preventScroll:true });
+          if (target.matches('[data-name-editor],[data-rank-editor]')) moveCursorToEnd(target);
+        }
         return;
       }
-      const stamEdit = input.closest('[data-stam-edit]');
+      const nameEdit = target.closest('[data-name-edit]');
+      if (nameEdit) {
+        event.preventDefault();
+        beginEdit('name', Number(nameEdit.dataset.nameEdit));
+        return;
+      }
+      const rankEdit = target.closest('[data-rank-edit]');
+      if (rankEdit) {
+        event.preventDefault();
+        beginEdit('rank', Number(rankEdit.dataset.rankEdit));
+        return;
+      }
+      const stamEdit = target.closest('[data-stam-edit]');
       if (stamEdit) {
         event.preventDefault();
         beginEdit('stam', Number(stamEdit.dataset.stamEdit));
         return;
       }
-      if (input.closest('[data-sl-task]')) event.preventDefault();
-    });
-    function handleAction(event){
-      const target = event.target;
-      if (target.matches('input')) return;
-      // pointerdown で既に開いている手入力は pointerup で二重起動しない
-      if (target.closest('[data-stam-edit]')) return;
-      const name = target.closest('[data-name-edit]');
-      if (name) { beginEdit('name', Number(name.dataset.nameEdit)); return; }
-      const rank = target.closest('[data-rank-edit]');
-      if (rank) { beginEdit('rank', Number(rank.dataset.rankEdit)); return; }
       const stamConfirm = target.closest('[data-stam-confirm]');
-      if (stamConfirm) { activate(Number(stamConfirm.dataset.stamConfirm), 'stam'); return; }
-      const sl=target.closest('[data-sl-task]');
-      if (sl) { beginSLEdit(sl.dataset.slTask); return; }
+      if (stamConfirm) {
+        activate(Number(stamConfirm.dataset.stamConfirm), 'stam');
+        return;
+      }
+      const sl = target.closest('[data-sl-task]');
+      if (sl) {
+        event.preventDefault();
+        beginSLEdit(sl.dataset.slTask);
+        return;
+      }
       const row = target.closest('[data-task]');
-      if (row && row.dataset.task !== 'stam') activate(Number(row.dataset.i), row.dataset.task);
-    }
-    // タッチ復帰直後にclick合成が欠ける端末でも、実タップを確実に拾う。
-    list.addEventListener('pointerup', event => {
-      if (event.pointerType) handleAction(event);
+      if (row && row.dataset.task !== 'stam') {
+        activate(Number(row.dataset.i), row.dataset.task);
+        return;
+      }
     });
     list.addEventListener('input', event => {
       const input = event.target;

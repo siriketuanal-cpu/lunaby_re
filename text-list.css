@@ -16,12 +16,15 @@ body{overflow:hidden;touch-action:pan-x;}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
-.name-display{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;font-weight:800;font-size:11px;line-height:1.15;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
-.rank-display{flex:none;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);cursor:text;}
-.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;}
-.name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;}
-.name-input{width:62px;font-size:11px;line-height:1.15;}
-.rank-input{width:3ch;text-align:right;color:var(--orange);font:800 11px/1.15 var(--timer-number-font);}
+.name-slot{min-width:0;flex:1;display:grid;grid-template-columns:minmax(0,1fr);align-items:center;min-height:15px;}
+.rank-slot{flex:none;display:grid;grid-template-columns:auto;align-items:center;justify-items:end;min-height:15px;}
+.name-display,.name-input{grid-area:1/1;box-sizing:border-box;min-width:0;margin:0;padding:0;border:0;outline:0;font-weight:800;font-size:11px;line-height:15px;height:15px;font-family:ui-sans-serif,system-ui,-apple-system,"Hiragino Sans",Meiryo,sans-serif;}
+.name-display{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:text;color:inherit;background:transparent;}
+.name-input{width:100%;max-width:100%;color:#fff;background:transparent;caret-color:transparent!important;}
+.rank-display,.rank-input{grid-area:1/1;box-sizing:border-box;margin:0;padding:0;border:0;outline:0;color:var(--orange);font:800 11px/15px var(--timer-number-font);height:15px;}
+.rank-display{cursor:text;background:transparent;}
+.rank-input{width:3ch;text-align:right;background:transparent;caret-color:transparent!important;}
+.name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;appearance:none;-webkit-appearance:none;}
 .task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
@@ -57,7 +60,8 @@ body{overflow:hidden;touch-action:pan-x;}
 
 /* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
 .stam-side{position:relative;left:14px;display:flex;align-items:center;min-width:0;min-height:26px;}
-.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;margin-left:-14px;cursor:text;}
+/* full-clock(left:6px,幅22px)の少し左まで手入力ヒットを伸ばす。clockはpointer-events:none */
+.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;margin-left:-20px;cursor:text;}
 .stam-edit-zone{flex:0 0 auto;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;}
 .stam-calc-zone{flex:0 0 auto;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;}
 .stam-calc-gap{flex:1 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:-6px;position:relative;z-index:2;cursor:pointer;}
