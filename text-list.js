@@ -327,10 +327,17 @@ import {
       const point = event.touches[0];
       if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault();
     }, { passive:false });
+    // タップで開く4つの「手入力」対象（名前・ランク・スタミナ・スターリープ）を1本の表にまとめる。
+    // 判定順・preventDefaultのタイミング・呼び出す関数は元のコードと同一で、繰り返しだけを解消。
+    const MANUAL_EDIT_TARGETS = [
+      ['[data-name-edit]', el => beginEdit('name', Number(el.dataset.nameEdit))],
+      ['[data-rank-edit]', el => beginEdit('rank', Number(el.dataset.rankEdit))],
+      ['[data-stam-edit]', el => beginEdit('stam', Number(el.dataset.stamEdit))],
+      ['[data-sl-task]', el => beginSLEdit(el.dataset.slTask)],
+    ];
     // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
     // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
-    // 名前/ランクは基準版どおり pointerup で開く（pointerdown だと選択ハンドルや focus が不安定になりやすい）
-    // 名前/ランク/スタミナ/40計算/SL すべて pointerdown で共通化
+    // やることは3種類だけ：① 手入力を開く ② 40計算（確定式） ③ 放置報酬の受取
     list.addEventListener('pointerdown', event => {
       const target = event.target;
       if (target.matches('input')) {
@@ -342,36 +349,23 @@ import {
         }
         return;
       }
-      const nameEdit = target.closest('[data-name-edit]');
-      if (nameEdit) {
-        // preventDefault で互換マウスイベントを止め、余白への誤ヒット→blur を防ぐ（スタミナと同じ）
-        event.preventDefault();
-        beginEdit('name', Number(nameEdit.dataset.nameEdit));
-        return;
+      // ① 手入力（名前／ランク／スタミナ／スターリープ）
+      for (const [selector, open] of MANUAL_EDIT_TARGETS) {
+        const el = target.closest(selector);
+        if (el) {
+          // preventDefault で互換マウスイベントを止め、余白への誤ヒット→blur を防ぐ
+          event.preventDefault();
+          open(el);
+          return;
+        }
       }
-      const rankEdit = target.closest('[data-rank-edit]');
-      if (rankEdit) {
-        event.preventDefault();
-        beginEdit('rank', Number(rankEdit.dataset.rankEdit));
-        return;
-      }
-      const stamEdit = target.closest('[data-stam-edit]');
-      if (stamEdit) {
-        event.preventDefault();
-        beginEdit('stam', Number(stamEdit.dataset.stamEdit));
-        return;
-      }
+      // ② 40計算（スタミナの確定式タップ）
       const stamConfirm = target.closest('[data-stam-confirm]');
       if (stamConfirm) {
         activate(Number(stamConfirm.dataset.stamConfirm), 'stam');
         return;
       }
-      const sl = target.closest('[data-sl-task]');
-      if (sl) {
-        event.preventDefault();
-        beginSLEdit(sl.dataset.slTask);
-        return;
-      }
+      // ③ 放置報酬の受取
       const row = target.closest('[data-task]');
       if (row && row.dataset.task !== 'stam') {
         activate(Number(row.dataset.i), row.dataset.task);
