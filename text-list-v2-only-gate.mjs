@@ -8,3 +8,15 @@ export function renderV2OnlyGate(onInitialize) {
   }
   if (starleap) starleap.textContent = '';
 }
+
+// 保存データ自体はあるのに起動処理側で例外が出たケース用。
+// 「初回起動する」ボタンを出すと、同じ起動処理を再実行して同じエラーで
+// 何も起きないように見えるだけなので、ここでは別メッセージだけを出す。
+export function renderStartupError() {
+  const list = document.getElementById('list');
+  const starleap = document.getElementById('starleap');
+  if (list) {
+    list.innerHTML = '<section class="pure-v2-gate" aria-live="polite"><strong>起動エラー</strong><span>保存データは見つかっていますが、起動処理でエラーが発生しました。コード側の問題の可能性があります（詳細はブラウザのコンソールを確認してください）。</span></section>';
+  }
+  if (starleap) starleap.textContent = '';
+}

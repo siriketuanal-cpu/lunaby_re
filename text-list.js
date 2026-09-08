@@ -317,16 +317,6 @@ import {
     document.addEventListener('cut', event => event.preventDefault());
     document.addEventListener('selectstart', event => event.preventDefault());
     document.addEventListener('dragstart', event => event.preventDefault());
-    let touchStartY = 0;
-    // 編集終了時だけ原点へ戻す。編集中に scrollTo(0) し続けると入力欄が画面外に飛ばされる
-    const resetScroll = () => { window.scrollTo(0, 0); };
-    document.addEventListener('touchstart', event => { touchStartY = event.touches[0] ? event.touches[0].clientY : 0; }, { passive:true });
-    document.addEventListener('touchmove', event => {
-      // 編集中の指スクロールは止める（ブラウザの自動パンは focus preventScroll 側で抑制）
-      if (edit || slEdit) { event.preventDefault(); return; }
-      const point = event.touches[0];
-      if (point && window.scrollY <= 0 && point.clientY > touchStartY) event.preventDefault();
-    }, { passive:false });
     // タップで開く4つの「手入力」対象（名前・ランク・スタミナ・スターリープ）を1本の表にまとめる。
     // 判定順・preventDefaultのタイミング・呼び出す関数は元のコードと同一で、繰り返しだけを解消。
     const MANUAL_EDIT_TARGETS = [
@@ -381,12 +371,11 @@ import {
     });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); resetScroll(); return; }
+      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
       if (type !== edit.type || Number(input.dataset[type + 'Editor']) !== edit.index) return;
       closeEdit(false);
-      resetScroll();
     });
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
