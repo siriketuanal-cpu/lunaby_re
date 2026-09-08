@@ -7,8 +7,8 @@
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#05070a",
+  "theme_color": "#05070a",
   "icons": [
     {
       "src": "lunaby-mascot-192.png",
