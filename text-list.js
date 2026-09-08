@@ -123,7 +123,7 @@ import {
         nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
-        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), idlePre:root.querySelector('.idle-pre'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
         idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
@@ -169,19 +169,19 @@ import {
     setHidden(ref.stamSlash, stamFull && !stamSelectionPreview);
     setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
     setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
-    if (ref.stamCalcGap) setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
     setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
     if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
     if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
-    if (stamFull) { const fullTime=fullTimeParts(snapshot.stam.plan); setText(ref.stamFullHour, fullTime.hour); setText(ref.stamFullMinute, fullTime.minute); setText(ref.stamFullLabel, '満'); }
-    const stamClock=fullTimeParts(snapshot.stam.plan);
+    const stamClock = fullTimeParts(snapshot.stam.plan);
+    if (stamFull) { setText(ref.stamFullHour, stamClock.hour); setText(ref.stamFullMinute, stamClock.minute); setText(ref.stamFullLabel, '満'); }
     const stamClockVisible=/^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
-    if (ref.stamFullClock) setHidden(ref.stamFullClock, !stamClockVisible || stamFull);
+    setHidden(ref.stamFullClock, !stamClockVisible || stamFull);
     if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
     setSelected(ref.stamRow, stamSelected);
     setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
     setClass(ref.idleFullClock, 'is-selected', idleSelected);
-    if (ref.stamInput && ref.stamInput.parentElement) setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
+    setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
     const idleValue = valueForIdle(snapshot, index);
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
@@ -189,7 +189,7 @@ import {
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
     const idleFullTime=fullTimeParts(snapshot.idle.plan);
     const idleFullClockVisible=/^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
-    if (ref.idleFullClock) setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
+    setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
     if (idleFullClockVisible) { setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2,'0')); setText(ref.idleFullClockMinute, idleFullTime.minute); }
     setClass(ref.idleValue, 'is-clock', idleClock);
     setText(ref.idlePlan, planForIdle(snapshot, index));
