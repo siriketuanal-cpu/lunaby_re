@@ -41,15 +41,17 @@ async function repairShell() {
   await caches.delete(STAGING_CACHE_NAME);
   const staging = await caches.open(STAGING_CACHE_NAME);
   try {
-    for (const resource of SHELL) {
-      const request = new Request(new URL(resource, self.location).href, {
-        cache: 'no-store',
-        credentials: 'same-origin'
-      });
-      const response = await fetch(request);
-      if (!response || !response.ok) throw new Error('shell fetch failed');
-      await staging.put(request, response);
-    }
+    // 各ファイルを並列取得（直列待ちだった分、通信が不安定な時間を短くする）。
+    // URLにキャッシュ避け用のクエリを付けて実際に取得し、保存キーは元の
+    // クリーンなパスにする（CDN等の中間キャッシュが古い内容を返す可能性を減らす）。
+    const bust = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+    await Promise.all(SHELL.map(async resource => {
+      const cleanUrl = new URL(resource, self.location).href;
+      const bustedUrl = cleanUrl + (cleanUrl.includes('?') ? '&' : '?') + '_repair=' + bust;
+      const response = await fetch(new Request(bustedUrl, { cache:'no-store', credentials:'same-origin' }));
+      if (!response || !response.ok) throw new Error('shell fetch failed: ' + resource);
+      await staging.put(new Request(cleanUrl), response);
+    }));
 
     // 全ファイル取得後: 本キャッシュを一度消してから入れ直す（古いエントリ残留防止）
     const entries = await staging.keys();
