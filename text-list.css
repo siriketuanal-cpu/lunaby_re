@@ -45,8 +45,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 /* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
-.full-clock-stam{left:6px;}
-.full-clock-idle{right:6px;}
+.full-clock-stam{left:-1px;}
+.full-clock-idle{right:-1px;}
 
 /* 操作中だけページ全体を一枚だけ暗転。
    選択中のタイマー／入力欄はこのレイヤーより前に出す。
@@ -66,29 +66,148 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
 
-/* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
-.stam-side{position:relative;left:14px;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
-/* 手入力ヒット：flex幅は維持し、::before だけで枠左端・上下まで伸ばす（数字位置は動かさない） */
-.stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
-.stam-edit-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;right:0;left:-28px;}
-.stam-edit-zone{flex:0 0 auto;position:relative;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;touch-action:manipulation;}
-.stam-edit-zone::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.stam-calc-zone{flex:0 0 auto;position:relative;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;touch-action:manipulation;}
-.stam-calc-zone::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.stam-calc-gap{flex:1 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:-6px;position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
-.stam-calc-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
+/* タイマー行：左右カードを50/50で固定。予定時刻は別の絶対配置。 */
+.stam-side{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  min-width:0;
+  min-height:26px;
+  left:0;
+  padding:0;
+}
 
-/* 数字表示（input と同一ボックスで重ねてズレを減らす。letter-spacing/line-height/アンチエイリアスは丸文字の見た目調整込みでここに一本化） */
-.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;}
-.stam-current{grid-area:1/1;box-sizing:border-box;width:36px;min-width:36px;height:18px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:pointer;}
+/* 左側の表示：予定時刻の右端から2px内側に、スタミナの先頭数字を置く。
+   ヒット領域は ::before で外側まで拡張し、見た目の移動と分離。 */
+.stam-edit-gap{
+  flex:1 1 auto;
+  min-width:0;
+  align-self:stretch;
+  position:relative;
+  cursor:text;
+  touch-action:manipulation;
+}
+.stam-edit-gap::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:-28px;
+  right:0;
+}
+.stam-edit-zone{
+  flex:0 0 auto;
+  position:relative;
+  display:inline-grid;
+  grid-template-columns:36px;
+  grid-template-rows:18px;
+  place-content:center;
+  place-items:stretch;
+  min-height:26px;
+  padding:4px 2px 4px 4px;
+  margin-left:17px;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.stam-edit-zone::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:-17px;
+  right:0;
+}
+.stam-calc-zone{
+  flex:0 0 auto;
+  position:relative;
+  display:flex;
+  align-items:center;
+  min-height:26px;
+  padding:4px 0;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.stam-calc-zone::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:0;
+  right:0;
+}
+.stam-calc-gap{
+  flex:1 1 0%;
+  min-width:0;
+  align-self:stretch;
+  min-height:26px;
+  margin-right:-6px;
+  position:relative;
+  z-index:2;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.stam-calc-gap::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:0;
+  right:0;
+}
+
+/* 数字表示（input と同一ボックスで重ねてズレを減らす）。 */
+.task-slash,.task-max,.task-value{
+  display:inline-block;
+  vertical-align:baseline;
+  line-height:1;
+  letter-spacing:.01em;
+  text-rendering:geometricPrecision;
+}
+.stam-current{
+  grid-area:1/1;
+  box-sizing:border-box;
+  width:36px;
+  min-width:36px;
+  height:18px;
+  margin:0;
+  padding:0;
+  border:0;
+  text-align:right;
+  color:#b4becc;
+  font:800 18px/18px var(--timer-number-font);
+  letter-spacing:.01em;
+  text-rendering:geometricPrecision;
+  cursor:pointer;
+}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 .task-slash{width:9px;height:18px;margin:0;color:#73839a;font:800 18px/18px var(--timer-number-font);letter-spacing:0;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
 .task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:18px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-align:left;white-space:nowrap;}
-
-/* 透明 input = 現在値と同一メトリクス。編集中は is-editing 側で色だけ上書き（下の1ルールのみ） */
-.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+.stam-edit,.stam-edit:focus{
+  grid-area:1/1;
+  box-sizing:border-box;
+  z-index:1;
+  width:36px;
+  min-width:36px;
+  height:18px;
+  margin:0;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  color:#b4becc;
+  -webkit-text-fill-color:#b4becc;
+  font:800 18px/18px var(--timer-number-font);
+  letter-spacing:.01em;
+  text-rendering:geometricPrecision;
+  text-align:right;
+  caret-color:transparent!important;
+  appearance:none;
+  -webkit-appearance:none;
+}
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-/* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
 .stam-edit-zone.is-editing .stam-edit,
 .stam-edit-zone.is-editing .stam-edit:focus,
 .stam-side.is-selected .stam-current{color:#d0d8e4;-webkit-text-fill-color:#d0d8e4;}
@@ -99,7 +218,6 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side.is-near-full.is-selected .stam-current{color:#ff8a8a;-webkit-text-fill-color:#ff8a8a;}
 .stam-side.is-near-full.is-selected .task-max{color:#ff9a9a;}
 
-/* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
@@ -110,26 +228,62 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド：右半分の中央にタイマー。 */
-/* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
-.idle-zone{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{min-width:0;min-height:26px;width:calc(100% - 6px);justify-self:end;cursor:pointer;position:relative;z-index:1;}
-.idle-pre::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:1;}
-.idle-action::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-post{min-width:0;min-height:26px;cursor:pointer;position:relative;z-index:1;}
-.idle-post::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
+/* 右側：タイマーを flex で右端側へ配置。予定時刻はカード右端から1px外側。
+   末尾の数字と予定時刻の左端の間を2pxにする。 */
+.idle-zone{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  min-width:0;
+  min-height:26px;
+  padding:0;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.idle-pre,.idle-post{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:50%;
+  min-width:0;
+  min-height:26px;
+  margin:0;
+  z-index:1;
+  cursor:pointer;
+}
+.idle-pre{left:0;right:auto;}
+.idle-post{left:auto;right:0;}
+.idle-pre::before,.idle-action::before,.idle-post::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:0;
+  right:0;
+}
+.idle-action{
+  flex:0 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:24px;
+  margin-right:23px;
+  cursor:pointer;
+  touch-action:manipulation;
+  position:relative;
+  z-index:3;
+}
 .task-value{margin:0;color:var(--violet);font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
-.task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;text-rendering:geometricPrecision;}
+.task-plan{position:absolute;left:calc(100% + 4px);top:50%;transform:translateY(-50%);margin-left:0;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;text-rendering:geometricPrecision;}
 .task-plan.is-full{position:relative;display:inline-block;width:5ch;box-sizing:border-box;margin-left:0;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:-.03em;text-align:center;white-space:nowrap;}
 .task-plan.is-full:not(:empty)::after{content:'満';position:absolute;left:calc(100% + 3px);top:50%;transform:translateY(-50%);margin:0;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;}
 .idle-zone.is-near-full .task-value,.idle-zone.is-near-full.is-selected .task-value{color:#ff7070;}
 .idle-zone.is-selected .task-value,
 .idle-zone.is-selected .task-plan,
-.idle-zone.is-selected .task-plan.is-full{
-  margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
-}
+.idle-zone.is-selected .task-plan.is-full{margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;}
 .idle-zone.is-selected .task-value{color:#e9ddff;}
 .idle-zone.is-selected .task-plan,
 .idle-zone.is-selected .task-plan.is-full{color:#ffd581;}
@@ -160,164 +314,4 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
-
-/* --- 位置調整: 予定時刻をカード外側端、実値/タイマーを2px内側へ --- */
-.full-clock-stam{left:0;}
-.full-clock-idle{right:0;}
-
-/* 左半分: [予定時刻22px][2px][スタミナ現在値…]
-   手入力のヒット領域は見た目とは分離して、外側から現在値の手前までを維持。 */
-.stam-side{
-  left:0;
-  width:50%;
-  box-sizing:border-box;
-  padding-left:24px;
-}
-.stam-edit-gap{
-  position:absolute;
-  left:0;
-  top:0;
-  width:0;
-  height:26px;
-  flex:none;
-  pointer-events:none;
-}
-.stam-edit-gap::before{
-  left:0;
-  right:auto;
-  width:24px;
-  pointer-events:auto;
-}
-
-/* 右半分: flexで実タイマーを外側へ寄せ、予定時刻の22px+2px手前に置く。
-   tap領域は左右半分の役割をそのままabsoluteで保持。 */
-.idle-zone{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  position:relative;
-  min-width:0;
-  padding-right:24px;
-}
-.idle-action{
-  flex:0 0 auto;
-  position:relative;
-  z-index:3;
-  margin-right:0;
-}
-.idle-pre,
-.idle-post{
-  position:absolute;
-  top:0;
-  bottom:0;
-  width:50%;
-  min-width:0;
-  min-height:26px;
-  margin:0;
-  z-index:1;
-}
-.idle-pre{left:0;right:auto;}
-.idle-post{left:auto;right:0;}
-
-/* --- final edge positioning ---
-   Visual layout only; existing JS/tap semantics are preserved. */
-
-/* Scheduled times: exactly 1px beyond the card's 0 edge. */
-.full-clock-stam {
-  left: -1px !important;
-}
-.full-clock-idle {
-  right: -1px !important;
-}
-
-/* Stamina:
-   Keep the card's interactive regions intact, but position the displayed
-   3-digit/current value 2px inward from the scheduled-time edge. */
-.stam-side {
-  display: flex;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  box-sizing: border-box;
-  padding-left: 0 !important;
-  padding-right: 0 !important;
-}
-
-.stam-side.left {
-  left: 0 !important;
-  width: 50% !important;
-  justify-content: flex-start;
-}
-
-.stam-side.left .stam-edit-gap {
-  margin-left: 0;
-}
-
-.stam-side.left .stam-edit {
-  margin-left: 2px !important;
-}
-
-/* Idle timer:
-   Its rightmost digit sits exactly 2px inward from the scheduled-time edge. */
-.idle-zone {
-  display: flex !important;
-  align-items: center;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0 !important;
-  width: 50% !important;
-  box-sizing: border-box;
-  padding-right: 0 !important;
-  justify-content: flex-end !important;
-}
-
-.idle-zone .idle-action {
-  margin-right: 2px !important;
-}
-
-/* Preserve the existing tap-zone geometry independently of the visual offsets. */
-.stam-edit-gap::before,
-.stam-edit-zone::before,
-.stam-calc-zone::before,
-.stam-calc-gap::before,
-.idle-pre::before,
-.idle-action::before,
-.idle-post::before {
-  box-sizing: border-box;
-}
-
-/* --- 予定時刻との間隔を「カード中央側へ2px」に補正 ---
-   ヒット領域を持つ親要素は動かさず、表示文字だけを移動する。 */
-
-/* 左：予定時刻(幅22px)の右端から2px → スタミナの百の位(3桁目) */
-.stam-side .stam-current,
-.stam-side .stam-edit,
-.stam-side .task-slash,
-.stam-side .task-max {
-  transform: translateX(25px);
-}
-
-/* 表示を移動した分、40計算側の透明ヒット領域だけ表示位置まで追従。 */
-.stam-edit-zone::before {
-  right: -25px;
-}
-.stam-calc-zone::before {
-  left: -25px;
-  right: -25px;
-}
-
-/* 右：予定時刻(幅22px)の左端から2px → タイマー末尾 */
-.idle-zone .task-value,
-.idle-zone .task-plan {
-  transform: translateX(-24px);
-}
-
-/* 放置報酬のタップ領域は元の左右関係を維持したまま。 */
-.idle-pre::before,
-.idle-post::before {
-  left: 0;
-  right: 0;
-}
 
