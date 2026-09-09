@@ -73,7 +73,7 @@ import {
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
   function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; setPageDimmed(false); slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
-  function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; syncAll(); writeSL(); }
+  function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
 
   function accountMarkup(slot, index){
@@ -138,65 +138,100 @@ import {
   }
   function setSelected(element, value){ setClass(element, 'is-selected', value); }
   function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
-  function planForIdle(snapshot, index){
-    if (!selected || selected.index !== index || selected.task !== 'idle') return snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '';
-    return snapshot.idle.full ? '受取' : '';
-  }
-  function valueForIdle(snapshot, index){ return selected && selected.index === index && selected.task === 'idle' && !snapshot.idle.full && snapshot.idle.value !== '未開始' ? '受取' : snapshot.idle.value; }
   function fullAtLabel(plan){ const [hour, minute] = String(plan || '').trim().split(':'); return /^\d{1,2}$/.test(hour) && /^\d{2}$/.test(minute) ? String(Number(hour)) + ':' + minute : ''; }
   function fullTimeParts(plan){ const [hour, minute] = String(fullAtLabel(plan) || '—:—').split(':'); return { hour:hour || '—', minute:minute || '—' }; }
 
-  function refreshSlot(index, snapshot){
-    const slot = state.slots[index];
+  // スタミナ行だけ描画（名前・ランク・放置は触らない）
+  // includeMax: ランク変更時など最大値の文字も更新する
+  // force: 差分スキップせず必ず描画（確定・復帰用）
+  function paintStamRow(index, now, options){
     const ref = refs[index];
-    const stamSelected = selected && selected.index === index && selected.task === 'stam';
-    const idleSelected = selected && selected.index === index && selected.task === 'idle';
-    const stamEditing = editIs('stam', index);
-    const nameEditing = editIs('name', index);
-    const rankEditing = editIs('rank', index);
-
-    setHidden(ref.nameDisplay, nameEditing);
-    setHidden(ref.nameInput, !nameEditing);
-    if (!nameEditing) setText(ref.nameDisplayText, slot.label || ('スロット ' + (index + 1)));
-    setHidden(ref.rankDisplay, rankEditing);
-    setHidden(ref.rankInput, !rankEditing);
-    if (!rankEditing) setText(ref.rankDisplay, 'Lv.' + slot.rank);
-
-    const stamFull = !stamEditing && snapshot.stam.current >= slot.stamMax;
-    const stamSelectionPreview = stamFull && stamSelected;
-    setHidden(ref.stamNumber, stamEditing || (stamFull && !stamSelectionPreview));
-    setHidden(ref.stamInput, !stamEditing);
-    setHidden(ref.stamSlash, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
-    if (!stamEditing) setText(ref.stamNumber, stamSelected ? selected.value : snapshot.stam.current);
-    if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    const includeMax = !!(options && options.includeMax);
+    const force = !!(options && options.force);
+    const busy = editIs('stam', index) || (selected && selected.index === index && selected.task === 'stam');
+    const prevCurrent = ref.snapshot.stam.current;
+    const prevLow = !!ref.snapshot.stam.low;
+    const snapshot = displaySnapshot(slot, now, ref.snapshot);
+    if (busy && !force) return;
+    const stamFull = snapshot.stam.current >= slot.stamMax;
+    const wasFull = prevCurrent >= slot.stamMax;
+    if (!force && !includeMax && snapshot.stam.current === prevCurrent && stamFull === wasFull && !!snapshot.stam.low === prevLow) return;
+    setSelected(ref.stamRow, false);
+    setClass(ref.stamFullClock, 'is-selected', false);
+    setClass(ref.stamInput.parentElement, 'is-editing', false);
+    setHidden(ref.stamInput, true);
+    setHidden(ref.stamNumber, stamFull);
+    setHidden(ref.stamSlash, stamFull);
+    setHidden(ref.stamMax, stamFull);
+    setHidden(ref.stamCalc, stamFull);
+    setHidden(ref.stamCalcGap, stamFull);
+    setHidden(ref.stamFull, !stamFull);
+    if (!stamFull) setText(ref.stamNumber, snapshot.stam.current);
+    // 最大値はランク変更・初回だけ更新（40計算/手入力確定では触らない）
+    if (includeMax) setText(ref.stamMax, slot.stamMax);
+    if (stamFull) {
+      const stamClock = fullTimeParts(snapshot.stam.plan);
+      setText(ref.stamFullHour, stamClock.hour);
+      setText(ref.stamFullMinute, stamClock.minute);
+      setText(ref.stamFullLabel, '満');
+    }
     const stamClock = fullTimeParts(snapshot.stam.plan);
-    if (stamFull) { setText(ref.stamFullHour, stamClock.hour); setText(ref.stamFullMinute, stamClock.minute); setText(ref.stamFullLabel, '満'); }
-    const stamClockVisible=/^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
+    const stamClockVisible = /^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
     setHidden(ref.stamFullClock, !stamClockVisible || stamFull);
-    if (stamClockVisible) { setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2,'0')); setText(ref.stamFullClockMinute, stamClock.minute); }
-    setSelected(ref.stamRow, stamSelected);
-    setClass(ref.stamFullClock, 'is-selected', stamSelected || stamEditing);
-    setClass(ref.idleFullClock, 'is-selected', idleSelected);
-    setClass(ref.stamInput.parentElement, 'is-editing', stamEditing);
+    if (stamClockVisible && !stamFull) {
+      setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2, '0'));
+      setText(ref.stamFullClockMinute, stamClock.minute);
+    }
     setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
-    const idleValue = valueForIdle(snapshot, index);
+  }
+  // 放置行だけ描画（名前・ランク・スタミナは触らない）
+  function paintIdleRow(index, now, options){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    const force = !!(options && options.force);
+    const busy = selected && selected.index === index && selected.task === 'idle';
+    const prevValue = ref.snapshot.idle.value;
+    const prevFull = !!ref.snapshot.idle.full;
+    const prevLow = !!ref.snapshot.idle.low;
+    const snapshot = displaySnapshot(slot, now, ref.snapshot);
+    if (busy && !force) return;
+    if (!force && snapshot.idle.value === prevValue && snapshot.idle.full === prevFull && !!snapshot.idle.low === prevLow) return;
+    setSelected(ref.idleRow, false);
+    setClass(ref.idleFullClock, 'is-selected', false);
+    const idleValue = snapshot.idle.value;
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
-    // 1桁時の前に数字幅の空白を1つだけ補い、時計の「:」位置を2桁時と揃える。
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
-    const idleFullTime=fullTimeParts(snapshot.idle.plan);
-    const idleFullClockVisible=/^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
-    setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
-    if (idleFullClockVisible) { setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2,'0')); setText(ref.idleFullClockMinute, idleFullTime.minute); }
     setClass(ref.idleValue, 'is-clock', idleClock);
-    setText(ref.idlePlan, planForIdle(snapshot, index));
     setHidden(ref.idleValue, snapshot.idle.full);
+    setText(ref.idlePlan, snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '');
     setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
     setClass(ref.idleRow, 'is-near-full', snapshot.idle.low);
-    setSelected(ref.idleRow, idleSelected);
+    const idleFullTime = fullTimeParts(snapshot.idle.plan);
+    const idleFullClockVisible = /^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
+    setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
+    if (idleFullClockVisible && !snapshot.idle.full) {
+      setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2, '0'));
+      setText(ref.idleFullClockMinute, idleFullTime.minute);
+    }
+  }
+  function paintName(index){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    setHidden(ref.nameDisplay, false);
+    setHidden(ref.nameInput, true);
+    setText(ref.nameDisplayText, slot.label || ('スロット ' + (index + 1)));
+  }
+  function paintRank(index){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    setHidden(ref.rankDisplay, false);
+    setHidden(ref.rankInput, true);
+    setText(ref.rankDisplay, 'Lv.' + slot.rank);
   }
   function scheduleRefresh(){
     if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
@@ -209,24 +244,37 @@ import {
     const delay = 60000 - (Date.now() % 60000) + 24;
     refreshTimer = setTimeout(syncTimedSlots, delay);
   }
-  function syncAll(){
-    const now = Date.now();
-    refreshSL(now);
-    for (let index = 0; index < state.slots.length; index += 1) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
-    scheduleRefresh();
-  }
   function syncTimedSlots(){
     const now = Date.now();
     refreshSL(now);
     for (let index = 0; index < state.slots.length; index += 1) {
       const slot = state.slots[index];
-      if (refs[index] && (slot.stamRunning || slot.idleRunning)) refreshSlot(index, displaySnapshot(slot, now, refs[index].snapshot));
+      if (!refs[index]) continue;
+      if (slot.idleRunning) paintIdleRow(index, now, null);
+      if (slot.stamRunning) paintStamRow(index, now, null);
     }
     scheduleRefresh();
   }
-  function syncIndices(...indices){
+  // 復帰時：名前/ランクは触らず、動いているタイマー行と SL だけ強制更新
+  function syncTimersAfterResume(){
     const now = Date.now();
-    for (const index of new Set(indices.filter(Number.isFinite))) if (refs[index]) refreshSlot(index, displaySnapshot(state.slots[index], now, refs[index].snapshot));
+    if (selected) { selected = null; setPageDimmed(false); }
+    if (edit) {
+      const idx = edit.index;
+      edit = null;
+      setPageDimmed(false);
+      paintName(idx);
+      paintRank(idx);
+      paintStamRow(idx, now, { force:true, includeMax:true });
+    }
+    refreshSL(now);
+    for (let index = 0; index < state.slots.length; index += 1) {
+      if (!refs[index]) continue;
+      const slot = state.slots[index];
+      if (slot.stamRunning) paintStamRow(index, now, { force:true });
+      if (slot.idleRunning) paintIdleRow(index, now, { force:true });
+    }
+    scheduleRefresh();
   }
   function syncAfterResume(){
     // Android/iOSでは復帰時に visibilitychange と focus が連続して発火する。
@@ -235,20 +283,41 @@ import {
     const now = Date.now();
     if (now - lastResumeSyncAt < 250) return;
     lastResumeSyncAt = now;
-    syncAll();
+    syncTimersAfterResume();
   }
 
   function setPageDimmed(value){ if (pageEl) setClass(pageEl, 'is-dimmed', value); }
 
   function beginEdit(type, index){
     const previous = selected ? selected.index : NaN;
+    const previousTask = selected ? selected.task : null;
+    if (Number.isFinite(previous)) clearSelectionVisual(previous, previousTask);
     selected = null;
     edit = { type, index, original:type === 'stam' ? liveStam(state.slots[index], Date.now()) : null };
     setPageDimmed(type === 'stam');
-    syncIndices(previous, index);
     const ref = refs[index];
+    if (type === 'name') {
+      setHidden(ref.nameDisplay, true);
+      setHidden(ref.nameInput, false);
+    } else if (type === 'rank') {
+      setHidden(ref.rankDisplay, true);
+      setHidden(ref.rankInput, false);
+    } else {
+      // 満表示中でも手入力に入れるよう、満UIを閉じて input を出す
+      setHidden(ref.stamFull, true);
+      setHidden(ref.stamNumber, true);
+      setHidden(ref.stamSlash, false);
+      setHidden(ref.stamMax, false);
+      setHidden(ref.stamCalc, false);
+      setHidden(ref.stamCalcGap, false);
+      setHidden(ref.stamInput, false);
+      setText(ref.stamMax, state.slots[index].stamMax);
+      setClass(ref.stamInput.parentElement, 'is-editing', true);
+      setSelected(ref.stamRow, false);
+      setClass(ref.stamFullClock, 'is-selected', true);
+    }
     const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
-    // 名前は既存文字を表示。ランク/スタミナはスタミナと同じく空欄から入力
+    // 名前は既存文字を表示。ランク/スタミナは空欄から入力
     input.value = type === 'name' ? state.slots[index].label : '';
     input.focus({ preventScroll:true });
   }
@@ -258,101 +327,94 @@ import {
     const ref = refs[active.index];
     const input = active.type === 'name' ? ref.nameInput : active.type === 'rank' ? ref.rankInput : ref.stamInput;
     if (!cancel) commitEdit(active, input.value);
-    else { edit = null; setPageDimmed(false); syncIndices(active.index); scheduleRefresh(); }
+    else {
+      edit = null;
+      setPageDimmed(false);
+      if (active.type === 'name') paintName(active.index);
+      else if (active.type === 'rank') paintRank(active.index);
+      else paintStamRow(active.index, Date.now(), { force:true, includeMax:true });
+      scheduleRefresh();
+    }
   }
   function commitEdit(active, raw){
     const slot = state.slots[active.index];
+    const now = Date.now();
     let changedIndex = null;
     if (active.type === 'name') {
       if (setLabel(slot, raw)) changedIndex = active.index;
+      edit = null;
+      setPageDimmed(false);
+      paintName(active.index);
     } else if (active.type === 'rank') {
-      // スタミナと同様：空欄のまま確定なら変更しない
       const digits = String(raw || '').replace(/[^0-9]/g, '');
       if (digits) {
         const rank = clamp(Math.floor(num(digits, slot.rank)), 1, 200);
-        if (setRank(slot, rank, Date.now())) changedIndex = active.index;
+        if (setRank(slot, rank, now)) changedIndex = active.index;
       }
+      edit = null;
+      setPageDimmed(false);
+      paintRank(active.index);
+      // ランク変更で最大スタミナ・現在値クランプが変わりうる
+      paintStamRow(active.index, now, { force:true, includeMax:true });
     } else {
       const digits = String(raw || '').replace(/[^0-9]/g, '');
       if (digits) {
         const value = clamp(Math.floor(num(digits, active.original)), 0, slot.stamMax);
-        applyStam(slot, value, Date.now());
+        applyStam(slot, value, now);
         changedIndex = active.index;
       }
+      edit = null;
+      setPageDimmed(false);
+      // 手入力確定：現在値・満了表示のみ（最大値は変更なし）
+      paintStamRow(active.index, now, { force:true });
     }
-    edit = null;
-    setPageDimmed(false);
-    syncAll();
+    scheduleRefresh();
     if (changedIndex != null) write(changedIndex);
   }
 
-  // 1回目タップ専用の最小描画。カード全体（名前/ランク/相手側タイマー）は触らない。
-  // 長時間放置後のメインスレッド復帰直後でも「選択表示」だけ先に出す。
-  function paintIdleSelection(index, isSelected){
+  // 1回目タップ：選択表示だけ。解除は paint*Row に任せる。
+  function paintIdleSelection(index){
     const ref = refs[index];
     if (!ref) return;
-    const snapshot = isSelected
-      ? displaySnapshot(state.slots[index], Date.now(), ref.snapshot)
-      : ref.snapshot;
-    setSelected(ref.idleRow, isSelected);
-    setClass(ref.idleFullClock, 'is-selected', isSelected);
-    if (isSelected) {
-      if (snapshot.idle.full) {
-        setText(ref.idlePlan, '受取');
-        setHidden(ref.idleValue, true);
-        setClass(ref.idlePlan, 'is-full', true);
-      } else if (snapshot.idle.value !== '未開始') {
-        setText(ref.idleValue, '受取');
-        setClass(ref.idleValue, 'is-clock', false);
-        setHidden(ref.idleValue, false);
-        setText(ref.idlePlan, '');
-      }
-    } else {
-      const idleValue = snapshot.idle.value;
-      const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
-      setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
-      setClass(ref.idleValue, 'is-clock', idleClock);
-      setHidden(ref.idleValue, snapshot.idle.full);
-      setText(ref.idlePlan, snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '');
-      setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
+    const snapshot = displaySnapshot(state.slots[index], Date.now(), ref.snapshot);
+    setSelected(ref.idleRow, true);
+    setClass(ref.idleFullClock, 'is-selected', true);
+    if (snapshot.idle.full) {
+      setText(ref.idlePlan, '受取');
+      setHidden(ref.idleValue, true);
+      setClass(ref.idlePlan, 'is-full', true);
+    } else if (snapshot.idle.value !== '未開始') {
+      setText(ref.idleValue, '受取');
+      setClass(ref.idleValue, 'is-clock', false);
+      setHidden(ref.idleValue, false);
+      setText(ref.idlePlan, '');
     }
   }
-  function paintStamSelection(index, isSelected, previewValue){
+  // 40計算待機：基本は現在値＋選択色のみ。
+  // 満のときだけ「満UI → 数字プレビュー」の表示切替が必要なので visibility を触る。
+  function paintStamSelection(index, previewValue){
     const ref = refs[index];
     if (!ref) return;
     const slot = state.slots[index];
-    const snapshot = isSelected
-      ? displaySnapshot(slot, Date.now(), ref.snapshot)
-      : ref.snapshot;
+    const snapshot = displaySnapshot(slot, Date.now(), ref.snapshot);
     const stamFull = snapshot.stam.current >= slot.stamMax;
-    const stamSelectionPreview = stamFull && isSelected;
-    setSelected(ref.stamRow, isSelected);
-    setClass(ref.stamFullClock, 'is-selected', isSelected);
-    // フル時は「満表示」⇔「40計算プレビュー」の切り替えが選択の本体
-    setHidden(ref.stamNumber, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamSlash, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
-    setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
-    if (isSelected) {
-      setText(ref.stamNumber, previewValue);
-      if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
-    } else {
-      setText(ref.stamNumber, snapshot.stam.current);
-      if (!stamFull) setText(ref.stamMax, slot.stamMax);
-      if (stamFull) {
-        const stamClock = fullTimeParts(snapshot.stam.plan);
-        setText(ref.stamFullHour, stamClock.hour);
-        setText(ref.stamFullMinute, stamClock.minute);
-        setText(ref.stamFullLabel, '満');
-      }
+    setSelected(ref.stamRow, true);
+    setClass(ref.stamFullClock, 'is-selected', true);
+    if (stamFull) {
+      setHidden(ref.stamFull, true);
+      setHidden(ref.stamNumber, false);
+      setHidden(ref.stamSlash, false);
+      setHidden(ref.stamMax, false);
+      setHidden(ref.stamCalc, false);
+      setHidden(ref.stamCalcGap, false);
     }
+    setText(ref.stamNumber, previewValue);
   }
   function clearSelectionVisual(index, task){
     if (!Number.isFinite(index) || !refs[index]) return;
-    if (task === 'idle') paintIdleSelection(index, false);
-    else if (task === 'stam') paintStamSelection(index, false);
+    const now = Date.now();
+    if (task === 'idle') paintIdleRow(index, now, { force:true });
+    else if (task === 'stam') paintStamRow(index, now, { force:true });
   }
   function selectTask(index, task){
     const previousIndex = selected ? selected.index : NaN;
@@ -364,22 +426,24 @@ import {
       ? { index, task, value:previewValue }
       : { index, task };
     setPageDimmed(true);
-    // 直前の選択を最小コストで外す
     if (Number.isFinite(previousIndex) && (previousIndex !== index || previousTask !== task)) {
       clearSelectionVisual(previousIndex, previousTask);
     }
-    if (task === 'idle') paintIdleSelection(index, true);
-    else paintStamSelection(index, true, previewValue);
+    if (task === 'idle') paintIdleSelection(index);
+    else paintStamSelection(index, previewValue);
   }
   function confirmTask(index, task){
     const slot = state.slots[index];
-    if (task === 'stam') applyStam(slot, selected.value, Date.now());
-    else if (task === 'idle') restartIdle(slot, Date.now());
+    const now = Date.now();
+    if (task === 'stam') applyStam(slot, selected.value, now);
+    else if (task === 'idle') restartIdle(slot, now);
     // UIを先に確定してから永続化。localStorage が端末で遅いと
     // 保存が終わるまで画面遷移が遅延して体感が悪くなるため。
     selected = null;
     setPageDimmed(false);
-    syncAll();
+    if (task === 'stam') paintStamRow(index, now, { force:true });
+    else paintIdleRow(index, now, { force:true });
+    scheduleRefresh();
     write(index);
   }
   function activate(index, task){
@@ -477,5 +541,14 @@ import {
     buildStaticList();
     setupEvents();
     buildSL();
-    syncAll();
+    // 初回：名前/ランクは markup 済み。タイマー行と SL だけ埋める。
+    // スタミナ最大値はここで一度だけ書く（以降はランク変更時のみ）。
+    const now = Date.now();
+    refreshSL(now);
+    for (let index = 0; index < state.slots.length; index += 1) {
+      if (!refs[index]) continue;
+      paintStamRow(index, now, { force:true, includeMax:true });
+      paintIdleRow(index, now, { force:true });
+    }
+    scheduleRefresh();
   }
