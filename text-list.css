@@ -50,9 +50,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 
 /* 操作中だけページ全体を一枚だけ暗転。
    選択中のタイマー／入力欄はこのレイヤーより前に出す。
-   タイマー処理とは独立したCSS表示なので実行負荷はほぼ増えない。 */
-.page-dim{display:none;position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);}
-.page.is-dimmed .page-dim{display:block;}
+   display 切替だとレイアウト再計算が走るため、opacity/visibility で合成だけ変える。 */
+.page-dim{
+  position:absolute;inset:0;z-index:5;pointer-events:none;
+  background:rgba(0,0,0,.58);
+  opacity:0;visibility:hidden;
+}
+.page.is-dimmed .page-dim{opacity:1;visibility:visible;}
 
 /* 選択中・手入力中の操作領域を暗転レイヤーより前へ（数字が暗転の下に潜らないように）。 */
 .page.is-dimmed .stam-side.is-selected,

@@ -73,7 +73,7 @@ import {
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
   function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; setPageDimmed(false); slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
-  function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; writeSL(); syncAll(); }
+  function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; syncAll(); writeSL(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
 
   function accountMarkup(slot, index){
@@ -262,46 +262,125 @@ import {
   }
   function commitEdit(active, raw){
     const slot = state.slots[active.index];
+    let changedIndex = null;
     if (active.type === 'name') {
-      setLabel(slot, raw);
-      write(active.index);
+      if (setLabel(slot, raw)) changedIndex = active.index;
     } else if (active.type === 'rank') {
       // スタミナと同様：空欄のまま確定なら変更しない
       const digits = String(raw || '').replace(/[^0-9]/g, '');
       if (digits) {
         const rank = clamp(Math.floor(num(digits, slot.rank)), 1, 200);
-        setRank(slot, rank, Date.now());
-        write(active.index);
+        if (setRank(slot, rank, Date.now())) changedIndex = active.index;
       }
     } else {
       const digits = String(raw || '').replace(/[^0-9]/g, '');
       if (digits) {
         const value = clamp(Math.floor(num(digits, active.original)), 0, slot.stamMax);
         applyStam(slot, value, Date.now());
-        write(active.index);
+        changedIndex = active.index;
       }
     }
     edit = null;
     setPageDimmed(false);
     syncAll();
+    if (changedIndex != null) write(changedIndex);
   }
 
+  // 1回目タップ専用の最小描画。カード全体（名前/ランク/相手側タイマー）は触らない。
+  // 長時間放置後のメインスレッド復帰直後でも「選択表示」だけ先に出す。
+  function paintIdleSelection(index, isSelected){
+    const ref = refs[index];
+    if (!ref) return;
+    const snapshot = isSelected
+      ? displaySnapshot(state.slots[index], Date.now(), ref.snapshot)
+      : ref.snapshot;
+    setSelected(ref.idleRow, isSelected);
+    setClass(ref.idleFullClock, 'is-selected', isSelected);
+    if (isSelected) {
+      if (snapshot.idle.full) {
+        setText(ref.idlePlan, '受取');
+        setHidden(ref.idleValue, true);
+        setClass(ref.idlePlan, 'is-full', true);
+      } else if (snapshot.idle.value !== '未開始') {
+        setText(ref.idleValue, '受取');
+        setClass(ref.idleValue, 'is-clock', false);
+        setHidden(ref.idleValue, false);
+        setText(ref.idlePlan, '');
+      }
+    } else {
+      const idleValue = snapshot.idle.value;
+      const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
+      setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
+      setClass(ref.idleValue, 'is-clock', idleClock);
+      setHidden(ref.idleValue, snapshot.idle.full);
+      setText(ref.idlePlan, snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '');
+      setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
+    }
+  }
+  function paintStamSelection(index, isSelected, previewValue){
+    const ref = refs[index];
+    if (!ref) return;
+    const slot = state.slots[index];
+    const snapshot = isSelected
+      ? displaySnapshot(slot, Date.now(), ref.snapshot)
+      : ref.snapshot;
+    const stamFull = snapshot.stam.current >= slot.stamMax;
+    const stamSelectionPreview = stamFull && isSelected;
+    setSelected(ref.stamRow, isSelected);
+    setClass(ref.stamFullClock, 'is-selected', isSelected);
+    // フル時は「満表示」⇔「40計算プレビュー」の切り替えが選択の本体
+    setHidden(ref.stamNumber, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamSlash, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamMax, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamCalc, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamCalcGap, stamFull && !stamSelectionPreview);
+    setHidden(ref.stamFull, !stamFull || stamSelectionPreview);
+    if (isSelected) {
+      setText(ref.stamNumber, previewValue);
+      if (!stamFull || stamSelectionPreview) setText(ref.stamMax, slot.stamMax);
+    } else {
+      setText(ref.stamNumber, snapshot.stam.current);
+      if (!stamFull) setText(ref.stamMax, slot.stamMax);
+      if (stamFull) {
+        const stamClock = fullTimeParts(snapshot.stam.plan);
+        setText(ref.stamFullHour, stamClock.hour);
+        setText(ref.stamFullMinute, stamClock.minute);
+        setText(ref.stamFullLabel, '満');
+      }
+    }
+  }
+  function clearSelectionVisual(index, task){
+    if (!Number.isFinite(index) || !refs[index]) return;
+    if (task === 'idle') paintIdleSelection(index, false);
+    else if (task === 'stam') paintStamSelection(index, false);
+  }
   function selectTask(index, task){
-    const previous = selected ? selected.index : NaN;
+    const previousIndex = selected ? selected.index : NaN;
+    const previousTask = selected ? selected.task : null;
+    const previewValue = task === 'stam'
+      ? remainingAfter40(liveStam(state.slots[index], Date.now()))
+      : null;
     selected = task === 'stam'
-      ? { index, task, value:remainingAfter40(liveStam(state.slots[index], Date.now())) }
+      ? { index, task, value:previewValue }
       : { index, task };
     setPageDimmed(true);
-    syncIndices(previous, index);
+    // 直前の選択を最小コストで外す
+    if (Number.isFinite(previousIndex) && (previousIndex !== index || previousTask !== task)) {
+      clearSelectionVisual(previousIndex, previousTask);
+    }
+    if (task === 'idle') paintIdleSelection(index, true);
+    else paintStamSelection(index, true, previewValue);
   }
   function confirmTask(index, task){
     const slot = state.slots[index];
     if (task === 'stam') applyStam(slot, selected.value, Date.now());
     else if (task === 'idle') restartIdle(slot, Date.now());
-    write(index);
+    // UIを先に確定してから永続化。localStorage が端末で遅いと
+    // 保存が終わるまで画面遷移が遅延して体感が悪くなるため。
     selected = null;
     setPageDimmed(false);
     syncAll();
+    write(index);
   }
   function activate(index, task){
     const same = selected && selected.index === index && selected.task === task;
@@ -380,9 +459,10 @@ import {
     document.addEventListener('pointerdown', event => {
       if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
       const index = selected.index;
+      const task = selected.task;
       selected = null;
       setPageDimmed(false);
-      syncIndices(index);
+      clearSelectionVisual(index, task);
     });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {

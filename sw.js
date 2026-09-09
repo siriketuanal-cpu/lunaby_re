@@ -12,8 +12,8 @@ const SHELL = [
   './lunaby-v2-first-launch.mjs',
   './manifest.json',
   './lunaby-mascot-192.png',
-  './lunaby-mascot-512.webp',
-  './lunaby-mascot-maskable-512.webp'
+  './lunaby-mascot-512.png',
+  './lunaby-mascot-maskable-512.png'
 ];
 const APP_PATH = new URL('./', self.location).pathname;
 const INDEX_URL = new URL('./index.html', self.location).href;
