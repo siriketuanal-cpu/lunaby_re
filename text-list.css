@@ -160,3 +160,61 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
+
+/* --- 位置調整: 予定時刻をカード外側端、実値/タイマーを2px内側へ --- */
+.full-clock-stam{left:0;}
+.full-clock-idle{right:0;}
+
+/* 左半分: [予定時刻22px][2px][スタミナ現在値…]
+   手入力のヒット領域は見た目とは分離して、外側から現在値の手前までを維持。 */
+.stam-side{
+  left:0;
+  width:50%;
+  box-sizing:border-box;
+  padding-left:24px;
+}
+.stam-edit-gap{
+  position:absolute;
+  left:0;
+  top:0;
+  width:0;
+  height:26px;
+  flex:none;
+  pointer-events:none;
+}
+.stam-edit-gap::before{
+  left:0;
+  right:auto;
+  width:24px;
+  pointer-events:auto;
+}
+
+/* 右半分: flexで実タイマーを外側へ寄せ、予定時刻の22px+2px手前に置く。
+   tap領域は左右半分の役割をそのままabsoluteで保持。 */
+.idle-zone{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  position:relative;
+  min-width:0;
+  padding-right:24px;
+}
+.idle-action{
+  flex:0 0 auto;
+  position:relative;
+  z-index:3;
+  margin-right:0;
+}
+.idle-pre,
+.idle-post{
+  position:absolute;
+  top:0;
+  bottom:0;
+  width:50%;
+  min-width:0;
+  min-height:26px;
+  margin:0;
+  z-index:1;
+}
+.idle-pre{left:0;right:auto;}
+.idle-post{left:auto;right:0;}
