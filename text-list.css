@@ -45,8 +45,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 /* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
-.full-clock-stam{left:2px;}
-.full-clock-idle{right:2px;}
+.full-clock-stam{left:1px;}
+.full-clock-idle{right:1px;}
 
 /* 操作中だけページ全体を一枚だけ暗転。
    選択中のタイマー／入力欄はこのレイヤーより前に出す。
@@ -159,4 +159,4 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
-@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
+@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:0;padding-right:0;}}
