@@ -36,6 +36,8 @@
          worker.postMessage({ type:'REPAIR_SHELL' }, [channel.port2]);
        });
        if (!result || !result.ok) throw new Error('repair failed');
+       // ちょうどキャッシュを書き直した直後なので、ここでも改めて永続化をお願いしておく。
+       if (navigator.storage && navigator.storage.persist) { try { await navigator.storage.persist(); } catch (_) {} }
        status.textContent='必要なファイルを保存しました。起動しています。';
        location.replace('./?updated=' + Date.now().toString(36));
        return;
