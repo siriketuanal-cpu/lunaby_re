@@ -162,17 +162,17 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
 
 
-/* --- 予定時刻・実値の端寄せ（flex構造を維持） ---
-   カード内側から数えて「予定時刻は1px内側 → 2px空ける → 実値/タイマー」。
-   .timer-row 自体の2列gridはそのまま。stam-side / idle-zone はflexのまま。 */
+/* --- 予定時刻の「見える数字」基準で最小間隔 ---
+   予定時刻の箱ではなく、表示位置の直後に実値を置く。
+   stam-side / idle-zone は flex のまま。既存の補助要素をそのまま利用。 */
 :root{--task-row-pad-x:4px;}
 
-/* task-row の左右paddingを差し引き、予定時刻の外側端をカード境界から1px内側へ */
+/* 予定時刻の外側端はカード境界から1px内側のまま。 */
 .full-clock-stam{left:calc(1px - var(--task-row-pad-x));}
 .full-clock-idle{right:calc(1px - var(--task-row-pad-x));}
 
-/* スタミナ側：1frを使わず固定の先頭スロットで位置を決める。
-   予定時刻22px + 2pxの空き = カード左端から25pxに3桁目を置く。 */
+/* 22pxの箱を「隙間」として扱わず、時計箱の右端 + 約2pxから数字を開始。
+   3桁時は百の位がこの基準位置に来て、1桁時は右寄せで自然に / 側へ寄る。 */
 .stam-side{
   left:0;
   display:flex;
@@ -184,15 +184,12 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   box-sizing:border-box;
 }
 .stam-edit-gap{
-  flex:0 0 calc(23px - var(--task-row-pad-x));
-  width:calc(23px - var(--task-row-pad-x));
-  min-width:calc(23px - var(--task-row-pad-x));
+  flex:0 0 calc(25px - var(--task-row-pad-x));
+  width:calc(25px - var(--task-row-pad-x));
+  min-width:calc(25px - var(--task-row-pad-x));
   align-self:stretch;
 }
-.stam-edit-gap::before{
-  left:-28px;
-  right:0;
-}
+.stam-edit-gap::before{left:-28px;right:0;}
 .stam-edit-zone{
   flex:0 0 36px;
   width:36px;
@@ -203,21 +200,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   align-items:center;
   position:relative;
 }
-.stam-current,.stam-edit{
-  text-align:right;
-}
+.stam-current,.stam-edit{text-align:right;}
 
-/* 40計算側は従来どおりflexで後続。残り幅はここだけで吸収する。 */
-.stam-calc-zone{
-  flex:0 0 auto;
-}
-.stam-calc-gap{
-  flex:1 1 0%;
-  min-width:0;
-  margin-right:-6px;
-}
+/* 40計算側の既存gapは残し、ここだけ残り幅を吸収。 */
+.stam-calc-zone{flex:0 0 auto;}
+.stam-calc-gap{flex:1 1 0%;min-width:0;margin-right:-6px;}
 
-/* 放置側もgridへ戻さずflex。タイマー右端を予定時刻の左端から2px内側へ。 */
+/* 放置側は時計箱の内側2pxを基準に右寄せ。 */
 .idle-zone{
   display:flex;
   align-items:center;
@@ -228,12 +217,15 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   padding:0;
 }
 .idle-action{
-  flex:0 0 auto;
-  margin-right:calc(23px - var(--task-row-pad-x));
+  flex:0 0 5ch;
+  width:5ch;
+  min-width:5ch;
+  box-sizing:border-box;
+  margin-right:calc(25px - var(--task-row-pad-x));
   position:relative;
   z-index:3;
+  justify-content:center;
 }
-/* tapの左右半分の意味はabsoluteレイヤーで維持 */
 .idle-pre,.idle-post{
   position:absolute;
   top:0;
@@ -247,7 +239,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-pre{left:0;right:auto;}
 .idle-post{left:auto;right:0;}
 
-/* 横方向の補正transformは使わない。選択時も同じ基準で配置する。 */
-@media (max-width:440px){
-  :root{--task-row-pad-x:3px;}
-}
+/* 手入力の判定領域が隣カードへはみ出さないようカード境界でクリップ。 */
+.account{overflow:hidden;}
+
+@media (max-width:440px){:root{--task-row-pad-x:3px;}}
