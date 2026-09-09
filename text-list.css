@@ -45,8 +45,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 /* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
-.full-clock-stam{left:6px;}
-.full-clock-idle{right:6px;}
+.full-clock-stam{left:2px;}
+.full-clock-idle{right:2px;}
 
 /* 操作中だけページ全体を一枚だけ暗転。
    選択中のタイマー／入力欄はこのレイヤーより前に出す。
@@ -66,11 +66,11 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
 
-/* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
-.stam-side{position:relative;left:14px;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
+/* 左半分：クロックの右端から2pxで数字を開始。手入力ヒットは左のflexが担当。 */
+.stam-side{position:relative;left:10px;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
 /* 手入力ヒット：flex幅は維持し、::before だけで枠左端・上下まで伸ばす（数字位置は動かさない） */
 .stam-edit-gap{flex:1 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
-.stam-edit-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;right:0;left:-28px;}
+.stam-edit-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;right:0;left:-16px;}
 .stam-edit-zone{flex:0 0 auto;position:relative;display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;touch-action:manipulation;}
 .stam-edit-zone::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
 .stam-calc-zone{flex:0 0 auto;position:relative;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;touch-action:manipulation;}
@@ -110,14 +110,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド：右半分の中央にタイマー。 */
-/* 右半分: [40計算の続き][タイマー固定幅][受取の右余白] */
-.idle-zone{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{min-width:0;min-height:26px;width:calc(100% - 6px);justify-self:end;cursor:pointer;position:relative;z-index:1;}
-.idle-pre::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-action{display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:1;}
+/* 右半分：クロックの左端から2pxで数字を終える。放置報酬側もflexに統一。 */
+.idle-zone{position:relative;left:9px;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;cursor:pointer;touch-action:manipulation;}
+.idle-pre{flex:1 1 0%;min-width:0;align-self:stretch;cursor:pointer;position:relative;z-index:1;}
+.idle-pre::before{content:'';position:absolute;top:-12px;bottom:-5px;left:-6px;right:0;}
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:1;}
 .idle-action::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-post{min-width:0;min-height:26px;cursor:pointer;position:relative;z-index:1;}
+.idle-post{flex:1 1 0%;min-width:0;align-self:stretch;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
@@ -160,27 +159,3 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
-
-
-/* === responsive typography: device-width adaptive ===
-   Keep the existing layout and hit areas unchanged.
-   Only let numeric/text glyphs breathe slightly on different viewport widths. */
-:root{
-  --responsive-number-size:clamp(0.94em, 0.97em + 0.20vw, 1.04em);
-  --responsive-label-size:clamp(0.96em, 0.98em + 0.14vw, 1.03em);
-}
-.stam-current,
-.stam-edit,
-.task-slash,
-.task-max,
-.task-value,
-.task-plan,
-.sl-value,
-.sl-edit{
-  font-size:var(--responsive-number-size);
-}
-.task-label,
-.account-name,
-.account-rank{
-  font-size:var(--responsive-label-size);
-}
