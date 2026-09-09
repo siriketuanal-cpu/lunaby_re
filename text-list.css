@@ -168,8 +168,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
  :root{--task-row-pad-x:4px;}
 
 /* 時計の箱自体を文字幅にする。これで左右に透明な壁を残さない。 */
-.full-clock-stam{left:calc(1px - var(--task-row-pad-x));width:max-content;}
-.full-clock-idle{right:calc(1px - var(--task-row-pad-x));width:max-content;}
+.full-clock-stam{left:1px;width:max-content;transform:translateY(-50%) translateX(-1px);}
+.full-clock-idle{right:1px;width:max-content;transform:translateY(-50%) translateX(1px);}
 .full-clock-hour,.full-clock-minute{width:max-content;}
 
 /* 時計の実文字の外側から2pxだけ空けて実値を開始。 */
@@ -216,8 +216,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 }
 .idle-action{
   flex:0 0 auto;
-  width:auto;
-  min-width:0;
+  width:5ch;
+  min-width:5ch;
   box-sizing:border-box;
   margin-right:calc(13px - var(--task-row-pad-x));
   position:relative;
