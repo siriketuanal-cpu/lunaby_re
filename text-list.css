@@ -179,11 +179,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   align-items:center;
   min-width:0;
   min-height:26px;
+  width:50%;
+  max-width:50%;
+  box-sizing:border-box;
 }
 .stam-edit-gap{
-  flex:0 0 calc(25px - var(--task-row-pad-x));
-  width:calc(25px - var(--task-row-pad-x));
-  min-width:calc(25px - var(--task-row-pad-x));
+  flex:0 0 calc(23px - var(--task-row-pad-x));
+  width:calc(23px - var(--task-row-pad-x));
+  min-width:calc(23px - var(--task-row-pad-x));
   align-self:stretch;
 }
 .stam-edit-gap::before{
@@ -201,7 +204,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   position:relative;
 }
 .stam-current,.stam-edit{
-  text-align:left;
+  text-align:right;
 }
 
 /* 40計算側は従来どおりflexで後続。残り幅はここだけで吸収する。 */
@@ -226,7 +229,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 }
 .idle-action{
   flex:0 0 auto;
-  margin-right:calc(25px - var(--task-row-pad-x));
+  margin-right:calc(23px - var(--task-row-pad-x));
   position:relative;
   z-index:3;
 }
