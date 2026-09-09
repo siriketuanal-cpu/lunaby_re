@@ -162,82 +162,25 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
 
 
-/* --- 予定時刻の実文字を基準に最小間隔 ---
-   透明な22px箱を基準にせず、時計自身を文字幅まで縮めて
-   実値との間にだけ最小の余白を残す。stam-side / idle-zone はflexのまま。 */
- :root{--task-row-pad-x:4px;}
-
-/* 時計の箱自体を文字幅にする。これで左右に透明な壁を残さない。 */
-.full-clock-stam{left:1px;width:max-content;transform:translateY(-50%) translateX(-1px);}
-.full-clock-idle{right:1px;width:max-content;transform:translateY(-50%) translateX(1px);}
-.full-clock-hour,.full-clock-minute{width:max-content;}
-
-/* 時計の実文字の外側から2pxだけ空けて実値を開始。 */
-.stam-side{
-  left:0;
-  display:flex;
-  align-items:center;
-  min-width:0;
-  min-height:26px;
-  width:50%;
-  max-width:50%;
-  box-sizing:border-box;
+/* === responsive typography: device-width adaptive ===
+   Keep the existing layout and hit areas unchanged.
+   Only let numeric/text glyphs breathe slightly on different viewport widths. */
+:root{
+  --responsive-number-size:clamp(0.94em, 0.97em + 0.20vw, 1.04em);
+  --responsive-label-size:clamp(0.96em, 0.98em + 0.14vw, 1.03em);
 }
-.stam-edit-gap{
-  flex:0 0 calc(13px - var(--task-row-pad-x));
-  width:calc(13px - var(--task-row-pad-x));
-  min-width:calc(13px - var(--task-row-pad-x));
-  align-self:stretch;
+.stam-current,
+.stam-edit,
+.task-slash,
+.task-max,
+.task-value,
+.task-plan,
+.sl-value,
+.sl-edit{
+  font-size:var(--responsive-number-size);
 }
-.stam-edit-gap::before{left:-28px;right:0;}
-.stam-edit-zone{
-  flex:0 0 36px;
-  width:36px;
-  min-width:36px;
-  box-sizing:border-box;
-  padding:4px 0;
-  display:inline-flex;
-  align-items:center;
-  position:relative;
+.task-label,
+.account-name,
+.account-rank{
+  font-size:var(--responsive-label-size);
 }
-.stam-current,.stam-edit{text-align:right;}
-
-.stam-calc-zone{flex:0 0 auto;}
-.stam-calc-gap{flex:1 1 0%;min-width:0;margin-right:-6px;}
-
-.idle-zone{
-  display:flex;
-  align-items:center;
-  justify-content:flex-end;
-  position:relative;
-  min-width:0;
-  min-height:26px;
-  padding:0;
-}
-.idle-action{
-  flex:0 0 auto;
-  width:5ch;
-  min-width:5ch;
-  box-sizing:border-box;
-  margin-right:calc(13px - var(--task-row-pad-x));
-  position:relative;
-  z-index:3;
-  justify-content:center;
-}
-.idle-pre,.idle-post{
-  position:absolute;
-  top:0;
-  bottom:0;
-  width:50%;
-  min-width:0;
-  min-height:26px;
-  margin:0;
-  z-index:1;
-}
-.idle-pre{left:0;right:auto;}
-.idle-post{left:auto;right:0;}
-
-/* 手入力の判定領域が隣カードへはみ出さないようカード境界でクリップ。 */
-.account{overflow:hidden;}
-
-@media (max-width:440px){:root{--task-row-pad-x:3px;}}
