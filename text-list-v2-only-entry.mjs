@@ -1,6 +1,13 @@
 import { loadExistingV2Store } from './lunaby-core.mjs';
 import { renderV2OnlyGate, renderStartupError } from './text-list-v2-only-gate.mjs';
 
+// オフラインキャッシュ(Cache Storage)は「一時領域」扱いだと、端末のストレージ事情次第で
+// ブラウザ側の判断で自動的に消されることがある。永続化をリクエストしておくことで、
+// その対象から外れやすくする（対応していないブラウザでは何も起きないだけ）。
+if (navigator.storage && navigator.storage.persist) {
+  navigator.storage.persist().catch(() => {});
+}
+
 const initializeAndStart = () => import('./lunaby-v2-first-launch.mjs')
   .then(({ initializeV2Store }) => initializeV2Store(localStorage))
   .then(initial => { if (initial) start(initial); else renderV2OnlyGate(initializeAndStart); })
