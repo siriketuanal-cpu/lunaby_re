@@ -218,3 +218,73 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 }
 .idle-pre{left:0;right:auto;}
 .idle-post{left:auto;right:0;}
+
+/* --- final edge positioning ---
+   Visual layout only; existing JS/tap semantics are preserved. */
+
+/* Scheduled times: exactly 1px beyond the card's 0 edge. */
+.full-clock-stam {
+  left: -1px !important;
+}
+.full-clock-idle {
+  right: -1px !important;
+}
+
+/* Stamina:
+   Keep the card's interactive regions intact, but position the displayed
+   3-digit/current value 2px inward from the scheduled-time edge. */
+.stam-side {
+  display: flex;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  box-sizing: border-box;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.stam-side.left {
+  left: 0 !important;
+  width: 50% !important;
+  justify-content: flex-start;
+}
+
+.stam-side.left .stam-edit-gap {
+  margin-left: 0;
+}
+
+.stam-side.left .stam-edit {
+  margin-left: 2px !important;
+}
+
+/* Idle timer:
+   Its rightmost digit sits exactly 2px inward from the scheduled-time edge. */
+.idle-zone {
+  display: flex !important;
+  align-items: center;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0 !important;
+  width: 50% !important;
+  box-sizing: border-box;
+  padding-right: 0 !important;
+  justify-content: flex-end !important;
+}
+
+.idle-zone .idle-action {
+  margin-right: 2px !important;
+}
+
+/* Preserve the existing tap-zone geometry independently of the visual offsets. */
+.stam-edit-gap::before,
+.stam-edit-zone::before,
+.stam-calc-zone::before,
+.stam-calc-gap::before,
+.idle-pre::before,
+.idle-action::before,
+.idle-post::before {
+  box-sizing: border-box;
+}
+
