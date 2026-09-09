@@ -66,8 +66,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
 
-/* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
-.stam-side{position:relative;left:24px;z-index:2;display:flex;align-items:center;width:calc(100% - 24px);min-width:0;min-height:26px;}
+/* 左半分：予定時刻（左端から1px）の直後24pxを空けて、スタミナを配置。 */
+.stam-side{position:relative;z-index:2;display:flex;align-items:center;width:100%;min-width:0;min-height:26px;padding-left:24px;}
 /* 手入力ヒット：flex幅は維持し、::before だけで枠左端・上下まで伸ばす（数字位置は動かさない） */
 .stam-edit-gap{flex:0 0 0;width:0;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;right:0;left:-28px;}
@@ -100,7 +100,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side.is-near-full.is-selected .task-max{color:#ff9a9a;}
 
 /* 満タン表示は左サイド全体に重ねる */
-.stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
+.stam-full{position:absolute;z-index:3;left:24px;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
 .stam-full-time{display:inline-flex;align-items:baseline;}
 .stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
 .stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
