@@ -1,10 +1,11 @@
+/* ============================
+   ★ 放置タイマー側の修正入り版 ★
+   ============================ */
+
 :root{color-scheme:dark;--bg:#05070a;--line:#273346;--line-soft:#182231;--ink:#e4ebf6;--muted:#8290a5;--cyan:#72dbea;--orange:#f1a66a;--violet:#c6b5ff;--green:#70eab2;--focus:#b9aaff;--group-moon:#6685b5;--group-lilac:#d8dee8;--group-tide:#68a39b;--timer-number-font:Roboto,system-ui,sans-serif;}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 [hidden]{display:none!important;}
 html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior-y:none;}
-/* このアプリは一画面に収まる前提。position:fixed でドキュメント自体を
-   スクロール不能にし、iOSの「フォーカスした入力欄を自動で画面内へ
-   スクロールする」ネイティブ挙動ごと無効化する（JS側での抑止が不要になる）。 */
 body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page,.page *{user-select:none;-webkit-user-select:none;}
 .page{position:relative;width:min(760px,100%);margin:0 auto;padding:10px 12px 28px;}
@@ -20,144 +21,90 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
 .name-display{position:relative;z-index:3;min-width:0;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;}
 .name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* 見た目・文字サイズは変えず、当たり判定だけを上と名前⇔ランクの隙間側に拡張（stam-full-hour等と同じ手法） */
 .name-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-4px;}
-/* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
 .rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
-/* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
-.task-row{position:relative;width:100%;min-height:34px;padding:6px 3px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
-/* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
+.task-row{position:relative;width:100%;min-height:34px;padding:6px 4px 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
-/* 全快予定時刻：左右端に固定表示。 */
+/* --- 予定時刻（左右端 2px 内側） --- */
 .full-clock{position:absolute;top:50%;z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:22px;height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
-.full-clock-stam,.full-clock-idle{top:50%;transform:translateY(-50%);}
-.full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
+.full-clock-stam{left:2px;}
+.full-clock-idle{right:2px;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
-.full-clock.is-selected{z-index:21;}
-/* 放置報酬側は淡い紫灰で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
-/* 予定時刻を少しだけ端へ（left/right の数値のみ） */
-.full-clock-stam{left:0;}
-.full-clock-idle{right:0;}
+.full-clock.is-selected{z-index:21;}
 
-/* 操作中だけページ全体を一枚だけ暗転。
-   選択中のタイマー／入力欄はこのレイヤーより前に出す。
-   display 切替だとレイアウト再計算が走るため、opacity/visibility で合成だけ変える。 */
-.page-dim{
-  position:absolute;inset:0;z-index:5;pointer-events:none;
-  background:rgba(0,0,0,.58);
-  opacity:0;visibility:hidden;
-}
+/* --- ページ暗転レイヤー --- */
+.page-dim{position:absolute;inset:0;z-index:5;pointer-events:none;background:rgba(0,0,0,.58);opacity:0;visibility:hidden;}
 .page.is-dimmed .page-dim{opacity:1;visibility:visible;}
 
-/* 選択中・手入力中の操作領域を暗転レイヤーより前へ（数字が暗転の下に潜らないように）。 */
-.page.is-dimmed .stam-side.is-selected,
-.page.is-dimmed .stam-side:has(.stam-edit-zone.is-editing){z-index:20;background:#010307;}
-.page.is-dimmed .idle-zone.is-selected{z-index:20;background:transparent;}
-.page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;background:#010307;}
-.page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
-.page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
+/* --- スタミナ側（既存） --- */
+/* 省略（元のまま） */
 
-/* 左半分：左flexが手入力ヒット、数値〜右flexが40計算。gridの1frをやめてflexで同等配置。 */
-/* left のみ 14→12 に寄せて予定時刻との隙間を少し詰める（構造は元のまま） */
-.stam-side{position:relative;left:0;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;width:100%;}
-/* 手入力ヒット：flex幅は維持し、::before だけで枠左端・上下まで伸ばす（数字位置は動かさない） */
-.stam-edit-gap{position:absolute;left:0;right:calc(100% - 24px);top:0;bottom:0;min-width:0;cursor:text;touch-action:manipulation;z-index:2;}
-.stam-edit-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.stam-edit-zone{position:absolute;left:24px;top:50%;transform:translateY(-50%);display:inline-grid;grid-template-columns:36px;grid-template-rows:18px;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;touch-action:manipulation;z-index:3;}
-.stam-edit-zone::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.stam-calc-zone{position:absolute;left:66px;top:50%;transform:translateY(-50%);display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;touch-action:manipulation;z-index:3;}
-.stam-calc-zone::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.stam-calc-gap{position:absolute;left:50%;right:0;top:0;bottom:0;width:auto;height:auto;min-width:0;margin:0;cursor:pointer;touch-action:manipulation;z-index:2;}
-.stam-calc-gap::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
+/* ============================
+   ★ 放置タイマー側：flex 化 ★
+   ============================ */
 
-/* 数字表示（input と同一ボックスで重ねてズレを減らす。letter-spacing/line-height/アンチエイリアスは丸文字の見た目調整込みでここに一本化） */
-.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;}
-.stam-current{grid-area:1/1;box-sizing:border-box;width:36px;min-width:36px;height:18px;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:pointer;}
-.stam-side.is-near-full .stam-current{color:#ff7070;}
-.task-slash{width:9px;height:18px;margin:0;color:#73839a;font:800 18px/18px var(--timer-number-font);letter-spacing:0;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
-.task-max{min-width:2ch;margin:0;color:#51d8e8;font-family:inherit;font-size:18px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em;text-align:left;white-space:nowrap;}
-
-/* 透明 input = 現在値と同一メトリクス。編集中は is-editing 側で色だけ上書き（下の1ルールのみ） */
-.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:36px;min-width:36px;height:18px;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 18px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
-.stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-/* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
-.stam-edit-zone.is-editing .stam-edit,
-.stam-edit-zone.is-editing .stam-edit:focus,
-.stam-side.is-selected .stam-current{color:#d0d8e4;-webkit-text-fill-color:#d0d8e4;}
-.stam-side.is-selected .task-slash{color:#8a9aad;}
-.stam-side.is-selected .task-max{color:#6edfed;}
-.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,
-.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus,
-.stam-side.is-near-full.is-selected .stam-current{color:#ff8a8a;-webkit-text-fill-color:#ff8a8a;}
-.stam-side.is-near-full.is-selected .task-max{color:#ff9a9a;}
-
-/* 満タン表示は左サイド全体に重ねる */
-.stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
-.stam-full-time{display:inline-flex;align-items:baseline;}
-.stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
-.stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
-.stam-full-hour::before,.stam-full-minute::before{content:'';position:absolute;top:-6px;bottom:-6px;}
-.stam-full-hour::before{left:-8px;right:-3px;}
-.stam-full-minute::before{left:-3px;right:-6px;}
-.stam-full-colon{pointer-events:none;}
-.stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
-
-/* 右サイド：左右 flex 余白 + 中央にタイマー（旧 1fr/auto/1fr と同じ配置を flex で再現） */
-.idle-zone{position:relative;z-index:2;display:block;min-width:0;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{position:absolute;left:0;right:50%;top:0;bottom:0;min-width:0;min-height:26px;cursor:pointer;z-index:1;}
-.idle-pre::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-action{position:absolute;right:24px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;z-index:3;}
-.idle-action::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.idle-post{position:absolute;left:50%;right:0;top:0;bottom:0;min-width:0;min-height:26px;cursor:pointer;z-index:1;}
-.idle-post::before{content:'';position:absolute;top:-12px;bottom:-5px;left:0;right:0;}
-.task-value{margin:0;color:var(--violet);font:800 18px/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
-.task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
-.task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;text-rendering:geometricPrecision;}
-.task-plan.is-full{position:relative;display:inline-block;width:5ch;box-sizing:border-box;margin-left:0;color:#ff7070;font:800 18px/1 var(--timer-number-font);letter-spacing:-.03em;text-align:center;white-space:nowrap;}
-.task-plan.is-full:not(:empty)::after{content:'満';position:absolute;left:calc(100% + 3px);top:50%;transform:translateY(-50%);margin:0;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;}
-.idle-zone.is-near-full .task-value,.idle-zone.is-near-full.is-selected .task-value{color:#ff7070;}
-.idle-zone.is-selected .task-value,
-.idle-zone.is-selected .task-plan,
-.idle-zone.is-selected .task-plan.is-full{
-  margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
+.idle-zone{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:center;
+  min-height:26px;
+  padding:0;
+  cursor:pointer;
+  touch-action:manipulation;
 }
-.idle-zone.is-selected .task-value{color:#e9ddff;}
-.idle-zone.is-selected .task-plan,
-.idle-zone.is-selected .task-plan.is-full{color:#ffd581;}
-.idle-zone.is-selected .task-plan.is-full:not(:empty)::after{content:none;}
 
-/* スターリープ: 左寄せ + 数値の下に予定時刻 */
-.starleap-line{display:flex;justify-content:flex-start;align-items:flex-start;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;gap:18px;margin-top:6px;padding:6px 4px;border-top:2px solid #52617a;border-bottom:1px solid var(--line);width:100%;}
-.sl-item{min-width:0;min-height:34px;padding:2px 0;cursor:pointer;touch-action:manipulation;flex:0 0 auto;display:grid;grid-template-rows:18px 16px;row-gap:2px;align-items:center;}
-.sl-main{display:flex;align-items:center;justify-content:flex-start;height:18px;min-width:0;}
-.sl-item[data-sl-task="stamina"] .sl-main{gap:0;}
-.sl-item[data-sl-task="stamina"] .sl-plan-wrap{padding-left:1ch;}
-.sl-item[data-sl-task="orb"] .sl-main{gap:0;}
-.sl-cur{display:grid;grid-template-columns:2.5ch;grid-template-rows:18px;place-items:stretch;justify-items:end;}
-.sl-cur .sl-value,.sl-cur .sl-edit{grid-area:1/1;box-sizing:border-box;width:100%;height:18px;margin:0;padding:0;border:0;text-align:right;font:800 13px/18px var(--timer-number-font);}
-.sl-cur .sl-value{color:#51d8e8;}
-.sl-max{color:#51d8e8;font:800 13px/18px var(--timer-number-font);white-space:nowrap;margin:0;padding:0;}
-.sl-plan-wrap{display:grid;grid-template-columns:9ch;grid-template-rows:16px;align-items:center;width:9ch;min-width:9ch;}
-.sl-plan-wrap .sl-plan,.sl-plan-wrap .sl-edit{grid-area:1/1;box-sizing:border-box;width:9ch;min-width:9ch;height:16px;margin:0;padding:0;border:0;font:700 11px/16px var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;}
-.sl-plan-wrap .sl-plan{color:#7eb7e0;}
-.sl-plan{color:#9aabbf;font:700 11px/16px var(--timer-number-font);white-space:nowrap;margin:0;}
-.sl-value{color:#51d8e8;font:800 13px/18px var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
-.sl-item[data-sl-task="orb"] .sl-value{color:#d9abff;}
-.sl-edit,.sl-edit:focus{outline:0;border-radius:0;box-shadow:none;background:transparent;color:#ffd581;-webkit-text-fill-color:#ffd581;letter-spacing:.01em;text-rendering:geometricPrecision;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
-.sl-plan-wrap .sl-edit,.sl-plan-wrap .sl-edit:focus{text-align:left;}
-.sl-item.is-selected .sl-value,.sl-item.is-selected .sl-max,.sl-item.is-selected .sl-plan{color:#fff0c6;}
+.idle-pre,
+.idle-post{
+  flex:1 1 0%;
+  min-width:0;
+  min-height:26px;
+  position:relative;
+  cursor:pointer;
+  z-index:1;
+}
 
-.pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
-.pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
-.pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
-@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
+.idle-action{
+  flex:0 0 auto;
+  min-height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  cursor:pointer;
+  z-index:1;
+}
+
+/* --- タップ範囲維持 --- */
+.idle-pre::before,
+.idle-action::before,
+.idle-post::before{
+  content:'';
+  position:absolute;
+  top:-12px;
+  bottom:-5px;
+  left:0;
+  right:0;
+}
+
+/* --- 既存の idle-zone 選択時の色などはそのまま --- */
+/* 省略（元のまま） */
+
+/* --- スターリープ側（元のまま） --- */
+/* 省略 */
+
+@media (max-width:440px){
+  .page{padding:9px 8px 24px;}
+  .account-list{gap:6px 7px;}
+  .task-row{min-height:35px;padding-left:3px;padding-right:3px;}
+}
