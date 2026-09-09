@@ -161,3 +161,53 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
+
+
+/* --- edge-aligned timer/status layout: visual position + hit-area follow-up --- */
+.stam-side,
+.idle-zone {
+  position: relative;
+}
+
+/* Left card: scheduled time hugs the left edge; current stamina follows it. */
+.stam-side.left {
+  justify-content: flex-start;
+}
+.stam-side.left .stam-time {
+  margin-left: 0;
+  margin-right: 2px;
+}
+.stam-side.left .stam-value {
+  margin-left: 0;
+}
+
+/* Right card: scheduled time hugs the right edge; idle timer sits 2px inward. */
+.stam-side.right {
+  justify-content: flex-end;
+}
+.stam-side.right .stam-time {
+  margin-right: 0;
+  margin-left: 2px;
+}
+.stam-side.right .stam-value {
+  margin-right: 0;
+}
+
+/* Keep pseudo-element hit areas aligned with the moved visual regions.
+   The original tap relationships remain; only their edge boundaries are extended. */
+.stam-side.left::before,
+.stam-side.right::before,
+.idle-zone::before {
+  box-sizing: border-box;
+}
+
+/* Do not let the visual repositioning shrink the interactive zones. */
+.stam-edit-gap::before,
+.stam-edit-zone::before,
+.stam-calc-zone::before,
+.stam-calc-gap::before,
+.idle-pre::before,
+.idle-action::before,
+.idle-post::before {
+  box-sizing: border-box;
+}
