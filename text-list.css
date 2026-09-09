@@ -163,51 +163,129 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
 
 
-/* --- edge-aligned timer/status layout: visual position + hit-area follow-up --- */
-.stam-side,
-.idle-zone {
-  position: relative;
+/* --- 予定時刻をカード外端へ、数値を2px内側へ。表示とタップ領域を同じ基準で再配置 --- */
+:root{--edge-clock-gap:24px;} /* 予定時刻幅22px + 内側2px */
+
+/* 予定時刻はタップを奪わない表示専用。カードの内側端まで寄せる。 */
+.full-clock-stam{left:0;}
+.full-clock-idle{right:0;}
+
+/* 左カード：予定時刻 → 2px → 現在スタミナ。 */
+.stam-side{
+  left:0;
+  width:100%;
+  min-width:0;
+  position:relative;
+  overflow:visible;
 }
 
-/* Left card: scheduled time hugs the left edge; current stamina follows it. */
-.stam-side.left {
-  justify-content: flex-start;
+/* 元のflexによる「左余白→現在値→40計算」をやめ、
+   見た目だけを端基準に固定。ヒット領域は下で左右半分を維持する。 */
+.stam-edit-gap{
+  position:absolute;
+  left:0;
+  right:50%;
+  top:0;
+  bottom:0;
+  width:auto;
+  height:auto;
+  flex:none;
+  min-width:0;
+  z-index:1;
 }
-.stam-side.left .stam-time {
-  margin-left: 0;
-  margin-right: 2px;
+.stam-edit-gap::before{
+  left:0;
+  right:0;
+  top:-12px;
+  bottom:-5px;
 }
-.stam-side.left .stam-value {
-  margin-left: 0;
+.stam-edit-zone{
+  position:absolute;
+  left:var(--edge-clock-gap);
+  top:50%;
+  transform:translateY(-50%);
+  z-index:3;
+  flex:none;
+  margin:0;
 }
+.stam-calc-zone{
+  position:absolute;
+  left:66px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:3;
+  flex:none;
+  margin:0;
+}
+.stam-calc-gap{
+  position:absolute;
+  left:50%;
+  right:0;
+  top:0;
+  bottom:0;
+  width:auto;
+  height:auto;
+  flex:none;
+  min-width:0;
+  margin:0;
+  z-index:1;
+}
+.stam-calc-gap::before{left:0;right:0;top:-12px;bottom:-5px;}
 
-/* Right card: scheduled time hugs the right edge; idle timer sits 2px inward. */
-.stam-side.right {
-  justify-content: flex-end;
+/* 右カード：タイマー → 2px → 予定時刻。 */
+.idle-zone{
+  position:relative;
+  width:100%;
+  min-width:0;
+  overflow:visible;
 }
-.stam-side.right .stam-time {
-  margin-right: 0;
-  margin-left: 2px;
+.idle-pre{
+  position:absolute;
+  left:0;
+  right:50%;
+  top:0;
+  bottom:0;
+  width:auto;
+  height:auto;
+  flex:none;
+  min-width:0;
+  z-index:1;
 }
-.stam-side.right .stam-value {
-  margin-right: 0;
+.idle-pre::before{left:0;right:0;top:-12px;bottom:-5px;}
+.idle-post{
+  position:absolute;
+  left:50%;
+  right:0;
+  top:0;
+  bottom:0;
+  width:auto;
+  height:auto;
+  flex:none;
+  min-width:0;
+  z-index:1;
 }
+.idle-post::before{left:0;right:0;top:-12px;bottom:-5px;}
+.idle-action{
+  position:absolute;
+  right:var(--edge-clock-gap);
+  top:50%;
+  transform:translateY(-50%);
+  z-index:3;
+  min-height:24px;
+  margin:0;
+  flex:none;
+  justify-content:center;
+}
+.idle-action::before{left:0;right:0;top:-12px;bottom:-5px;}
 
-/* Keep pseudo-element hit areas aligned with the moved visual regions.
-   The original tap relationships remain; only their edge boundaries are extended. */
-.stam-side.left::before,
-.stam-side.right::before,
-.idle-zone::before {
-  box-sizing: border-box;
-}
-
-/* Do not let the visual repositioning shrink the interactive zones. */
+/* タップ判定の境界は左右半分のまま、新しい見た目の位置に追従させる。 */
 .stam-edit-gap::before,
 .stam-edit-zone::before,
 .stam-calc-zone::before,
 .stam-calc-gap::before,
 .idle-pre::before,
 .idle-action::before,
-.idle-post::before {
-  box-sizing: border-box;
-}
+.idle-post::before{box-sizing:border-box;}
+
+/* 満タン表示は従来どおり中央表示を優先。 */
+.stam-full{left:0;right:0;}
