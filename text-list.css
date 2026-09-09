@@ -288,3 +288,36 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   box-sizing: border-box;
 }
 
+/* --- 予定時刻との間隔を「カード中央側へ2px」に補正 ---
+   ヒット領域を持つ親要素は動かさず、表示文字だけを移動する。 */
+
+/* 左：予定時刻(幅22px)の右端から2px → スタミナの百の位(3桁目) */
+.stam-side .stam-current,
+.stam-side .stam-edit,
+.stam-side .task-slash,
+.stam-side .task-max {
+  transform: translateX(25px);
+}
+
+/* 表示を移動した分、40計算側の透明ヒット領域だけ表示位置まで追従。 */
+.stam-edit-zone::before {
+  right: -25px;
+}
+.stam-calc-zone::before {
+  left: -25px;
+  right: -25px;
+}
+
+/* 右：予定時刻(幅22px)の左端から2px → タイマー末尾 */
+.idle-zone .task-value,
+.idle-zone .task-plan {
+  transform: translateX(-24px);
+}
+
+/* 放置報酬のタップ領域は元の左右関係を維持したまま。 */
+.idle-pre::before,
+.idle-post::before {
+  left: 0;
+  right: 0;
+}
+
