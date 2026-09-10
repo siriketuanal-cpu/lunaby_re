@@ -160,30 +160,3 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
 @media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
-
-
-/* === responsive typography: device-width adaptive ===
-   Keep the existing layout and hit areas unchanged.
-   Only let numeric/text glyphs breathe slightly on different viewport widths. */
-:root{
-  --responsive-number-size:clamp(0.94em, 0.97em + 0.20vw, 1.04em);
-  --responsive-label-size:clamp(0.96em, 0.98em + 0.14vw, 1.03em);
-}
-.stam-current,
-.stam-edit,
-.task-slash,
-.task-max,
-.task-value,
-.task-plan,
-.sl-value,
-.sl-edit{
-  font-size:var(--responsive-number-size);
-}
-.task-label,
-.account-name,
-.account-rank{
-  font-size:var(--responsive-label-size);
-}
-
-/* balanced clock-to-value spacing */
-.stam-edit-gap{flex-basis:calc(7px - var(--task-row-pad-x));width:calc(7px - var(--task-row-pad-x));min-width:calc(7px - var(--task-row-pad-x));}
