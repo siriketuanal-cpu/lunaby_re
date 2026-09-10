@@ -13,7 +13,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
 .version-link:active{color:var(--cyan);}
 .account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;}
-.account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
+.account{min-width:0;max-width:100%;overflow-x:hidden;overflow-y:visible;padding:6px 0 0;border-top:2px solid #52617a;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
@@ -105,15 +105,15 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   align-items:center;
   justify-content:center;
   box-sizing:border-box;
-  width:var(--stam-box-cols);
-  min-width:var(--stam-box-cols);
-  max-width:var(--stam-box-cols);
   font-size:var(--stam-cur-size);
+  width:3.1ch;           /* ch はこの要素の font-size 基準 */
+  min-width:3.1ch;
+  max-width:3.1ch;
   row-gap:2px;
   min-height:28px;
   padding:0;
-  margin:-6px 0 0;
-  overflow:hidden;
+  margin:-6px 0 0;       /* 名前行へ軽く食い込み */
+  overflow:hidden;       /* 手入力時に隣カードへ侵食しない */
   cursor:pointer;
   touch-action:manipulation;
   z-index:2;

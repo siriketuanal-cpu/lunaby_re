@@ -1,6 +1,6 @@
 // キャッシュ名は固定。バージョン上げはしない（更新バー抑制のため）。
 // パス固定（?rev= なし）。中身の差し替えは LUNABY → REPAIR_SHELL のみ。
-const CACHE_NAME = 'lunaby-static-v1-flex2-gap';
+const CACHE_NAME = 'lunaby-static-v1';
 const STAGING_CACHE_NAME = 'lunaby-static-staging-v1';
 const SHELL = [
   './index.html',
