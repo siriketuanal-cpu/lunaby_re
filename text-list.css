@@ -56,14 +56,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
-.task-row{position:relative;width:100%;min-height:28px;padding:1px var(--row-pad-x) 3px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+.task-row{position:relative;width:100%;min-height:28px;padding:3px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:26px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
 /* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける） */
-.full-clock{position:absolute;top:50%;z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
-.full-clock-stam,.full-clock-idle{top:50%;transform:translateY(-50%);}
+.full-clock{position:absolute;top:calc(50% + 2px);z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
+.full-clock-stam,.full-clock-idle{top:calc(50% + 2px);transform:translateY(-50%);}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
