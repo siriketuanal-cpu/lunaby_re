@@ -94,23 +94,121 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
 .stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
-/* 二段スタミナ：上=最大(小) / 下=現在(主)。横幅は現在値の桁分だけ → カードを広げない */
-.stam-stack{flex:0 0 auto;position:relative;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;gap:1px;min-width:0;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;z-index:2;}
-.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-4px;right:-4px;}
-.stam-edit-zone{position:relative;display:inline-grid;grid-template-columns:minmax(2ch,max-content);grid-template-rows:1em;place-content:center;place-items:center;min-height:0;padding:0;cursor:pointer;touch-action:manipulation;}
-.stam-edit-zone::before{content:'';position:absolute;top:0;bottom:0;left:0;right:0;}
+/* 二段スタミナ：grid で上=最大 / 下=現在を強制。font-size は shorthand に頼らず単体指定 */
+.stam-side{align-items:center;}
+.stam-stack{
+  flex:0 0 auto;
+  position:relative;
+  display:grid;
+  grid-template-columns:max-content;
+  grid-template-rows:auto auto;
+  align-items:end;
+  justify-items:end;
+  row-gap:2px;
+  min-width:0;
+  min-height:28px;
+  padding:0;
+  cursor:pointer;
+  touch-action:manipulation;
+  z-index:2;
+}
+.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
+/* 上段：最大 */
+.stam-stack > .task-max{
+  grid-row:1;
+  grid-column:1;
+  display:block;
+  margin:0;
+  padding:0;
+  border:0;
+  width:auto;
+  min-width:0;
+  height:auto;
+  color:#51d8e8;
+  font-family:var(--timer-number-font);
+  font-weight:700;
+  font-size:var(--stam-max-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:.02em;
+  text-align:right;
+  white-space:nowrap;
+  opacity:.9;
+}
+/* 下段：現在値ゾーン */
+.stam-stack > .stam-edit-zone{
+  grid-row:2;
+  grid-column:1;
+  position:relative;
+  display:grid;
+  grid-template-columns:max-content;
+  grid-template-rows:1em;
+  place-items:end center;
+  margin:0;
+  padding:0;
+  min-height:0;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.stam-stack > .stam-edit-zone::before{content:'';position:absolute;inset:0;}
 .stam-calc-gap{flex:var(--stam-flex-right) 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:var(--stam-calc-gap-pull);position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
 .stam-calc-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 
 .task-value{display:inline-block;vertical-align:middle;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
-/* 上段：最大スタミナ（小さめ・シアン系） */
-.task-max{margin:0;padding:0;border:0;color:#51d8e8;font:700 var(--stam-max-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:.02em;text-align:right;white-space:nowrap;line-height:1;opacity:.92;}
-/* 下段：現在値（主数字） */
-.stam-current{grid-area:1/1;box-sizing:border-box;margin:0;padding:0;border:0;min-width:2ch;height:1em;text-align:right;color:#b4becc;font:800 var(--stam-cur-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:0;text-rendering:geometricPrecision;cursor:pointer;display:flex;align-items:center;justify-content:flex-end;line-height:1;}
+.stam-current{
+  grid-area:1/1;
+  box-sizing:border-box;
+  display:block;
+  margin:0;
+  padding:0;
+  border:0;
+  min-width:2ch;
+  height:1em;
+  color:#b4becc;
+  font-family:var(--timer-number-font);
+  font-weight:800;
+  font-size:var(--stam-cur-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:0;
+  text-align:right;
+  text-rendering:geometricPrecision;
+  cursor:pointer;
+  white-space:nowrap;
+}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 
-/* 透明 input = 現在値と同じ枠 */
-.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;min-width:2ch;width:100%;height:1em;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 var(--stam-cur-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:0;text-rendering:geometricPrecision;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+.stam-edit,.stam-edit:focus{
+  grid-area:1/1;
+  box-sizing:border-box;
+  z-index:1;
+  min-width:2ch;
+  width:100%;
+  height:1em;
+  margin:0;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  color:#b4becc;
+  -webkit-text-fill-color:#b4becc;
+  font-family:var(--timer-number-font);
+  font-weight:800;
+  font-size:var(--stam-cur-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:0;
+  text-align:right;
+  text-rendering:geometricPrecision;
+  caret-color:transparent!important;
+  appearance:none;
+  -webkit-appearance:none;
+}
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
 /* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
 .stam-edit-zone.is-editing .stam-edit,
