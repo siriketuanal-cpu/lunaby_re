@@ -52,7 +52,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --hit-top:-12px;
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
-  --num-size:18px;
+  --num-size:20px;
   --stam-max-size:11px;            /* 二段：上段の最大スタミナ（余白縮小後に一〜二回り大きく） */
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */

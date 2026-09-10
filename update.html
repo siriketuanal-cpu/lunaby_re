@@ -39,7 +39,7 @@
        // ちょうどキャッシュを書き直した直後なので、ここでも改めて永続化をお願いしておく。
        if (navigator.storage && navigator.storage.persist) { try { await navigator.storage.persist(); } catch (_) {} }
        status.textContent='必要なファイルを保存しました。起動しています。';
-       location.replace('./?updated=' + Date.now().toString(36));
+       location.replace('./?updated=' + Date.now().toString(36) + '&r=' + Math.random().toString(36).slice(2, 8));
        return;
      }
      throw new Error('service worker unavailable');

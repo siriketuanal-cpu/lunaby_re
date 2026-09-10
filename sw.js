@@ -116,7 +116,15 @@ self.addEventListener('message', event => {
   const port = event.ports && event.ports[0];
   event.waitUntil(
     repairShell()
-      .then(result => { if (port) port.postMessage(result); })
+      .then(async result => {
+        // 修復後に既存クライアントを新キャッシュへ確実に向ける
+        await self.clients.claim();
+        const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        for (const client of list) {
+          try { client.postMessage({ type: 'LUNABY_REPAIRED' }); } catch (_) {}
+        }
+        if (port) port.postMessage(result);
+      })
       .catch(() => { if (port) port.postMessage({ ok:false }); })
   );
 });
