@@ -17,11 +17,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
-.account-head{min-height:15px;padding:1px 4px 2px;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;}
-.name-display{position:relative;z-index:3;min-width:0;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;}
+.account-head{min-height:13px;padding:0 4px 0;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;position:relative;z-index:3;}
+.name-display{position:relative;z-index:3;min-width:0;max-width:58%;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;}
 .name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* 見た目・文字サイズは変えず、当たり判定だけを上と名前⇔ランクの隙間側に拡張（stam-full-hour等と同じ手法） */
-.name-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-4px;}
+/* 通常名：上方向のみヒット拡張（下は最大スタミナ食い込みと被らないよう伸ばさない） */
+.name-display::before{content:'';position:absolute;top:-4px;bottom:0;left:-4px;right:-4px;}
+/* 未設定（スロットN）：小さく・ヒットも狭く → 最大スタミナの上段と重なりにくくする */
+.name-display.is-placeholder{font-size:9px;line-height:13px;font-weight:700;color:#6f7d90;max-width:42%;}
+.name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
 .rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
@@ -53,7 +56,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
-.task-row{position:relative;width:100%;min-height:34px;padding:6px var(--row-pad-x) 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+.task-row{position:relative;width:100%;min-height:30px;padding:2px var(--row-pad-x) 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:28px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
@@ -109,7 +112,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   row-gap:2px;
   min-height:28px;
   padding:0;
-  margin:0;
+  margin:-6px 0 0;
   overflow:hidden;
   cursor:pointer;
   touch-action:manipulation;
