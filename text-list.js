@@ -102,7 +102,7 @@ import {
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
           '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
-          '<span class="idle-action"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
+          '<span class="idle-action" data-task="idle" data-i="' + index + '"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
           '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
@@ -144,6 +144,7 @@ import {
   // スタミナ行だけ描画（名前・ランク・放置は触らない）
   // includeMax: ランク変更時など最大値の文字も更新する
   // force: 差分スキップせず必ず描画（確定・復帰用）
+  // options.snapshot / prev*: 同一 tick で displaySnapshot を二重に呼ばないための受け渡し
   function paintStamRow(index, now, options){
     const ref = refs[index];
     const slot = state.slots[index];
@@ -151,9 +152,15 @@ import {
     const includeMax = !!(options && options.includeMax);
     const force = !!(options && options.force);
     const busy = editIs('stam', index) || (selected && selected.index === index && selected.task === 'stam');
-    const prevCurrent = ref.snapshot.stam.current;
-    const prevLow = !!ref.snapshot.stam.low;
-    const snapshot = displaySnapshot(slot, now, ref.snapshot);
+    const prevCurrent = options && 'prevStamCurrent' in options
+      ? options.prevStamCurrent
+      : ref.snapshot.stam.current;
+    const prevLow = options && 'prevStamLow' in options
+      ? !!options.prevStamLow
+      : !!ref.snapshot.stam.low;
+    const snapshot = options && options.snapshot
+      ? options.snapshot
+      : displaySnapshot(slot, now, ref.snapshot);
     if (busy && !force) return;
     const stamFull = snapshot.stam.current >= slot.stamMax;
     const wasFull = prevCurrent >= slot.stamMax;
@@ -193,10 +200,18 @@ import {
     if (!ref || !slot) return;
     const force = !!(options && options.force);
     const busy = selected && selected.index === index && selected.task === 'idle';
-    const prevValue = ref.snapshot.idle.value;
-    const prevFull = !!ref.snapshot.idle.full;
-    const prevLow = !!ref.snapshot.idle.low;
-    const snapshot = displaySnapshot(slot, now, ref.snapshot);
+    const prevValue = options && 'prevIdleValue' in options
+      ? options.prevIdleValue
+      : ref.snapshot.idle.value;
+    const prevFull = options && 'prevIdleFull' in options
+      ? !!options.prevIdleFull
+      : !!ref.snapshot.idle.full;
+    const prevLow = options && 'prevIdleLow' in options
+      ? !!options.prevIdleLow
+      : !!ref.snapshot.idle.low;
+    const snapshot = options && options.snapshot
+      ? options.snapshot
+      : displaySnapshot(slot, now, ref.snapshot);
     if (busy && !force) return;
     if (!force && snapshot.idle.value === prevValue && snapshot.idle.full === prevFull && !!snapshot.idle.low === prevLow) return;
     setSelected(ref.idleRow, false);
@@ -249,9 +264,23 @@ import {
     refreshSL(now);
     for (let index = 0; index < state.slots.length; index += 1) {
       const slot = state.slots[index];
-      if (!refs[index]) continue;
-      if (slot.idleRunning) paintIdleRow(index, now, null);
-      if (slot.stamRunning) paintStamRow(index, now, null);
+      const ref = refs[index];
+      if (!ref) continue;
+      if (!slot.idleRunning && !slot.stamRunning) continue;
+      // 同一 snapshot を共有するため、更新前の値を先に撮ってから1回だけ displaySnapshot する。
+      // （先に放置を描くと stam.current が先に進み、スタミナが「変化なし」でスキップされる不具合を防ぐ）
+      const prevStamCurrent = ref.snapshot.stam.current;
+      const prevStamLow = !!ref.snapshot.stam.low;
+      const prevIdleValue = ref.snapshot.idle.value;
+      const prevIdleFull = !!ref.snapshot.idle.full;
+      const prevIdleLow = !!ref.snapshot.idle.low;
+      const snapshot = displaySnapshot(slot, now, ref.snapshot);
+      if (slot.idleRunning) {
+        paintIdleRow(index, now, { snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
+      }
+      if (slot.stamRunning) {
+        paintStamRow(index, now, { snapshot, prevStamCurrent, prevStamLow });
+      }
     }
     scheduleRefresh();
   }
