@@ -61,14 +61,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:26px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
-/* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける） */
+/* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける）
+   top は task-row の padding 非対称に合わせて少し下げ、現在値・放置タイマーと同じ高さ基準にする */
 .full-clock{position:absolute;top:calc(50% + 2px);z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
-.full-clock-stam,.full-clock-idle{top:calc(50% + 2px);transform:translateY(-50%);}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
 .full-clock.is-selected{z-index:21;}
-/* 放置報酬側は淡い紫灰で差別化 */
+/* 放置報酬側は淡い緑で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
 .full-clock-stam{left:var(--clock-inset);}
@@ -96,7 +96,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:24px;}
 .stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
-/* 二段スタミナ：flex column。幅は固定 ch 枠で桁の中心を安定させる（1桁=中心、2桁=中心を挟む） */
+/* スタミナ現在値を基準に中央揃え。最大値は absolute でフロー外に出し、現在値・放置・予定時刻の高さを一致させる */
 .stam-stack{
   flex:0 0 auto;
   position:relative;
@@ -118,12 +118,12 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   z-index:2;
 }
 .stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
-/* 上段：最大（absolute にしてフローから外す → 現在値・放置・予定時刻が同じ高さ基準で揃う） */
+/* 最大値：現在値のすぐ上に配置（レイアウト高さに影響させない） */
 .stam-stack > .task-max{
   position:absolute;
   left:0;
   right:0;
-  bottom:calc(100% + 1px);       /* 現在値のすぐ上 */
+  bottom:calc(100% + 1px);
   display:block;
   box-sizing:border-box;
   width:100%;
