@@ -100,7 +100,6 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-stack{
   flex:0 0 auto;
   position:relative;
-  top:-4px;                      /* レイアウトサイズを変えずに視覚だけ上へ（負marginだとgridのcenterがズレる原因だった） */
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -110,18 +109,21 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   min-width:var(--stam-box-cols);
   max-width:var(--stam-box-cols);
   font-size:var(--stam-cur-size);
-  row-gap:1px;
-  min-height:26px;
+  min-height:24px;
   padding:0;
   margin:0;
-  overflow:visible;              /* topシフト時に最大値が切れないように */
+  overflow:visible;
   cursor:pointer;
   touch-action:manipulation;
   z-index:2;
 }
 .stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
-/* 上段：最大（同じ固定枠の中で中央揃え → 40計算で下段の桁が変わってもズレない） */
+/* 上段：最大（absolute にしてフローから外す → 現在値・放置・予定時刻が同じ高さ基準で揃う） */
 .stam-stack > .task-max{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:calc(100% + 1px);       /* 現在値のすぐ上 */
   display:block;
   box-sizing:border-box;
   width:100%;
