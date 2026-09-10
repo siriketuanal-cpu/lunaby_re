@@ -39,8 +39,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --clock-inset:6px;
   --clock-size:22px;
   --row-pad-x:4px;
-  --stam-side-shift:10px;          /* 旧14px。小さくすると数値ごと左（予定時刻側）へ */
-  --stam-flex-left:0.7;            /* 旧1。小さくすると数字が左へ */
+  --stam-side-shift:14px;          /* 予定時刻(clock)との距離。小さくしすぎると被る */
+  --stam-flex-left:1;              /* 左右対称。桁揃えは 3ch 側で行う（ここを絞らない） */
   --stam-flex-right:1;
   --stam-edit-hit-extend:28px;     /* 手入力ヒットを左へ伸ばす量 */
   --stam-calc-gap-pull:-6px;
@@ -48,7 +48,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --hit-top:-12px;
   --hit-bottom:-5px;
   /* 数字サイズ：狭い端末で少し縮む。桁揃えは ch + tabular-nums */
-  --num-size:clamp(15px, 2.4vw + 8px, 18px);
+  --num-size:clamp(14px, 2.2vw + 8px, 18px);
   --stam-cur-cols:3ch;             /* 現在値は常に3桁分の枠 → 「/」位置が桁で動かない */
   --stam-max-cols:3ch;
 }
