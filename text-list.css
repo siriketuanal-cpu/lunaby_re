@@ -92,22 +92,22 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
 .stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
-.stam-edit-zone{flex:0 0 auto;position:relative;display:inline-grid;grid-template-columns:var(--stam-cur-cols);grid-template-rows:1.15em;place-content:center;place-items:stretch;min-height:26px;padding:4px 2px 4px 4px;cursor:pointer;touch-action:manipulation;}
+.stam-edit-zone{flex:0 0 auto;position:relative;display:inline-grid;grid-template-columns:var(--stam-cur-cols);grid-template-rows:1em;place-content:center;place-items:center;min-height:26px;padding:0 2px 0 0;cursor:pointer;touch-action:manipulation;}
 .stam-edit-zone::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.stam-calc-zone{flex:0 0 auto;position:relative;display:flex;align-items:center;min-height:26px;padding:4px 0;cursor:pointer;touch-action:manipulation;}
+.stam-calc-zone{flex:0 0 auto;position:relative;display:inline-flex;align-items:center;min-height:26px;padding:0;gap:0;cursor:pointer;touch-action:manipulation;}
 .stam-calc-zone::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .stam-calc-gap{flex:var(--stam-flex-right) 1 0%;min-width:0;align-self:stretch;min-height:26px;margin-right:var(--stam-calc-gap-pull);position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
 .stam-calc-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 
-/* 数字表示：現在値は固定3ch右寄せ → 1〜3桁でも「/」位置がほぼ固定。tabular-nums で桁幅均一 */
-.task-slash,.task-max,.task-value{display:inline-block;vertical-align:baseline;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
-.stam-current{grid-area:1/1;box-sizing:border-box;width:var(--stam-cur-cols);min-width:var(--stam-cur-cols);height:1.15em;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 var(--num-size)/1.15em var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:.01em;text-rendering:geometricPrecision;cursor:pointer;}
+/* 数字表示：現在値は固定3ch右寄せ。「/」は左右に隙間、縦位置は line-height:1 で揃える */
+.task-slash,.task-max,.task-value{display:inline-block;vertical-align:middle;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+.stam-current{grid-area:1/1;box-sizing:border-box;width:var(--stam-cur-cols);min-width:var(--stam-cur-cols);height:1em;margin:0;padding:0;border:0;text-align:right;color:#b4becc;font:800 var(--num-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:0;text-rendering:geometricPrecision;cursor:pointer;display:flex;align-items:center;justify-content:flex-end;}
 .stam-side.is-near-full .stam-current{color:#ff7070;}
-.task-slash{width:0.55em;height:1.15em;margin:0;color:#73839a;font:800 var(--num-size)/1.15em var(--timer-number-font);letter-spacing:0;text-align:center;display:inline-flex;align-items:center;justify-content:center;}
-.task-max{width:var(--stam-max-cols);min-width:var(--stam-max-cols);margin:0;color:#51d8e8;font:800 var(--num-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:.01em;text-align:left;white-space:nowrap;}
+.task-slash{width:0.65em;min-width:0.65em;height:1em;margin:0 1px;color:#73839a;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:0;text-align:center;display:inline-flex;align-items:center;justify-content:center;flex:none;}
+.task-max{width:var(--stam-max-cols);min-width:var(--stam-max-cols);height:1em;margin:0;color:#51d8e8;font:800 var(--num-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:0;text-align:left;white-space:nowrap;display:inline-flex;align-items:center;}
 
 /* 透明 input = 現在値と同一メトリクス（幅も 3ch 固定） */
-.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:var(--stam-cur-cols);min-width:var(--stam-cur-cols);height:1.15em;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 var(--num-size)/1.15em var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:.01em;text-rendering:geometricPrecision;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+.stam-edit,.stam-edit:focus{grid-area:1/1;box-sizing:border-box;z-index:1;width:var(--stam-cur-cols);min-width:var(--stam-cur-cols);height:1em;margin:0;padding:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:#b4becc;-webkit-text-fill-color:#b4becc;font:800 var(--num-size)/1 var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;letter-spacing:0;text-rendering:geometricPrecision;text-align:right;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
 /* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
 .stam-edit-zone.is-editing .stam-edit,
