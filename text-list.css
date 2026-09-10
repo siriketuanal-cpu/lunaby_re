@@ -56,9 +56,9 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
-.task-row{position:relative;width:100%;min-height:28px;padding:3px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+.task-row{position:relative;width:100%;min-height:26px;padding:3px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
-.timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:26px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
+.timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:24px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
 /* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける）
@@ -93,7 +93,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
 
 /* 左半分：文字位置は --stam-*、ヒットは ::before のみ（レイアウト非干渉） */
-.stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:24px;}
+.stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;}
 .stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
 /* スタミナ現在値を基準に中央揃え。最大値は absolute でフロー外に出し、現在値・放置・予定時刻の高さを一致させる */
@@ -109,7 +109,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   min-width:var(--stam-box-cols);
   max-width:var(--stam-box-cols);
   font-size:var(--stam-cur-size);
-  min-height:24px;
+  min-height:22px;
   padding:0;
   margin:0;
   overflow:visible;
@@ -160,7 +160,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   touch-action:manipulation;
 }
 .stam-stack > .stam-edit-zone::before{content:'';position:absolute;inset:0;}
-.stam-calc-gap{flex:var(--stam-flex-right) 1 0%;min-width:0;align-self:stretch;min-height:24px;margin-right:var(--stam-calc-gap-pull);position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
+.stam-calc-gap{flex:var(--stam-flex-right) 1 0%;min-width:0;align-self:stretch;min-height:22px;margin-right:var(--stam-calc-gap-pull);position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
 .stam-calc-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 
 .task-value{display:inline-block;vertical-align:middle;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
@@ -246,12 +246,12 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
 /* 右サイド：flex で中央にタイマー。余白は --idle-flex-side、ヒットは ::before のみ */
-.idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:24px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:24px;cursor:pointer;position:relative;z-index:1;}
+.idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;padding:0;cursor:pointer;touch-action:manipulation;}
+.idle-pre{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:22px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-post{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:24px;cursor:pointer;position:relative;z-index:1;}
+.idle-post{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
@@ -293,4 +293,4 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
-@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:35px;padding-left:3px;padding-right:3px;}}
+@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:28px;padding-left:3px;padding-right:3px;}}
