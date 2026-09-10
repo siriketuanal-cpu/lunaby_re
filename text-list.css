@@ -13,7 +13,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
 .version-link:active{color:var(--cyan);}
 .account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;}
-.account{min-width:0;max-width:100%;overflow-x:hidden;overflow-y:visible;padding:6px 0 0;border-top:2px solid #52617a;}
+.account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
@@ -52,7 +52,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --hit-bottom:-5px;
   /* 数字サイズ：狭い端末で少し縮む。桁揃えは ch + tabular-nums */
   --num-size:clamp(14px, 2.2vw + 8px, 18px);
-  --stam-max-size:9px;             /* 二段：上段の最大スタミナ */
+  --stam-max-size:11px;            /* 二段：上段の最大スタミナ（余白縮小後に一〜二回り大きく） */
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
@@ -105,15 +105,15 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   align-items:center;
   justify-content:center;
   box-sizing:border-box;
+  width:var(--stam-box-cols);
+  min-width:var(--stam-box-cols);
+  max-width:var(--stam-box-cols);
   font-size:var(--stam-cur-size);
-  width:3.1ch;           /* ch はこの要素の font-size 基準 */
-  min-width:3.1ch;
-  max-width:3.1ch;
   row-gap:2px;
   min-height:28px;
   padding:0;
-  margin:-6px 0 0;       /* 名前行へ軽く食い込み */
-  overflow:hidden;       /* 手入力時に隣カードへ侵食しない */
+  margin:-6px 0 0;
+  overflow:hidden;
   cursor:pointer;
   touch-action:manipulation;
   z-index:2;
@@ -246,7 +246,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;}
 .idle-pre{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:26px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;transform:translateY(1.5px);}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-post{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:26px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
