@@ -45,8 +45,8 @@ import {
       + '<input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></span>'
       + '</section>';
   }
-  function setHidden(element, value){ const hidden = !!value; if (element.hidden !== hidden) element.hidden = hidden; }
-  function setClass(element, name, value){ const enabled = !!value; if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled); }
+  function setHidden(element, value){ if (!element) return; const hidden = !!value; if (element.hidden !== hidden) element.hidden = hidden; }
+  function setClass(element, name, value){ if (!element) return; const enabled = !!value; if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled); }
   function refreshSLItem(ref, isEditing, value, plan, maxText){
     setClass(ref.root,'is-selected',isEditing);
     if (ref.max) {
@@ -89,13 +89,12 @@ import {
         '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
-          '<span class="stam-edit-zone" data-stam-confirm="' + index + '">' +
-            '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
-            '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
-          '</span>' +
-          '<span class="stam-calc-zone" data-stam-confirm="' + index + '">' +
-            '<span class="task-slash">/</span>' +
+          '<span class="stam-stack" data-stam-confirm="' + index + '">' +
             '<span class="task-max" data-stam-number="' + index + '"></span>' +
+            '<span class="stam-edit-zone">' +
+              '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
+              '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
+            '</span>' +
           '</span>' +
           '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
           '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
@@ -123,7 +122,7 @@ import {
         nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
       stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
-        stamMax:stamRow.querySelector('.task-max'), stamSlash:stamRow.querySelector('.task-slash'), stamCalc:stamRow.querySelector('.stam-calc-zone'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:null, stamCalc:stamRow.querySelector('.stam-stack'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
         idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
         idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
@@ -133,6 +132,7 @@ import {
   }
 
   function setText(element, value){
+    if (!element) return;
     const text = String(value == null ? '' : value);
     if (element.textContent !== text) element.textContent = text;
   }
