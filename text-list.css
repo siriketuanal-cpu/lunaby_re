@@ -100,6 +100,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-stack{
   flex:0 0 auto;
   position:relative;
+  top:-5px;                      /* レイアウトサイズを変えずに視覚だけ上へ（負marginだとgridのcenterがズレる原因だった） */
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -112,8 +113,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   row-gap:2px;
   min-height:28px;
   padding:0;
-  margin:-6px 0 0;
-  overflow:hidden;
+  margin:0;
+  overflow:visible;              /* topシフト時に最大値が切れないように */
   cursor:pointer;
   touch-action:manipulation;
   z-index:2;
@@ -246,7 +247,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;padding:0;cursor:pointer;touch-action:manipulation;}
 .idle-pre{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:26px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;transform:translateY(1.5px);}
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:24px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-post{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:26px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
