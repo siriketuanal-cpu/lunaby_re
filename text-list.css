@@ -13,7 +13,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
 .version-link:active{color:var(--cyan);}
 .account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;}
-.account{min-width:0;padding:6px 0 0;border-top:2px solid #52617a;}
+.account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
@@ -49,10 +49,9 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --hit-bottom:-5px;
   /* 数字サイズ：狭い端末で少し縮む。桁揃えは ch + tabular-nums */
   --num-size:clamp(14px, 2.2vw + 8px, 18px);
-  --stam-cur-cols:3ch;
-  --stam-max-cols:3ch;
   --stam-max-size:9px;             /* 二段：上段の最大スタミナ */
-  --stam-cur-size:var(--num-size); /* 二段：下段の現在値（必要なら 0.92em 等で微減） */
+  --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
+  --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
 .task-row{position:relative;width:100%;min-height:34px;padding:6px var(--row-pad-x) 5px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
@@ -94,36 +93,37 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:26px;}
 .stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
 .stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
-/* 二段スタミナ：grid で上=最大 / 下=現在を強制。font-size は shorthand に頼らず単体指定 */
-.stam-side{align-items:center;}
+/* 二段スタミナ：flex column。幅は固定 ch 枠で桁の中心を安定させる（1桁=中心、2桁=中心を挟む） */
 .stam-stack{
   flex:0 0 auto;
   position:relative;
-  display:grid;
-  grid-template-columns:max-content;
-  grid-template-rows:auto auto;
-  align-items:end;
-  justify-items:end;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:var(--stam-box-cols);
+  min-width:var(--stam-box-cols);
+  max-width:var(--stam-box-cols);
+  font-size:var(--stam-cur-size);
   row-gap:2px;
-  min-width:0;
   min-height:28px;
   padding:0;
+  margin:0;
+  overflow:hidden;
   cursor:pointer;
   touch-action:manipulation;
   z-index:2;
 }
 .stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
-/* 上段：最大 */
+/* 上段：最大（同じ固定枠の中で中央揃え → 40計算で下段の桁が変わってもズレない） */
 .stam-stack > .task-max{
-  grid-row:1;
-  grid-column:1;
   display:block;
+  box-sizing:border-box;
+  width:100%;
   margin:0;
   padding:0;
   border:0;
-  width:auto;
-  min-width:0;
-  height:auto;
   color:#51d8e8;
   font-family:var(--timer-number-font);
   font-weight:700;
@@ -132,22 +132,24 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   font-variant-numeric:tabular-nums;
   font-feature-settings:"tnum" 1;
   letter-spacing:.02em;
-  text-align:right;
+  text-align:center;
   white-space:nowrap;
   opacity:.9;
 }
-/* 下段：現在値ゾーン */
+/* 下段：現在値 */
 .stam-stack > .stam-edit-zone{
-  grid-row:2;
-  grid-column:1;
   position:relative;
   display:grid;
-  grid-template-columns:max-content;
+  grid-template-columns:1fr;
   grid-template-rows:1em;
-  place-items:end center;
+  place-items:center;
+  box-sizing:border-box;
+  width:100%;
   margin:0;
   padding:0;
+  min-width:0;
   min-height:0;
+  overflow:hidden;
   cursor:pointer;
   touch-action:manipulation;
 }
@@ -160,11 +162,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   grid-area:1/1;
   box-sizing:border-box;
   display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  height:1em;
   margin:0;
   padding:0;
   border:0;
-  min-width:2ch;
-  height:1em;
   color:#b4becc;
   font-family:var(--timer-number-font);
   font-weight:800;
@@ -173,19 +177,22 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   font-variant-numeric:tabular-nums;
   font-feature-settings:"tnum" 1;
   letter-spacing:0;
-  text-align:right;
+  text-align:center;
   text-rendering:geometricPrecision;
   cursor:pointer;
   white-space:nowrap;
+  overflow:hidden;
 }
 .stam-side.is-near-full .stam-current{color:#ff7070;}
 
+/* input はブラウザ既定の min-width で隣カードへ食い込みやすいので完全に枠内へ閉じ込める */
 .stam-edit,.stam-edit:focus{
   grid-area:1/1;
   box-sizing:border-box;
   z-index:1;
-  min-width:2ch;
-  width:100%;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
   height:1em;
   margin:0;
   padding:0!important;
@@ -203,7 +210,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   font-variant-numeric:tabular-nums;
   font-feature-settings:"tnum" 1;
   letter-spacing:0;
-  text-align:right;
+  text-align:center;
   text-rendering:geometricPrecision;
   caret-color:transparent!important;
   appearance:none;
