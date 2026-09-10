@@ -52,12 +52,12 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --hit-top:-12px;
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
-  --num-size:16px;
+  --num-size:18px;
   --stam-max-size:11px;            /* 二段：上段の最大スタミナ（余白縮小後に一〜二回り大きく） */
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
-.task-row{position:relative;width:100%;min-height:24px;padding:2px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+.task-row{position:relative;width:100%;min-height:24px;padding:2px var(--row-pad-x) 0;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
 .timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:22px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
