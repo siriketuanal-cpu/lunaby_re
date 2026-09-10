@@ -79,7 +79,7 @@ import {
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
-        '<span class="name-display' + (String(slot.label || '').trim() ? '' : ' is-placeholder') + '" data-name-edit="' + index + '"><span class="name-display-text">' + escape(String(slot.label || '').trim() ? slot.label : ('スロット ' + (index + 1))) + '</span></span>' +
+        '<span class="name-display' + (String(slot.label || '').trim() ? '' : ' is-placeholder') + '" data-name-edit="' + index + '"><span class="name-display-text">' + escape(String(slot.label || '').trim() ? slot.label : '名前') + '</span></span>' +
         '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
         '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
         '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off" maxlength="3">' +
@@ -239,7 +239,7 @@ import {
     setHidden(ref.nameDisplay, false);
     setHidden(ref.nameInput, true);
     const blank = !String(slot.label || '').trim();
-    setText(ref.nameDisplayText, blank ? ('スロット ' + (index + 1)) : slot.label);
+    setText(ref.nameDisplayText, blank ? '名前' : slot.label);
     setClass(ref.nameDisplay, 'is-placeholder', blank);
   }
   function paintRank(index){

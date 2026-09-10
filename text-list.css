@@ -42,28 +42,29 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --clock-inset:6px;
   --clock-size:22px;
   --row-pad-x:4px;
-  --stam-side-shift:14px;          /* 予定時刻(clock)との距離。小さくしすぎると被る */
-  --stam-flex-left:1;              /* 左右対称。桁揃えは 3ch 側で行う（ここを絞らない） */
+  --stam-side-shift:10px;          /* 左予定時刻との距離。少し左寄せ */
+  --stam-flex-left:1;
   --stam-flex-right:1;
-  --stam-edit-hit-extend:28px;     /* 手入力ヒットを左へ伸ばす量 */
+  --stam-edit-hit-extend:28px;
   --stam-calc-gap-pull:-6px;
-  --idle-flex-side:1;              /* 放置左右余白（対称） */
+  --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
+  --idle-flex-post:1.35;
   --hit-top:-12px;
   --hit-bottom:-5px;
-  /* 数字サイズ：狭い端末で少し縮む。桁揃えは ch + tabular-nums */
-  --num-size:clamp(14px, 2.2vw + 8px, 18px);
+  /* 数字サイズ固定（解像度依存を外す） */
+  --num-size:16px;
   --stam-max-size:11px;            /* 二段：上段の最大スタミナ（余白縮小後に一〜二回り大きく） */
   --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
   --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
 }
-.task-row{position:relative;width:100%;min-height:26px;padding:3px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+.task-row{position:relative;width:100%;min-height:24px;padding:2px var(--row-pad-x) 1px;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
 /* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
-.timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:24px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
+.timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:22px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
 .task-row:active{background:#080c12;}
 
 /* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける）
-   top は task-row の padding 非対称に合わせて少し下げ、現在値・放置タイマーと同じ高さ基準にする */
-.full-clock{position:absolute;top:calc(50% + 2px);z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
+   top は task-row の padding に合わせて少し下げ、現在値・放置タイマーと同じ高さ基準にする */
+.full-clock{position:absolute;top:calc(50% + 1.5px);z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
 .full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
@@ -245,13 +246,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド：flex で中央にタイマー。余白は --idle-flex-side、ヒットは ::before のみ */
+/* 右サイド：flex でタイマー位置。pre/post 比率で左寄せし、左右の予定時刻との感覚を揃える */
 .idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-pre{flex:var(--idle-flex-pre) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-post{flex:var(--idle-flex-side) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-post{flex:var(--idle-flex-post) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
@@ -293,4 +294,4 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
 .pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
 .pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
-@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:28px;padding-left:3px;padding-right:3px;}}
+@media (max-width:440px){.page{padding:9px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:26px;padding-left:3px;padding-right:3px;}}
