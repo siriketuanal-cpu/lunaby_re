@@ -128,8 +128,18 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   touch-action:manipulation;
   z-index:2;
 }
-.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;z-index:1;}
-/* 最大値：現在値のすぐ上に配置（レイアウト高さに影響させない） */
+/* 実要素のヒット板（::before は端末によって上方向の判定が欠けることがある） */
+.stam-hit{
+  position:absolute;
+  left:-8px;
+  right:-8px;
+  top:-22px;
+  bottom:-6px;
+  z-index:1;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+/* 最大値：現在値のすぐ上。自身も data-stam-confirm でタップ可能 */
 .stam-stack > .task-max{
   position:absolute;
   left:0;
@@ -139,7 +149,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   box-sizing:border-box;
   width:100%;
   margin:0;
-  padding:0;
+  padding:3px 0;
   border:0;
   color:#51d8e8;
   font-family:var(--timer-number-font);
@@ -152,11 +162,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   text-align:center;
   white-space:nowrap;
   opacity:.9;
-  pointer-events:none;           /* 上段は見た目のみ。タップは stam-stack の ::before が受ける */
+  z-index:2;
+  cursor:pointer;
+  touch-action:manipulation;
 }
 /* 下段：現在値 */
 .stam-stack > .stam-edit-zone{
   position:relative;
+  z-index:2;
   display:grid;
   grid-template-columns:1fr;
   grid-template-rows:1em;
@@ -262,7 +275,18 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-pre{flex:var(--idle-flex-pre) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
-.idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-4px;right:-4px;z-index:1;}
+.idle-hit{
+  position:absolute;
+  left:-10px;
+  right:-10px;
+  top:-22px;
+  bottom:-8px;
+  z-index:0;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.idle-action .task-value,
+.idle-action .task-plan{position:relative;z-index:1;}
 .idle-post{flex:var(--idle-flex-post) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}

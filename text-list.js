@@ -90,7 +90,8 @@ import {
         '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
           '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
           '<span class="stam-stack" data-stam-confirm="' + index + '">' +
-            '<span class="task-max" data-stam-number="' + index + '"></span>' +
+            '<span class="stam-hit" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
+            '<span class="task-max" data-stam-confirm="' + index + '" data-stam-number="' + index + '"></span>' +
             '<span class="stam-edit-zone">' +
               '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
               '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
@@ -101,7 +102,7 @@ import {
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
           '<span class="idle-pre" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
-          '<span class="idle-action" data-task="idle" data-i="' + index + '"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
+          '<span class="idle-action" data-task="idle" data-i="' + index + '"><span class="idle-hit" data-task="idle" data-i="' + index + '" aria-hidden="true"></span><strong class="task-value"></strong><span class="task-plan"></span></span>' +
           '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
         '</div>' +
       '</div>' +
