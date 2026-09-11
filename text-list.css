@@ -226,6 +226,20 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus,
 .stam-side.is-near-full.is-selected .stam-current{color:#ff9a9a;-webkit-text-fill-color:#ff9a9a;}
 .stam-side.is-near-full.is-selected .task-max{color:#ffb0b0;}
+/* 40計算・手入力中：スタミナ左に ▶（absolute なので桁幅・レイアウトは動かさない） */
+.stam-side.is-selected .stam-stack::after,
+.stam-side.is-editing .stam-stack::after{
+  content:'▶';
+  position:absolute;
+  left:-0.9em;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:10px;
+  line-height:1;
+  color:#c5d0e0;
+  pointer-events:none;
+  z-index:3;
+}
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
@@ -257,7 +271,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone.is-selected .task-value,
 .idle-zone.is-selected .task-plan,
 .idle-zone.is-selected .task-plan.is-full{
-  margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
+  margin-left:0;text-align:center;font-size:14px;font-weight:800;letter-spacing:.02em;
 }
 /* 「受取」は value / plan どちらに出ても同じ薄黄で統一 */
 .idle-zone.is-selected .task-value,
