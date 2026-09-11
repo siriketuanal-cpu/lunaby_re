@@ -242,7 +242,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;padding:0;cursor:pointer;touch-action:manipulation;}
 .idle-pre{flex:1 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
+/* min-width でタイマー幅を確保 → 「受取」に変わっても右に寄らない */
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:5.5ch;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-post{flex:0 0 var(--idle-side-shift);width:var(--idle-side-shift);min-width:var(--idle-side-shift);align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
@@ -258,7 +259,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone.is-selected .task-plan.is-full{
   margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
 }
-.idle-zone.is-selected .task-value{color:#f3eaff;}
+/* 「受取」は value / plan どちらに出ても同じ薄黄で統一 */
+.idle-zone.is-selected .task-value,
 .idle-zone.is-selected .task-plan,
 .idle-zone.is-selected .task-plan.is-full{color:#ffe09a;}
 .idle-zone.is-selected .task-plan.is-full:not(:empty)::after{content:none;}
