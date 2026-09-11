@@ -27,8 +27,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
-/* 下方向に伸ばさない（最大スタミナ／放置の上端タップを奪わない） */
-.rank-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-4px;}
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
@@ -55,7 +54,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-calc-gap-pull:-6px;
   --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
   --idle-flex-post:1.35;
-  --hit-top:-24px;                 /* 最大スタミナ〜数字上までタップを伸ばす */
+  --hit-top:-12px;
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
   --num-size:20px;
@@ -128,18 +127,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   touch-action:manipulation;
   z-index:2;
 }
-/* 実要素のヒット板（::before は端末によって上方向の判定が欠けることがある） */
-.stam-hit{
-  position:absolute;
-  left:-8px;
-  right:-8px;
-  top:-22px;
-  bottom:-6px;
-  z-index:1;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-/* 最大値：現在値のすぐ上。自身も data-stam-confirm でタップ可能 */
+.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
+/* 最大値：現在値のすぐ上（レイアウト高さに影響させない） */
 .stam-stack > .task-max{
   position:absolute;
   left:0;
@@ -149,7 +138,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   box-sizing:border-box;
   width:100%;
   margin:0;
-  padding:3px 0;
+  padding:0;
   border:0;
   color:#51d8e8;
   font-family:var(--timer-number-font);
@@ -162,14 +151,11 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   text-align:center;
   white-space:nowrap;
   opacity:.9;
-  z-index:2;
-  cursor:pointer;
-  touch-action:manipulation;
+  pointer-events:none;
 }
 /* 下段：現在値 */
 .stam-stack > .stam-edit-zone{
   position:relative;
-  z-index:2;
   display:grid;
   grid-template-columns:1fr;
   grid-template-rows:1em;
@@ -275,18 +261,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-pre{flex:var(--idle-flex-pre) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
-.idle-hit{
-  position:absolute;
-  left:-10px;
-  right:-10px;
-  top:-22px;
-  bottom:-8px;
-  z-index:0;
-  cursor:pointer;
-  touch-action:manipulation;
-}
-.idle-action .task-value,
-.idle-action .task-plan{position:relative;z-index:1;}
+.idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-post{flex:var(--idle-flex-post) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
