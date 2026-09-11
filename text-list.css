@@ -27,8 +27,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
-/* 下方向を伸ばしすぎると最大スタミナ／放置上端のタップを奪うので控えめに */
-.rank-display::before{content:'';position:absolute;top:-6px;bottom:-4px;left:-4px;right:-4px;}
+/* 下方向に伸ばさない（最大スタミナ／放置の上端タップを奪わない） */
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:0;left:-4px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
@@ -55,7 +55,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-calc-gap-pull:-6px;
   --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
   --idle-flex-post:1.35;
-  --hit-top:-18px;                 /* 最大スタミナ上までタップを伸ばす（名前/ランクと競合しない範囲） */
+  --hit-top:-24px;                 /* 最大スタミナ〜数字上までタップを伸ばす */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
   --num-size:20px;
@@ -75,8 +75,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
 .full-clock.is-selected{z-index:21;}
-/* スタミナ予定時刻：名前・現在値の青灰／シアン／ランク橙と被らない濃い青 */
-.full-clock-stam .full-clock-hour{color:#4a7ab0;}
+/* スタミナ予定時刻：時・分とも同じ濃い青 */
+.full-clock-stam .full-clock-hour,
 .full-clock-stam .full-clock-minute{color:#5b8ec4;}
 /* 放置報酬側は淡い緑で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
@@ -128,7 +128,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   touch-action:manipulation;
   z-index:2;
 }
-.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
+.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;z-index:1;}
 /* 最大値：現在値のすぐ上に配置（レイアウト高さに影響させない） */
 .stam-stack > .task-max{
   position:absolute;
@@ -262,7 +262,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-pre{flex:var(--idle-flex-pre) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
-.idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
+.idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-4px;right:-4px;z-index:1;}
 .idle-post{flex:var(--idle-flex-post) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}

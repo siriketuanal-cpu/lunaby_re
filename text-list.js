@@ -100,7 +100,7 @@ import {
           '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
         '</div>' +
         '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
-          '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
+          '<span class="idle-pre" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
           '<span class="idle-action" data-task="idle" data-i="' + index + '"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
           '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
         '</div>' +
