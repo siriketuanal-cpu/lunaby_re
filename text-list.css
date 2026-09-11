@@ -17,21 +17,22 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
 .account.group-2{border-top-color:var(--group-tide);}
-.account-head{min-height:13px;padding:0 4px 0;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;position:relative;z-index:3;}
-.name-display{position:relative;z-index:3;min-width:0;max-width:58%;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;}
+/* 行全体はタップを透過させ、名前・ランク本体だけ受ける。
+   仕切りを外したあとも head と timer は別要素なので、head が空領域まで取ると
+   上方向に伸ばしたタイマー側ヒットが境界で消えて見えていた */
+.account-head{min-height:13px;padding:0 4px 0;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;position:relative;z-index:3;pointer-events:none;}
+.name-display{position:relative;z-index:3;min-width:0;max-width:58%;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;pointer-events:auto;}
 .name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-/* 通常名：上方向のみヒット拡張（下は最大スタミナ食い込みと被らないよう伸ばさない） */
+/* 通常名：上方向のみヒット拡張（下は最大スタミナと被らないよう伸ばさない） */
 .name-display::before{content:'';position:absolute;top:-4px;bottom:0;left:-4px;right:-4px;}
-/* 未設定（スロットN）：小さく・ヒットも狭く → 最大スタミナの上段と重なりにくくする */
 .name-display.is-placeholder{font-size:9px;line-height:13px;font-weight:700;color:#6f7d90;max-width:42%;}
 .name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
-/* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
-.rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
-.rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
-.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
+.rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;pointer-events:auto;}
+/* 下方向は最小限（放置・最大スタミナ上端を奪わない） */
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:-2px;left:-4px;right:-4px;}
+.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;pointer-events:auto;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
-/* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
 /* ===== タイマー行の位置（ここだけ触れば寄せ・余白を調整できる） =====
    文字位置: 既存の side-shift / flex 比率変数で調整
@@ -54,7 +55,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-calc-gap-pull:-6px;
   --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
   --idle-flex-post:1.35;
-  --hit-top:-12px;
+  --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
   --num-size:20px;
