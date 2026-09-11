@@ -35,7 +35,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
 /* ===== タイマー行の位置（ここだけ触れば寄せ・余白を調整できる） =====
-   文字位置: 既存の side-shift / flex 比率変数で調整
+   文字位置: side-shift（左）/ idle-side-shift（右・固定px）で調整
    ヒット: ::before のみ（レイアウトに影響しない）
    予定時刻: full-clock の inset
    --- 今後の追記ルール ---
@@ -75,33 +75,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
 .full-clock.is-selected{z-index:21;}
-/* スタミナ予定時刻：時・分とも同じ濃い青 */
+/* スタミナ予定時刻：濃い青系・黒背景で沈みにくい明るめ */
 .full-clock-stam .full-clock-hour,
-.full-clock-stam .full-clock-minute{color:#5b8ec4;}
+.full-clock-stam .full-clock-minute{color:#7eb0e8;}
 /* 放置報酬側は淡い緑で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
 .full-clock-stam{left:var(--clock-inset);}
 .full-clock-idle{right:var(--clock-inset);}
-
-/* 操作中だけページ全体を一枚だけ暗転。
-   選択中のタイマー／入力欄はこのレイヤーより前に出す。
-   display 切替だとレイアウト再計算が走るため、opacity/visibility で合成だけ変える。 */
-.page-dim{
-  position:absolute;inset:0;z-index:5;pointer-events:none;
-  background:rgba(0,0,0,.58);
-  opacity:0;visibility:hidden;
-}
-.page.is-dimmed .page-dim{opacity:1;visibility:visible;}
-
-/* 選択中・手入力中の操作領域を暗転レイヤーより前へ。
-   background 塗りは再ペイントコストがあるので外し、z-index だけ上げる */
-.page.is-dimmed .stam-side.is-selected,
-.page.is-dimmed .stam-side.is-editing{z-index:20;}
-.page.is-dimmed .idle-zone.is-selected{z-index:20;}
-.page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;}
-.page.is-dimmed .stam-side.is-editing .stam-edit-zone{position:relative;z-index:21;}
-.page.is-dimmed .stam-side.is-editing .stam-edit{position:relative;z-index:22;}
 
 /* 左半分：文字位置は --stam-*、ヒットは ::before のみ（レイアウト非干渉） */
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;}
@@ -235,16 +216,16 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   -webkit-appearance:none;
 }
 .stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
-/* 手入力中・40計算選択中：通常色に近い少し明るめのハイライト（下線なし） */
+/* 選択中・手入力中：暗転なし。数字の色だけで「ここを操作中」と分かる明るめ */
 .stam-edit-zone.is-editing .stam-edit,
 .stam-edit-zone.is-editing .stam-edit:focus,
-.stam-side.is-selected .stam-current{color:#d0d8e4;-webkit-text-fill-color:#d0d8e4;}
-.stam-side.is-selected .task-slash{color:#8a9aad;}
-.stam-side.is-selected .task-max{color:#6edfed;}
+.stam-side.is-selected .stam-current{color:#f2f6fc;-webkit-text-fill-color:#f2f6fc;}
+.stam-side.is-selected .task-slash{color:#a8b6c8;}
+.stam-side.is-selected .task-max{color:#7ee8f5;}
 .stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,
 .stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus,
-.stam-side.is-near-full.is-selected .stam-current{color:#ff8a8a;-webkit-text-fill-color:#ff8a8a;}
-.stam-side.is-near-full.is-selected .task-max{color:#ff9a9a;}
+.stam-side.is-near-full.is-selected .stam-current{color:#ff9a9a;-webkit-text-fill-color:#ff9a9a;}
+.stam-side.is-near-full.is-selected .task-max{color:#ffb0b0;}
 
 /* 満タン表示は左サイド全体に重ねる */
 .stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
@@ -277,9 +258,9 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-zone.is-selected .task-plan.is-full{
   margin-left:0;text-align:center;font-size:12px;font-weight:800;letter-spacing:.02em;
 }
-.idle-zone.is-selected .task-value{color:#e9ddff;}
+.idle-zone.is-selected .task-value{color:#f3eaff;}
 .idle-zone.is-selected .task-plan,
-.idle-zone.is-selected .task-plan.is-full{color:#ffd581;}
+.idle-zone.is-selected .task-plan.is-full{color:#ffe09a;}
 .idle-zone.is-selected .task-plan.is-full:not(:empty)::after{content:none;}
 
 /* スターリープ: 左寄せ + 数値の下に予定時刻 */

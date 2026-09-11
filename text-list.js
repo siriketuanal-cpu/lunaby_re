@@ -21,7 +21,6 @@ import {
   let selected = null;
   let edit = null;
   let slEdit = null;
-  let pageEl = null;
   let slRefs = null;
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
@@ -72,7 +71,7 @@ import {
     refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
-  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; setPageDimmed(false); slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
+  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
   function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
   function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
 
@@ -290,11 +289,10 @@ import {
   // 復帰時：名前/ランクは触らず、動いているタイマー行と SL だけ強制更新
   function syncTimersAfterResume(){
     const now = Date.now();
-    if (selected) { selected = null; setPageDimmed(false); }
+    if (selected) { selected = null; }
     if (edit) {
       const idx = edit.index;
       edit = null;
-      setPageDimmed(false);
       paintName(idx);
       paintRank(idx);
       paintStamRow(idx, now, { force:true, includeMax:true });
@@ -318,12 +316,6 @@ import {
     syncTimersAfterResume();
   }
 
-  function setPageDimmed(value){
-    if (!pageEl) return;
-    // 同じ状態なら classList を触らない（長時間放置後の初回タップでスタイル再計算が重くなるのを避ける）
-    if (pageEl.classList.contains('is-dimmed') === !!value) return;
-    setClass(pageEl, 'is-dimmed', value);
-  }
 
   function beginEdit(type, index){
     const previous = selected ? selected.index : NaN;
@@ -331,7 +323,6 @@ import {
     if (Number.isFinite(previous)) clearSelectionVisual(previous, previousTask);
     selected = null;
     edit = { type, index, original:type === 'stam' ? liveStam(state.slots[index], Date.now()) : null };
-    setPageDimmed(type === 'stam');
     const ref = refs[index];
     if (type === 'name') {
       setHidden(ref.nameDisplay, true);
@@ -367,7 +358,6 @@ import {
     if (!cancel) commitEdit(active, input.value);
     else {
       edit = null;
-      setPageDimmed(false);
       if (active.type === 'name') paintName(active.index);
       else if (active.type === 'rank') paintRank(active.index);
       else paintStamRow(active.index, Date.now(), { force:true, includeMax:true });
@@ -381,7 +371,6 @@ import {
     if (active.type === 'name') {
       if (setLabel(slot, raw)) changedIndex = active.index;
       edit = null;
-      setPageDimmed(false);
       paintName(active.index);
     } else if (active.type === 'rank') {
       const digits = String(raw || '').replace(/[^0-9]/g, '');
@@ -390,7 +379,6 @@ import {
         if (setRank(slot, rank, now)) changedIndex = active.index;
       }
       edit = null;
-      setPageDimmed(false);
       paintRank(active.index);
       // ランク変更で最大スタミナ・現在値クランプが変わりうる
       paintStamRow(active.index, now, { force:true, includeMax:true });
@@ -402,7 +390,6 @@ import {
         changedIndex = active.index;
       }
       edit = null;
-      setPageDimmed(false);
       // 手入力確定：現在値・満了表示のみ（最大値は変更なし）
       paintStamRow(active.index, now, { force:true });
     }
@@ -464,7 +451,6 @@ import {
     selected = task === 'stam'
       ? { index, task, value:previewValue }
       : { index, task };
-    setPageDimmed(true);
     if (Number.isFinite(previousIndex) && (previousIndex !== index || previousTask !== task)) {
       clearSelectionVisual(previousIndex, previousTask);
     }
@@ -479,7 +465,6 @@ import {
     // UIを先に確定してから永続化。localStorage が端末で遅いと
     // 保存が終わるまで画面遷移が遅延して体感が悪くなるため。
     selected = null;
-    setPageDimmed(false);
     if (task === 'stam') paintStamRow(index, now, { force:true });
     else paintIdleRow(index, now, { force:true });
     scheduleRefresh();
@@ -493,7 +478,6 @@ import {
 
   function setupEvents(){
     const list = document.querySelector('.page');
-    pageEl = list;
     document.addEventListener('contextmenu', event => event.preventDefault());
     document.addEventListener('copy', event => event.preventDefault());
     document.addEventListener('cut', event => event.preventDefault());
@@ -567,7 +551,6 @@ import {
       const index = selected.index;
       const task = selected.task;
       selected = null;
-      setPageDimmed(false);
       clearSelectionVisual(index, task);
     });
     document.addEventListener('visibilitychange', () => {
