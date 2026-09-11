@@ -48,13 +48,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --clock-inset:6px;
   --clock-size:22px;
   --row-pad-x:4px;
-  --stam-side-shift:10px;          /* 左予定時刻との距離。少し左寄せ */
+  --stam-side-shift:12px;          /* 左予定時刻→スタミナの距離 */
   --stam-flex-left:1;
   --stam-flex-right:1;
   --stam-edit-hit-extend:28px;
   --stam-calc-gap-pull:-6px;
-  --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
-  --idle-flex-post:1.35;
+  --idle-flex-pre:0.55;            /* 放置を左へ：右予定時刻との余白を左と同程度に */
+  --idle-flex-post:1.45;
   --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
@@ -267,6 +267,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
+.task-value.is-pending{font-size:13px;font-weight:700;letter-spacing:.02em;}
 .task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;text-rendering:geometricPrecision;}
 .task-plan.is-full{position:relative;display:inline-block;width:5ch;box-sizing:border-box;margin-left:0;color:#ff7070;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:-.03em;text-align:center;white-space:nowrap;}
 .task-plan.is-full:not(:empty)::after{content:'満';position:absolute;left:calc(100% + 3px);top:50%;transform:translateY(-50%);margin:0;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;}

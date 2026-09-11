@@ -220,6 +220,7 @@ import {
     const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
     setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
     setClass(ref.idleValue, 'is-clock', idleClock);
+    setClass(ref.idleValue, 'is-pending', idleValue === '未開始');
     setHidden(ref.idleValue, snapshot.idle.full);
     setText(ref.idlePlan, snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '');
     setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
@@ -423,6 +424,7 @@ import {
     } else if (snapshot.idle.value !== '未開始') {
       setText(ref.idleValue, '受取');
       setClass(ref.idleValue, 'is-clock', false);
+      setClass(ref.idleValue, 'is-pending', false);
       setHidden(ref.idleValue, false);
       setText(ref.idlePlan, '');
     }
