@@ -48,13 +48,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --clock-inset:6px;
   --clock-size:22px;
   --row-pad-x:4px;
-  --stam-side-shift:10px;          /* 左予定時刻との距離。少し左寄せ */
+  --stam-side-shift:12px;          /* 左予定時刻→スタミナの距離 */
   --stam-flex-left:1;
   --stam-flex-right:1;
   --stam-edit-hit-extend:28px;
   --stam-calc-gap-pull:-6px;
-  --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
-  --idle-flex-post:1.35;
+  --idle-flex-pre:1;               /* 放置は右半分で中央寄せ（以前の見え方） */
+  --idle-flex-post:1;
   --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
