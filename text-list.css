@@ -27,16 +27,22 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
 /* display と input の高さを揃えて、編集切替でカードが縦に伸びないようにする */
 .rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;}
-.rank-display::before{content:'';position:absolute;top:-6px;bottom:-14px;left:-4px;right:-4px;}
+/* 下方向を伸ばしすぎると最大スタミナ／放置上端のタップを奪うので控えめに */
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:-4px;left:-4px;right:-4px;}
 .name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;}
 .name-input,.rank-input,.stam-edit,.sl-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
 .name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
 /* 幅だけ display に近づけ、高さは display と同じ13px（min-height禁止） */
 .rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
 /* ===== タイマー行の位置（ここだけ触れば寄せ・余白を調整できる） =====
-   文字位置: flex 余白 / side-shift
+   文字位置: 既存の side-shift / flex 比率変数で調整
    ヒット: ::before のみ（レイアウトに影響しない）
    予定時刻: full-clock の inset
+   --- 今後の追記ルール ---
+   ・:has() は使わない
+   ・新規の grid / 1fr 追加は避ける（位置調整が不安定になりやすい実績あり）
+   ・既存の grid/flex 基盤は壊さない。触るなら最小変更
+   ・位置・ヒットは変数と ::before で足す
 */
 .timer-row{
   --clock-inset:6px;
@@ -49,7 +55,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-calc-gap-pull:-6px;
   --idle-flex-pre:0.65;            /* 放置を左寄せ（右余白を大きくして均等感） */
   --idle-flex-post:1.35;
-  --hit-top:-12px;
+  --hit-top:-18px;                 /* 最大スタミナ上までタップを伸ばす（名前/ランクと競合しない範囲） */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
   --num-size:20px;
@@ -69,6 +75,9 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .full-clock-hour{font-size:9px;color:#91a5bb;}
 .full-clock-minute{font-size:9px;color:#a8b7c8;}
 .full-clock.is-selected{z-index:21;}
+/* スタミナ予定時刻：名前・現在値の青灰／シアン／ランク橙と被らない濃い青 */
+.full-clock-stam .full-clock-hour{color:#4a7ab0;}
+.full-clock-stam .full-clock-minute{color:#5b8ec4;}
 /* 放置報酬側は淡い緑で差別化 */
 .full-clock-idle .full-clock-hour{color:#58b89a;}
 .full-clock-idle .full-clock-minute{color:#68c3a4;}
@@ -85,13 +94,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 }
 .page.is-dimmed .page-dim{opacity:1;visibility:visible;}
 
-/* 選択中・手入力中の操作領域を暗転レイヤーより前へ（数字が暗転の下に潜らないように）。 */
+/* 選択中・手入力中の操作領域を暗転レイヤーより前へ。
+   background 塗りは再ペイントコストがあるので外し、z-index だけ上げる */
 .page.is-dimmed .stam-side.is-selected,
-.page.is-dimmed .stam-side:has(.stam-edit-zone.is-editing){z-index:20;background:#010307;}
-.page.is-dimmed .idle-zone.is-selected{z-index:20;background:transparent;}
-.page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;background:#010307;}
-.page.is-dimmed .stam-edit-zone.is-editing{position:relative;z-index:21;}
-.page.is-dimmed .stam-edit-zone.is-editing .stam-edit{position:relative;z-index:22;}
+.page.is-dimmed .stam-side.is-editing{z-index:20;}
+.page.is-dimmed .idle-zone.is-selected{z-index:20;}
+.page.is-dimmed .idle-zone.is-selected .idle-action{position:relative;z-index:21;}
+.page.is-dimmed .stam-side.is-editing .stam-edit-zone{position:relative;z-index:21;}
+.page.is-dimmed .stam-side.is-editing .stam-edit{position:relative;z-index:22;}
 
 /* 左半分：文字位置は --stam-*、ヒットは ::before のみ（レイアウト非干渉） */
 .stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;}
@@ -142,6 +152,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   text-align:center;
   white-space:nowrap;
   opacity:.9;
+  pointer-events:none;           /* 上段は見た目のみ。タップは stam-stack の ::before が受ける */
 }
 /* 下段：現在値 */
 .stam-stack > .stam-edit-zone{

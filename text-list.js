@@ -168,6 +168,7 @@ import {
     setSelected(ref.stamRow, false);
     setClass(ref.stamFullClock, 'is-selected', false);
     setClass(ref.stamInput.parentElement, 'is-editing', false);
+    setClass(ref.stamRow, 'is-editing', false);
     setHidden(ref.stamInput, true);
     setHidden(ref.stamNumber, stamFull);
     setHidden(ref.stamSlash, stamFull);
@@ -178,13 +179,12 @@ import {
     if (!stamFull) setText(ref.stamNumber, snapshot.stam.current);
     // 最大値はランク変更・初回だけ更新（40計算/手入力確定では触らない）
     if (includeMax) setText(ref.stamMax, slot.stamMax);
+    const stamClock = fullTimeParts(snapshot.stam.plan);
     if (stamFull) {
-      const stamClock = fullTimeParts(snapshot.stam.plan);
       setText(ref.stamFullHour, stamClock.hour);
       setText(ref.stamFullMinute, stamClock.minute);
       setText(ref.stamFullLabel, '満');
     }
-    const stamClock = fullTimeParts(snapshot.stam.plan);
     const stamClockVisible = /^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
     setHidden(ref.stamFullClock, !stamClockVisible || stamFull);
     if (stamClockVisible && !stamFull) {
@@ -317,7 +317,12 @@ import {
     syncTimersAfterResume();
   }
 
-  function setPageDimmed(value){ if (pageEl) setClass(pageEl, 'is-dimmed', value); }
+  function setPageDimmed(value){
+    if (!pageEl) return;
+    // 同じ状態なら classList を触らない（長時間放置後の初回タップでスタイル再計算が重くなるのを避ける）
+    if (pageEl.classList.contains('is-dimmed') === !!value) return;
+    setClass(pageEl, 'is-dimmed', value);
+  }
 
   function beginEdit(type, index){
     const previous = selected ? selected.index : NaN;
@@ -344,6 +349,7 @@ import {
       setHidden(ref.stamInput, false);
       setText(ref.stamMax, state.slots[index].stamMax);
       setClass(ref.stamInput.parentElement, 'is-editing', true);
+      setClass(ref.stamRow, 'is-editing', true);
       setSelected(ref.stamRow, false);
       setClass(ref.stamFullClock, 'is-selected', true);
     }
@@ -423,12 +429,12 @@ import {
   }
   // 40計算待機：基本は現在値＋選択色のみ。
   // 満のときだけ「満UI → 数字プレビュー」の表示切替が必要なので visibility を触る。
+  // displaySnapshot は使わず liveStam だけ見て最小描画を維持（長時間放置後の初回反応を軽くする）。
   function paintStamSelection(index, previewValue){
     const ref = refs[index];
     if (!ref) return;
     const slot = state.slots[index];
-    const snapshot = displaySnapshot(slot, Date.now(), ref.snapshot);
-    const stamFull = snapshot.stam.current >= slot.stamMax;
+    const stamFull = liveStam(slot, Date.now()) >= slot.stamMax;
     setSelected(ref.stamRow, true);
     setClass(ref.stamFullClock, 'is-selected', true);
     if (stamFull) {
@@ -526,12 +532,15 @@ import {
       // ② 40計算（スタミナの確定式タップ）
       const stamConfirm = target.closest('[data-stam-confirm]');
       if (stamConfirm) {
+        // 互換マウスイベントや長時間放置後の二重発火を防ぐ
+        event.preventDefault();
         activate(Number(stamConfirm.dataset.stamConfirm), 'stam');
         return;
       }
       // ③ 放置報酬の受取
       const row = target.closest('[data-task]');
       if (row && row.dataset.task !== 'stam') {
+        event.preventDefault();
         activate(Number(row.dataset.i), row.dataset.task);
         return;
       }
