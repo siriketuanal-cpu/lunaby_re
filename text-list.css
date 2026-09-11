@@ -12,8 +12,18 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .edition{font:800 9px/1 var(--timer-number-font);letter-spacing:.12em;color:#aebbd1;}
 .version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
 .version-link:active{color:var(--cyan);}
-/* 下線は旧スターリープ上辺と同じ太さ・色（SL本体は出さない） */
-.account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;border-bottom:2px solid #52617a;padding-bottom:6px;}
+.account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;}
+/* スターリープ非表示時も、旧SL上辺と同じ仕切り線だけ残す */
+#starleap.sl-bottom-line{
+  display:block;
+  width:100%;
+  height:0;
+  margin-top:6px;
+  padding:0;
+  border:0;
+  border-top:2px solid #52617a;
+  overflow:hidden;
+}
 .account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
 .account.group-0{border-top-color:var(--group-moon);}
 .account.group-1{border-top-color:var(--group-lilac);}
@@ -237,8 +247,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   transform:translateY(-50%);
   font-size:11px;
   line-height:1;
-  color:#ff2ec8;
-  -webkit-text-fill-color:#ff2ec8;
+  color:#9b5cff;
+  -webkit-text-fill-color:#9b5cff;
   font-weight:800;
   pointer-events:none;
   z-index:3;
