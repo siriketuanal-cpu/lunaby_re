@@ -260,7 +260,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .idle-pre{flex:1 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 /* min-width でタイマー幅を確保 → 「受取」に変わっても右に寄らない */
-.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:5.5ch;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:5.5ch;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;left:-8px;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-post{flex:0 0 var(--idle-side-shift);width:var(--idle-side-shift);min-width:var(--idle-side-shift);align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
