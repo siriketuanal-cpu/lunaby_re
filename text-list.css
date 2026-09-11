@@ -48,13 +48,12 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --clock-inset:6px;
   --clock-size:22px;
   --row-pad-x:4px;
-  --stam-side-shift:10px;          /* 左予定時刻→スタミナ（この幅を基準） */
+  --stam-side-shift:10px;          /* 左：予定時刻側からの固定寄せ */
   --stam-flex-left:1;
   --stam-flex-right:1;
   --stam-edit-hit-extend:28px;
   --stam-calc-gap-pull:-6px;
-  --idle-flex-pre:0.4;             /* 放置を左へ：右予定時刻までの余白を左と同じくらいに */
-  --idle-flex-post:1.6;
+  --idle-side-shift:10px;          /* 右：予定時刻側からの固定寄せ（スタミナと同値） */
   --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
@@ -257,13 +256,13 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .stam-full-colon{pointer-events:none;}
 .stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
 
-/* 右サイド：flex でタイマー位置。pre/post 比率で左寄せし、左右の予定時刻との感覚を揃える */
+/* 右サイド：flex配置は維持。右余白だけ固定px（スタミナの side-shift と同じ決め方） */
 .idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;padding:0;cursor:pointer;touch-action:manipulation;}
-.idle-pre{flex:var(--idle-flex-pre) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-pre{flex:1 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;}
 .idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
-.idle-post{flex:var(--idle-flex-post) 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-post{flex:0 0 var(--idle-side-shift);width:var(--idle-side-shift);min-width:var(--idle-side-shift);align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
 .idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
 .task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
 .task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
