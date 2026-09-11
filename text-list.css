@@ -236,7 +236,7 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   transform:translateY(-50%);
   font-size:10px;
   line-height:1;
-  color:#c5d0e0;
+  color:#ff4fd8; /* 他で未使用の明るいマゼンタ */
   pointer-events:none;
   z-index:3;
 }

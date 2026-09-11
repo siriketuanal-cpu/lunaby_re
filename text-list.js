@@ -10,6 +10,8 @@ import {
   const escape = value => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 
   // starleap API を従来の namespace形に束ねる（呼び出し側の差分を最小化）
+  // false でスターリープUIを起動時に組まない（保存データは残す。戻すときは true）
+  const SL_UI_ENABLED = false;
   const slRuntime = {
     getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
     applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
@@ -64,16 +66,27 @@ import {
     }
   }
   function refreshSL(now){
-    if (!slRuntime || !slRefs || !state.sl) return;
+    if (!SL_UI_ENABLED || !slRuntime || !slRefs || !state.sl) return;
     const { getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration } = slRuntime;
     const stamina = getTimerInfo(state.sl.stamina, SL_STAM_MAX, SL_STAM_STEP_MS, now, slSnapshot.stamina);
     const orb = getTimerInfo(state.sl.orb, SL_ORB_MAX, SL_ORB_STEP_MS, now, slSnapshot.orb);
     refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
-  function beginSLEdit(type){ if(!slRuntime || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
-  function commitSLEdit(){ if(!slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
-  function buildSL(){ const host=document.getElementById('starleap'); if(!host) return; host.innerHTML=slMarkup(); slRefs={}; for(const type of ['stamina','orb']){ const root=host.querySelector('[data-sl-task="'+type+'"]'); slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') }; } }
+  function beginSLEdit(type){ if(!SL_UI_ENABLED || !slRuntime || !slRefs || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
+  function commitSLEdit(){ if(!SL_UI_ENABLED || !slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
+  function buildSL(){
+    const host=document.getElementById('starleap');
+    if(!host) return;
+    if(!SL_UI_ENABLED){ host.innerHTML=''; host.hidden=true; slRefs=null; return; }
+    host.hidden=false;
+    host.innerHTML=slMarkup();
+    slRefs={};
+    for(const type of ['stamina','orb']){
+      const root=host.querySelector('[data-sl-task="'+type+'"]');
+      slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') };
+    }
+  }
 
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
@@ -254,7 +267,7 @@ import {
     if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
     if (document.hidden || edit || slEdit) return;
     const now = Date.now();
-    const slTimed = !!(slRuntime && state.sl && slRuntime.hasSLTimedProgress(state.sl, now));
+    const slTimed = !!(SL_UI_ENABLED && slRuntime && state.sl && slRuntime.hasSLTimedProgress(state.sl, now));
     let dotTimed = false;
     for (let index = 0; index < state.slots.length; index += 1) { if (refs[index] && hasTimedProgress(state.slots[index], now)) { dotTimed = true; break; } }
     if (!dotTimed && !slTimed) return;
