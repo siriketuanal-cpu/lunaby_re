@@ -73,7 +73,7 @@ import {
     refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
     refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
   }
-  function beginSLEdit(type){ if(!SL_UI_ENABLED || !slRuntime || !slRefs || slEdit) return; selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
+  function beginSLEdit(type){ if(!SL_UI_ENABLED || !slRuntime || !slRefs || slEdit) return; if(edit) closeEdit(false); if(selected) clearSelectionVisual(selected.index, selected.task); selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
   function commitSLEdit(){ if(!SL_UI_ENABLED || !slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
   function buildSL(){
     const host=document.getElementById('starleap');
@@ -140,7 +140,7 @@ import {
         root,
         nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
         rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
-      stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
+        stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
         stamMax:stamRow.querySelector('.task-max'), stamSlash:null, stamCalc:stamRow.querySelector('.stam-stack'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
         stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
         idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
@@ -309,7 +309,12 @@ import {
   // 復帰時：名前/ランクは触らず、動いているタイマー行と SL だけ強制更新
   function syncTimersAfterResume(){
     const now = Date.now();
-    if (selected) { selected = null; }
+    if (selected) {
+      const idx = selected.index;
+      const task = selected.task;
+      selected = null;
+      clearSelectionVisual(idx, task);
+    }
     if (edit) {
       const idx = edit.index;
       edit = null;
@@ -327,8 +332,7 @@ import {
     scheduleRefresh();
   }
   function syncAfterResume(){
-    // Android/iOSでは復帰時に visibilitychange と focus が連続して発火する。
-    // 両イベントの役割は残しつつ、近接した同一復帰だけを抑制する。
+    // Android/iOSでは復帰時に visibilitychange が複数回連続して発火することがあるためガード
     if (document.hidden) return;
     const now = Date.now();
     if (now - lastResumeSyncAt < 250) return;
@@ -338,10 +342,13 @@ import {
 
 
   function beginEdit(type, index){
-    const previous = selected ? selected.index : NaN;
-    const previousTask = selected ? selected.task : null;
-    if (Number.isFinite(previous)) clearSelectionVisual(previous, previousTask);
-    selected = null;
+    if (edit) closeEdit(false);
+    if (selected) {
+      const prevIdx = selected.index;
+      const prevTask = selected.task;
+      selected = null;
+      clearSelectionVisual(prevIdx, prevTask);
+    }
     edit = { type, index, original:type === 'stam' ? liveStam(state.slots[index], Date.now()) : null };
     const ref = refs[index];
     if (type === 'name') {
@@ -498,13 +505,7 @@ import {
 
   function setupEvents(){
     const list = document.querySelector('.page');
-    document.addEventListener('contextmenu', event => event.preventDefault());
-    document.addEventListener('copy', event => event.preventDefault());
-    document.addEventListener('cut', event => event.preventDefault());
-    document.addEventListener('selectstart', event => event.preventDefault());
-    document.addEventListener('dragstart', event => event.preventDefault());
     // タップで開く4つの「手入力」対象（名前・ランク・スタミナ・スターリープ）を1本の表にまとめる。
-    // 判定順・preventDefaultのタイミング・呼び出す関数は元のコードと同一で、繰り返しだけを解消。
     const MANUAL_EDIT_TARGETS = [
       ['[data-name-edit]', el => beginEdit('name', Number(el.dataset.nameEdit))],
       ['[data-rank-edit]', el => beginEdit('rank', Number(el.dataset.rankEdit))],
@@ -512,15 +513,10 @@ import {
       ['[data-sl-task]', el => beginSLEdit(el.dataset.slTask)],
     ];
     // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
-    // pointerup に分けるとモバイルで focus 脱落・反応遅れが出るため一本化。
-    // やることは3種類だけ：① 手入力を開く ② 40計算（確定式） ③ 放置報酬の受取
     list.addEventListener('pointerdown', event => {
       const target = event.target;
       if (target.matches('input')) {
         if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
-          // ここは実際の <input> 自身へのタップなので preventDefault はしない。
-          // pointerdown で preventDefault すると、端末によっては直後の focus() が
-          // 「素のユーザー操作」と見なされずソフトキーボードが開かないことがあるため。
           target.focus({ preventScroll:true });
         }
         return;
@@ -529,7 +525,6 @@ import {
       for (const [selector, open] of MANUAL_EDIT_TARGETS) {
         const el = target.closest(selector);
         if (el) {
-          // preventDefault で互換マウスイベントを止め、余白への誤ヒット→blur を防ぐ
           event.preventDefault();
           open(el);
           return;
@@ -538,7 +533,6 @@ import {
       // ② 40計算（スタミナの確定式タップ）
       const stamConfirm = target.closest('[data-stam-confirm]');
       if (stamConfirm) {
-        // 互換マウスイベントや長時間放置後の二重発火を防ぐ
         event.preventDefault();
         activate(Number(stamConfirm.dataset.stamConfirm), 'stam');
         return;
@@ -556,7 +550,17 @@ import {
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
       if (input.matches('[data-rank-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
       if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
-      if (input.matches('[data-sl-editor="orb"]')) { const raw=String(input.value||'').replace(/：/g,':'); let next=''; let digits=0; for(const char of raw){ if(/\d/.test(char) && digits<4){ next+=char; digits+=1; } else if(char===':' && !next.includes(':')) next+=char; } input.value=next; }
+      if (input.matches('[data-sl-editor="orb"]')) {
+        const raw=String(input.value||'').replace(/：/g,':');
+        let next='';
+        let digits=0;
+        for(let i=0; i<raw.length; i++){
+          const char = raw[i];
+          if(char >= '0' && char <= '9' && digits<4){ next+=char; digits+=1; }
+          else if(char===':' && !next.includes(':')) next+=char;
+        }
+        input.value=next;
+      }
     });
     list.addEventListener('focusout', event => {
       const input = event.target;
@@ -578,7 +582,6 @@ import {
         if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
       } else syncAfterResume();
     });
-    window.addEventListener('focus', syncAfterResume);
   }
 
   export function startLunaby(loaded) {
