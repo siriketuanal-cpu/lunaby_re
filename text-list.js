@@ -79,16 +79,14 @@ import {
     const host=document.getElementById('starleap');
     if(!host) return;
     if(!SL_UI_ENABLED){
-      host.hidden=false;
-      host.className='sl-bottom-line';
       host.innerHTML='';
-      host.setAttribute('aria-hidden','true');
+      host.hidden=true;
+      host.className='';
       slRefs=null;
       return;
     }
     host.hidden=false;
     host.className='';
-    host.removeAttribute('aria-hidden');
     host.innerHTML=slMarkup();
     slRefs={};
     for(const type of ['stamina','orb']){
