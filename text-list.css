@@ -53,7 +53,8 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   --stam-flex-right:1;
   --stam-edit-hit-extend:28px;
   --stam-calc-gap-pull:-6px;
-  --idle-side-shift:10px;          /* 右：予定時刻側からの固定寄せ（スタミナと同値） */
+  /* 右：予定時刻は右端にあるので、時計幅+inset+スタミナと同じ寄せ分だけ内側（中央方向）へ */
+  --idle-side-shift:calc(var(--clock-inset) + var(--clock-size) + var(--stam-side-shift));
   --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
   --hit-bottom:-5px;
   /* 数字サイズ固定（解像度依存を外す） */
