@@ -10,21 +10,11 @@
    const status=document.getElementById('status');
    try {
      if ('serviceWorker' in navigator) {
+       // SW本体の update() は呼ばない（Chrome/TWAの更新検知を増やさない）。
+       // アプリ本体の差し替えは REPAIR_SHELL（Cache Storage）だけで行う。
        let registration=await navigator.serviceWorker.getRegistration('./');
-       if (!registration) registration=await navigator.serviceWorker.register('./sw.js', { scope:'./' });
-       await registration.update();
-       const installing=registration.installing;
-       if (installing) {
-         await new Promise((resolve, reject) => {
-           const timeout=setTimeout(() => reject(new Error('service worker update timeout')), 10000);
-           const finish=() => { clearTimeout(timeout); resolve(); };
-           if (installing.state === 'activated') finish();
-           else if (installing.state === 'redundant') reject(new Error('service worker update rejected'));
-           else installing.addEventListener('statechange', () => {
-             if (installing.state === 'activated') finish();
-             else if (installing.state === 'redundant') reject(new Error('service worker update rejected'));
-           });
-         });
+       if (!registration) {
+         registration=await navigator.serviceWorker.register('./sw.js', { scope:'./', updateViaCache:'all' });
        }
        await navigator.serviceWorker.ready;
        const worker=registration.active || navigator.serviceWorker.controller;

@@ -23,12 +23,14 @@
     <div id="starleap" aria-label="スターリープ テキストリスト"></div>
   </main>
   <script type="module" src="text-list-v2-only-entry.mjs"></script>
-  <!-- アプリ起動後に登録。SWの取得・インストールで初回描画をブロックしない -->
+  <!-- 初回のみ登録。既存があれば触らない（update()しない＝TWA更新バー抑制） -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.getRegistration('./').then(registration => {
-          if (!registration) return navigator.serviceWorker.register('./sw.js', { scope: './' });
+          if (registration) return;
+          // updateViaCache:'all' で sw.js の余計な再検証を減らす
+          return navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'all' });
         }).catch(() => {});
       }, { once: true });
     }
