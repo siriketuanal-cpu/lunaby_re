@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.siriketuanal_cpu.twa",
+        "sha256_cert_fingerprints": ["DF:32:21:F4:D9:91:3A:7D:A9:52:48:49:00:B7:6C:45:04:9C:AB:2C:32:4F:EE:38:8B:4F:51:4D:02:AD:60:E9"]
+      }
+    }]
