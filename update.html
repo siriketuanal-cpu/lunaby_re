@@ -8,6 +8,10 @@
 <script>
  (async () => {
    const status=document.getElementById('status');
+   // ?force=1 の時だけ、SW本体の本当の更新チェックをする（隠しモード）。
+   // 普段のLUNABYタップ(パラメータなし)は今まで通り更新チェックをしない。
+   // TWAアプリからは開けないので、通常のChromeで直接このURLに?force=1を付けて開く。
+   const force = new URLSearchParams(location.search).get('force') === '1';
    try {
      if ('serviceWorker' in navigator) {
        // SW本体の update() は呼ばない（Chrome/TWAの更新検知を増やさない）。
@@ -15,6 +19,18 @@
        let registration=await navigator.serviceWorker.getRegistration('./');
        if (!registration) {
          registration=await navigator.serviceWorker.register('./sw.js', { scope:'./', updateViaCache:'all' });
+       } else if (force) {
+         status.textContent='SW本体の更新を確認しています。';
+         await registration.update();
+         const incoming = registration.installing || registration.waiting;
+         if (incoming) {
+           await new Promise(resolve => {
+             const to = setTimeout(resolve, 15000);
+             incoming.addEventListener('statechange', () => {
+               if (incoming.state === 'activated' || incoming.state === 'redundant') { clearTimeout(to); resolve(); }
+             });
+           });
+         }
        }
        await navigator.serviceWorker.ready;
        const worker=registration.active || navigator.serviceWorker.controller;
