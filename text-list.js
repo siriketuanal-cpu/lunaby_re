@@ -324,10 +324,20 @@ import {
     }
     refreshSL(now);
     for (let index = 0; index < state.slots.length; index += 1) {
-      if (!refs[index]) continue;
+      const ref = refs[index];
+      if (!ref) continue;
       const slot = state.slots[index];
-      if (slot.stamRunning) paintStamRow(index, now, { force:true });
-      if (slot.idleRunning) paintIdleRow(index, now, { force:true });
+      if (!slot.stamRunning && !slot.idleRunning) continue;
+      // syncTimedSlots と同じ差分方式。復帰直後は「受取」タップと処理が重なりやすいため、
+      // ここだけ force:true で全描画していたのを避け、変化のあった行だけ描画する。
+      const prevStamCurrent = ref.snapshot.stam.current;
+      const prevStamLow = !!ref.snapshot.stam.low;
+      const prevIdleValue = ref.snapshot.idle.value;
+      const prevIdleFull = !!ref.snapshot.idle.full;
+      const prevIdleLow = !!ref.snapshot.idle.low;
+      const snapshot = displaySnapshot(slot, now, ref.snapshot);
+      if (slot.stamRunning) paintStamRow(index, now, { snapshot, prevStamCurrent, prevStamLow });
+      if (slot.idleRunning) paintIdleRow(index, now, { snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
     }
     scheduleRefresh();
   }
@@ -495,7 +505,9 @@ import {
     if (task === 'stam') paintStamRow(index, now, { force:true });
     else paintIdleRow(index, now, { force:true });
     scheduleRefresh();
-    write(index);
+    // localStorage.setItem は同期I/Oで詰まることがあるため、確定タップの描画が
+    // 実際に画面へコミットされるのを待ってから書き込む（rAF→setTimeout(0)で1フレーム後ろへ）。
+    requestAnimationFrame(() => setTimeout(() => write(index), 0));
   }
   function activate(index, task){
     const same = selected && selected.index === index && selected.task === task;
@@ -580,6 +592,9 @@ import {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+        // 確定タップ直後の書き込みはrAF後まで遅延しているため、
+        // その前にバックグラウンド遷移した場合の保存漏れを防ぐ保険。
+        write();
       } else syncAfterResume();
     });
   }
