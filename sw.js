@@ -15,7 +15,6 @@ const SHELL = [
   './lunaby-mascot-512.png',
   './lunaby-mascot-maskable-512.png'
 ];
-const APP_PATH = new URL('./', self.location).pathname;
 const INDEX_URL = new URL('./index.html', self.location).href;
 
 self.addEventListener('install', event => {
