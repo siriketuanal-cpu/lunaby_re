@@ -7,7 +7,7 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-
    スクロールする」ネイティブ挙動ごと無効化する（JS側での抑止が不要になる）。 */
 body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 .page,.page *{user-select:none;-webkit-user-select:none;}
-.page{position:relative;width:min(760px,100%);margin:0 auto;padding:10px 12px 28px;}
+.page{position:relative;width:min(760px,100%);margin:0 auto;padding:calc(10px + env(safe-area-inset-top, 0px)) 12px 28px;}
 .topbar{position:relative;height:28px;display:flex;align-items:center;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px;}
 .edition{font:800 9px/1 var(--timer-number-font);letter-spacing:.12em;color:#aebbd1;}
 .version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
