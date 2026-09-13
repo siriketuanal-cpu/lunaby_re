@@ -342,7 +342,6 @@ import {
     scheduleRefresh();
   }
   function syncAfterResume(){
-    // Android/iOSでは復帰時に visibilitychange が複数回連続して発火することがあるためガード
     if (document.hidden) return;
     const now = Date.now();
     if (now - lastResumeSyncAt < 250) return;
