@@ -28,6 +28,14 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   transition:opacity 320ms cubic-bezier(.22,.61,.36,1);
 }
 
+/* Android TWA / standalone のタスク復帰では、同期済みDOMを早めに見せる。
+   通常ブラウザは上の320msを維持。 */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui){
+  .resume-veil.is-revealing{
+    transition-duration:260ms;
+  }
+}
+
 .page,.page *{user-select:none;-webkit-user-select:none;}
 .page{position:relative;width:min(760px,100%);margin:0 auto;padding:250px 12px 28px;}
 /* 旧 topbar の LUNABY 表示は廃止。更新は左上の .update-corner のみ */

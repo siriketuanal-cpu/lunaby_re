@@ -422,7 +422,7 @@ import {
     const veil = document.getElementById('resume-veil');
     if (!veil) return;
     if (resumeRevealTimer) clearTimeout(resumeRevealTimer);
-    // DOM更新を1フレーム確定させてからベールを320msかけて外す。
+    // DOM更新を1フレーム確定させてからベールをモード別の時間で外す。
     requestAnimationFrame(() => {
       if (document.hidden) return;
       // class切替を確実に別描画に分離する。
@@ -433,20 +433,36 @@ import {
         resumeRevealTimer = setTimeout(() => {
           resumeRevealTimer = null;
           veil.classList.remove('is-revealing');
-        }, 360);
+        }, RESUME_REVEAL_CLEANUP);
       });
     });
   }
 
+  // TWA / standalone は Android のタスク復帰を主対象にする。
+  // 通常ブラウザでは従来の安全側タイミングを維持する。
+  const standaloneResumeMode = (() => {
+    try {
+      return !!(window.matchMedia && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches
+      ));
+    } catch (_) {
+      return false;
+    }
+  })();
+  const RESUME_SYNC_DELAY = standaloneResumeMode ? 160 : 240;
+  const RESUME_REVEAL_CLEANUP = standaloneResumeMode ? 300 : 360;
+
   function syncAfterResume(){
     if (document.hidden) return;
     const now = Date.now();
-    // 連続する visibility / 復帰イベントをまとめる（点滅の二重更新防止）
+    // 連続する visibility / pageshow をまとめ、二重復帰を防ぐ。
     if (now - lastResumeSyncAt < 320) return;
     lastResumeSyncAt = now;
 
-    // 第1段階：復帰直後の不安定なコンポジタをベールで覆う。
-    // 第2段階：240ms待ってDOMを更新し、その後320msかけて見せる。
+    // TWA/standalone はタスク復帰を優先し、待機を160msへ短縮。
+    // 通常ブラウザでは従来の240msを維持する。
     beginResumeCover();
     if (resumeSyncTimer) clearTimeout(resumeSyncTimer);
     resumeSyncTimer = setTimeout(() => {
@@ -454,7 +470,7 @@ import {
       if (document.hidden) return;
       syncTimersAfterResume();
       revealAfterResume();
-    }, 240);
+    }, RESUME_SYNC_DELAY);
   }
 
 
