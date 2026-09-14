@@ -9,10 +9,33 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 
 .page,.page *{user-select:none;-webkit-user-select:none;}
 .page{position:relative;width:min(760px,100%);margin:0 auto;padding:250px 12px 28px;}
-.topbar{position:relative;height:28px;display:flex;align-items:center;border-bottom:1px solid var(--line);color:var(--muted);font-size:11px;}
-.edition{font:800 9px/1 var(--timer-number-font);letter-spacing:.12em;color:#aebbd1;}
-.version-link{margin-left:-4px;padding:1px 4px;color:#f1f5fb;text-decoration:none;cursor:pointer;}
-.version-link:active{color:var(--cyan);}
+/* 旧 topbar の LUNABY 表示は廃止。更新は左上の .update-corner のみ */
+.topbar{display:none;}
+.update-corner{
+  position:fixed;
+  top:10px;
+  left:10px;
+  z-index:20;
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  border:1px solid rgba(174,187,209,.35);
+  background:rgba(5,7,10,.55);
+  color:#aebbd1;
+  font:700 14px/1 system-ui,sans-serif;
+  text-decoration:none;
+  opacity:.72;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.update-corner:active{
+  color:var(--cyan);
+  border-color:var(--cyan);
+  opacity:1;
+}
 /* 下線はドットアビス側の締め（旧SL上辺と同じ太さ・色）。SL本体は出さない */
 .account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;border-bottom:2px solid #52617a;padding-bottom:6px;}
 .account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
