@@ -6,23 +6,17 @@
   <title>ルナビィ — v2専用</title>
   <meta name="theme-color" content="#05070a">
   <meta name="application-name" content="ルナビィ">
-  <meta name="apple-mobile-web-app-title" content="ルナビィ">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <style>html,body{background:#05070a;}</style>
   <link rel="manifest" href="manifest.json">
   <!-- ランチャー／タスク一覧用：複数サイズ＋apple-touch を明示（Chromeアイコン落ち防止） -->
   <link rel="icon" type="image/png" sizes="192x192" href="lunaby-neko-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="lunaby-neko-512.png">
-  <link rel="apple-touch-icon" href="lunaby-neko-192.png">
-  <link rel="apple-touch-icon" sizes="192x192" href="lunaby-neko-192.png">
-  <link rel="apple-touch-icon" sizes="512x512" href="lunaby-neko-512.png">
-    <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
-    <link rel="modulepreload" href="text-list-v2-only-entry.mjs">
-    <link rel="modulepreload" href="text-list.js">
-    <link rel="modulepreload" href="lunaby-core.mjs">
-    <link rel="stylesheet" href="text-list.css">
+  <!-- TWA初回描画を優先: render-blocking CSSを先に発見し、その直後に起動モジュールを先読み。 -->
+  <link rel="stylesheet" href="text-list.css" fetchpriority="high">
+  <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
+  <link rel="modulepreload" href="text-list-v2-only-entry.mjs" fetchpriority="high">
+  <link rel="modulepreload" href="text-list.js">
+  <link rel="modulepreload" href="lunaby-core.mjs">
 </head>
 <body>
   <!-- 更新入口: 画面左上の軽いリンク。経路は従来どおり update.html -->
@@ -33,15 +27,17 @@
     <div id="starleap" aria-label="スターリープ テキストリスト"></div>
   </main>
   <script type="module" src="text-list-v2-only-entry.mjs"></script>
-  <!-- 初回のみ登録。既存があれば触らない（update()しない＝TWA更新バー抑制） -->
+  <!-- TWA通常起動ではSW登録を描画後のアイドルへ送る。登録済みなら何もしない。 -->
   <script>
     if ('serviceWorker' in navigator) {
+      const registerSW = () => navigator.serviceWorker.getRegistration('./').then(registration => {
+        if (registration) return;
+        // updateViaCache:'all' は既存の更新フローを変えない。
+        return navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'all' });
+      }).catch(() => {});
       window.addEventListener('load', () => {
-        navigator.serviceWorker.getRegistration('./').then(registration => {
-          if (registration) return;
-          // updateViaCache:'all' で sw.js の余計な再検証を減らす
-          return navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'all' });
-        }).catch(() => {});
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(registerSW, { timeout: 2000 });
+        else setTimeout(registerSW, 0);
       }, { once: true });
     }
   </script>

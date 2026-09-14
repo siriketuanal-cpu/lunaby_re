@@ -422,7 +422,7 @@ import {
     const veil = document.getElementById('resume-veil');
     if (!veil) return;
     if (resumeRevealTimer) clearTimeout(resumeRevealTimer);
-    // DOM更新を1フレーム確定させてからベールを520msかけて外す。
+    // DOM更新を1フレーム確定させてからベールを320msかけて外す。
     requestAnimationFrame(() => {
       if (document.hidden) return;
       // class切替を確実に別描画に分離する。
@@ -433,7 +433,7 @@ import {
         resumeRevealTimer = setTimeout(() => {
           resumeRevealTimer = null;
           veil.classList.remove('is-revealing');
-        }, 560);
+        }, 360);
       });
     });
   }
@@ -446,7 +446,7 @@ import {
     lastResumeSyncAt = now;
 
     // 第1段階：復帰直後の不安定なコンポジタをベールで覆う。
-    // 第2段階：240ms待ってDOMを更新し、その後520msかけてゆっくり見せる。
+    // 第2段階：240ms待ってDOMを更新し、その後320msかけて見せる。
     beginResumeCover();
     if (resumeSyncTimer) clearTimeout(resumeSyncTimer);
     resumeSyncTimer = setTimeout(() => {
