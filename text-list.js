@@ -306,45 +306,113 @@ import {
     }
     scheduleRefresh();
   }
-  // 復帰時：名前/ランクは触らず、動いているタイマー行と SL だけ強制更新
+  // 復帰時：内部時刻はすぐ合わせ、DOM は「変化した行だけ」を1フレームにまとめて書く。
+  // force 全描画や選択クリアの force 再描画は、値が同じでも hidden/class を触って点滅しやすい。
   function syncTimersAfterResume(){
     const now = Date.now();
-    if (selected) {
-      const idx = selected.index;
-      const task = selected.task;
-      selected = null;
-      clearSelectionVisual(idx, task);
-    }
+    // 選択・編集は状態だけ外す（ここでは force 再描画しない）
+    const hadSelected = selected;
+    const hadEdit = edit;
+    if (selected) selected = null;
     if (edit) {
       const idx = edit.index;
       edit = null;
+      // input を閉じる最小処理（行全体の force はしない）
+      const ref = refs[idx];
+      if (ref) {
+        setHidden(ref.nameInput, true);
+        setHidden(ref.nameDisplay, false);
+        setHidden(ref.rankInput, true);
+        setHidden(ref.rankDisplay, false);
+        setHidden(ref.stamInput, true);
+        setClass(ref.stamInput.parentElement, 'is-editing', false);
+        setClass(ref.stamRow, 'is-editing', false);
+      }
       paintName(idx);
       paintRank(idx);
-      paintStamRow(idx, now, { force:true, includeMax:true });
     }
-    refreshSL(now);
+    // スナップショット計算は同期で行い、DOM 書き込みだけ rAF に載せる
+    const jobs = [];
     for (let index = 0; index < state.slots.length; index += 1) {
       const ref = refs[index];
       if (!ref) continue;
       const slot = state.slots[index];
       if (!slot.stamRunning && !slot.idleRunning) continue;
-      // syncTimedSlots と同じ差分方式。復帰直後は「受取」タップと処理が重なりやすいため、
-      // ここだけ force:true で全描画していたのを避け、変化のあった行だけ描画する。
       const prevStamCurrent = ref.snapshot.stam.current;
       const prevStamLow = !!ref.snapshot.stam.low;
       const prevIdleValue = ref.snapshot.idle.value;
       const prevIdleFull = !!ref.snapshot.idle.full;
       const prevIdleLow = !!ref.snapshot.idle.low;
       const snapshot = displaySnapshot(slot, now, ref.snapshot);
-      if (slot.stamRunning) paintStamRow(index, now, { snapshot, prevStamCurrent, prevStamLow });
-      if (slot.idleRunning) paintIdleRow(index, now, { snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
+      if (slot.stamRunning) {
+        jobs.push({ kind:'stam', index, snapshot, prevStamCurrent, prevStamLow });
+      }
+      if (slot.idleRunning) {
+        jobs.push({ kind:'idle', index, snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
+      }
     }
-    scheduleRefresh();
+    // 選択中だった行は、プレビュー数字/ハイライト解除のため必ず force で戻す
+    // （値が同じでも差分スキップされると40プレビューが残る）
+    if (hadSelected && refs[hadSelected.index]) {
+      const index = hadSelected.index;
+      const kind = hadSelected.task === 'idle' ? 'idle' : 'stam';
+      for (let i = jobs.length - 1; i >= 0; i -= 1) {
+        if (jobs[i].index === index && jobs[i].kind === kind) jobs.splice(i, 1);
+      }
+      const ref = refs[index];
+      const slot = state.slots[index];
+      if (slot && ref) {
+        const snapshot = displaySnapshot(slot, now, ref.snapshot);
+        if (kind === 'idle') {
+          jobs.push({
+            kind:'idle', index, snapshot,
+            prevIdleValue: snapshot.idle.value,
+            prevIdleFull: !!snapshot.idle.full,
+            prevIdleLow: !!snapshot.idle.low,
+            force:true
+          });
+        } else {
+          jobs.push({
+            kind:'stam', index, snapshot,
+            prevStamCurrent: snapshot.stam.current,
+            prevStamLow: !!snapshot.stam.low,
+            force:true
+          });
+        }
+      }
+    }
+    const runJobs = () => {
+      if (document.hidden) return;
+      for (const job of jobs) {
+        if (job.kind === 'stam') {
+          paintStamRow(job.index, now, {
+            snapshot: job.snapshot,
+            prevStamCurrent: job.prevStamCurrent,
+            prevStamLow: job.prevStamLow,
+            force: !!job.force
+          });
+        } else {
+          paintIdleRow(job.index, now, {
+            snapshot: job.snapshot,
+            prevIdleValue: job.prevIdleValue,
+            prevIdleFull: job.prevIdleFull,
+            prevIdleLow: job.prevIdleLow,
+            force: !!job.force
+          });
+        }
+      }
+      refreshSL(now);
+      scheduleRefresh();
+    };
+    // ブラウザの描画フレームに乗せて、途中経過の再フローを減らす
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(runJobs);
+    else runJobs();
   }
   function syncAfterResume(){
     if (document.hidden) return;
     const now = Date.now();
-    if (now - lastResumeSyncAt < 250) return;
+    // 連続する visibility / 復帰イベントをまとめる（点滅の二重更新防止）
+    if (now - lastResumeSyncAt < 320) return;
     lastResumeSyncAt = now;
     syncTimersAfterResume();
   }
@@ -591,10 +659,18 @@ import {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
-        // 確定タップ直後の書き込みはrAF後まで遅延しているため、
-        // その前にバックグラウンド遷移した場合の保存漏れを防ぐ保険。
-        write();
-      } else syncAfterResume();
+        // 保存は必要だが、重い同期I/Oで復帰直後の描画とぶつかりやすいので
+        // 可能ならアイドルに回す（非対応環境は即時）。
+        const persist = () => { try { write(); } catch (_) {} };
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(persist, { timeout: 400 });
+        else setTimeout(persist, 0);
+      } else {
+        syncAfterResume();
+      }
+    });
+    // bfcache 復帰（一部 Android / 戻る操作）でも同じ経路へ
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) syncAfterResume();
     });
   }
 
