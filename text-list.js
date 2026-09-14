@@ -408,6 +408,7 @@ import {
     if (typeof requestAnimationFrame === 'function') requestAnimationFrame(runJobs);
     else runJobs();
   }
+
   function syncAfterResume(){
     if (document.hidden) return;
     const now = Date.now();
