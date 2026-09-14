@@ -5,12 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
   <title>ルナビィ — v2専用</title>
   <meta name="theme-color" content="#05070a">
+  <meta name="application-name" content="ルナビィ">
+  <meta name="apple-mobile-web-app-title" content="ルナビィ">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <style>html,body{background:#05070a;}</style>
   <link rel="manifest" href="manifest.json">
+  <!-- ランチャー／タスク一覧用：複数サイズ＋apple-touch を明示（Chromeアイコン落ち防止） -->
   <link rel="icon" type="image/png" sizes="192x192" href="lunaby-neko-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="lunaby-neko-512.png">
+  <link rel="apple-touch-icon" href="lunaby-neko-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="lunaby-neko-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="lunaby-neko-512.png">
     <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
     <link rel="modulepreload" href="text-list-v2-only-entry.mjs">
     <link rel="modulepreload" href="text-list.js">

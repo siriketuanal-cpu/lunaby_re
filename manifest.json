@@ -3,7 +3,8 @@
   "short_name": "ルナビィ",
   "description": "Dot AbyssとSTAR LEAPの回復・放置報酬を管理する軽量タイマー",
   "lang": "ja",
-  "start_url": "./",
+  "id": "./",
+  "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -27,6 +28,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "lunaby-neko-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ],
   "display_override": [
