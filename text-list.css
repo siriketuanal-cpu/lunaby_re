@@ -7,6 +7,27 @@ html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-
    スクロールする」ネイティブ挙動ごと無効化する（JS側での抑止が不要になる）。 */
 body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
 
+/* タスク凍結からの復帰時：DOM更新を覆ってから、ゆっくり画面へ戻す。
+   Android/TWAのコンポジタが「古い描画→新しい描画」と瞬間的に切り替わる
+   フラッシュを見せにくくするための復帰用ベール。 */
+.resume-veil{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:#05070a;
+  opacity:0;
+  pointer-events:none;
+  transition:none;
+  will-change:opacity;
+}
+.resume-veil.is-covering{
+  opacity:.96;
+}
+.resume-veil.is-revealing{
+  opacity:0;
+  transition:opacity 520ms cubic-bezier(.22,.61,.36,1);
+}
+
 .page,.page *{user-select:none;-webkit-user-select:none;}
 .page{position:relative;width:min(760px,100%);margin:0 auto;padding:250px 12px 28px;}
 /* 旧 topbar の LUNABY 表示は廃止。更新は左上の .update-corner のみ */

@@ -26,6 +26,8 @@ import {
   let slRefs = null;
   const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
+  let resumeSyncTimer = null;
+  let resumeRevealTimer = null;
   let lastResumeSyncAt = -Infinity;
   function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
 
@@ -409,13 +411,50 @@ import {
     else runJobs();
   }
 
+  function beginResumeCover(){
+    const veil = document.getElementById('resume-veil');
+    if (!veil) return;
+    veil.classList.remove('is-revealing');
+    veil.classList.add('is-covering');
+  }
+
+  function revealAfterResume(){
+    const veil = document.getElementById('resume-veil');
+    if (!veil) return;
+    if (resumeRevealTimer) clearTimeout(resumeRevealTimer);
+    // DOM更新を1フレーム確定させてからベールを520msかけて外す。
+    requestAnimationFrame(() => {
+      if (document.hidden) return;
+      // class切替を確実に別描画に分離する。
+      requestAnimationFrame(() => {
+        if (document.hidden) return;
+        veil.classList.remove('is-covering');
+        veil.classList.add('is-revealing');
+        resumeRevealTimer = setTimeout(() => {
+          resumeRevealTimer = null;
+          veil.classList.remove('is-revealing');
+        }, 560);
+      });
+    });
+  }
+
   function syncAfterResume(){
     if (document.hidden) return;
     const now = Date.now();
     // 連続する visibility / 復帰イベントをまとめる（点滅の二重更新防止）
     if (now - lastResumeSyncAt < 320) return;
     lastResumeSyncAt = now;
-    syncTimersAfterResume();
+
+    // 第1段階：復帰直後の不安定なコンポジタをベールで覆う。
+    // 第2段階：240ms待ってDOMを更新し、その後520msかけてゆっくり見せる。
+    beginResumeCover();
+    if (resumeSyncTimer) clearTimeout(resumeSyncTimer);
+    resumeSyncTimer = setTimeout(() => {
+      resumeSyncTimer = null;
+      if (document.hidden) return;
+      syncTimersAfterResume();
+      revealAfterResume();
+    }, 240);
   }
 
 
@@ -660,6 +699,10 @@ import {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+        if (resumeSyncTimer) { clearTimeout(resumeSyncTimer); resumeSyncTimer = null; }
+        if (resumeRevealTimer) { clearTimeout(resumeRevealTimer); resumeRevealTimer = null; }
+        const veil = document.getElementById('resume-veil');
+        if (veil) veil.classList.remove('is-covering', 'is-revealing');
         // 保存は必要だが、重い同期I/Oで復帰直後の描画とぶつかりやすいので
         // 可能ならアイドルに回す（非対応環境は即時）。
         const persist = () => { try { write(); } catch (_) {} };
