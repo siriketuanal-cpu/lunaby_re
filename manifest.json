@@ -11,19 +11,19 @@
   "theme_color": "#05070a",
   "icons": [
     {
-      "src": "lunaby-mascot-192.png",
+      "src": "lunaby-neko-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "lunaby-mascot-512.png",
+      "src": "lunaby-neko-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "lunaby-mascot-maskable-512.png",
+      "src": "lunaby-neko-maskable-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"

@@ -11,9 +11,9 @@ const SHELL = [
   './lunaby-core.mjs',
   './lunaby-v2-first-launch.mjs',
   './manifest.json',
-  './lunaby-mascot-192.png',
-  './lunaby-mascot-512.png',
-  './lunaby-mascot-maskable-512.png'
+  './lunaby-neko-192.png',
+  './lunaby-neko-512.png',
+  './lunaby-neko-maskable-512.png'
 ];
 const INDEX_URL = new URL('./index.html', self.location).href;
 
