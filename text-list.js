@@ -29,6 +29,17 @@ import {
   function buildSL(){ /* no-op */ }
   function refreshSL(){ /* no-op */ }
 
+  function setHidden(element, value){
+    if (!element) return;
+    const hidden = !!value;
+    if (element.hidden !== hidden) element.hidden = hidden;
+  }
+  function setClass(element, name, value){
+    if (!element) return;
+    const enabled = !!value;
+    if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled);
+  }
+
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
       '<div class="account-head">' +
