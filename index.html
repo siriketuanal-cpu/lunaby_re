@@ -6,12 +6,34 @@
   <title>ルナビィ — v2専用</title>
   <meta name="theme-color" content="#05070a">
   <meta name="application-name" content="ルナビィ">
-  <style>html,body{background:#05070a;}</style>
+  <!-- 致命的レイアウトは HTML 内に持つ。text-list.css が欠ける／古いキャッシュでも
+       上余白と更新ボタンが「消えた／テキストリンクだけ」にならないようにする。 -->
+  <style>
+    html,body{height:100%;margin:0;background:#05070a;color:#e4ebf6;}
+    body{position:fixed;inset:0;overflow:hidden;}
+    .page{
+      position:relative;width:min(760px,100%);margin:0 auto;
+      padding:250px 12px 28px;box-sizing:border-box;
+    }
+    @media (max-width:440px){
+      .page{padding:230px 8px 24px;}
+    }
+    .update-corner{
+      position:fixed;top:10px;left:10px;z-index:20;
+      width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+      border-radius:8px;border:1px solid rgba(174,187,209,.35);
+      background:rgba(5,7,10,.55);color:#aebbd1;
+      font:700 14px/1 system-ui,sans-serif;text-decoration:none;opacity:.72;
+      -webkit-tap-highlight-color:transparent;touch-action:manipulation;
+      box-sizing:border-box;
+    }
+    .update-corner:active{color:#72dbea;border-color:#72dbea;opacity:1;}
+  </style>
   <link rel="manifest" href="manifest.json">
   <!-- ランチャー／タスク一覧用：複数サイズ＋apple-touch を明示（Chromeアイコン落ち防止） -->
   <link rel="icon" type="image/png" sizes="192x192" href="lunaby-neko-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="lunaby-neko-512.png">
-  <!-- TWA初回描画を優先: render-blocking CSSを先に発見し、その直後に起動モジュールを先読み。 -->
+  <!-- 詳細スタイル。欠けても上の inline で余白・更新ボタンは維持される -->
   <link rel="stylesheet" href="text-list.css" fetchpriority="high">
   <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
   <link rel="modulepreload" href="text-list-v2-only-entry.mjs" fetchpriority="high">
@@ -20,9 +42,9 @@
 </head>
 <body>
   <!-- 更新入口: 画面左上の軽いリンク。経路は従来どおり update.html -->
-  <a class="update-corner" href="update.html" aria-label="アプリを更新">↻</a>
+  <a class="update-corner" href="update.html" aria-label="アプリを更新" style="position:fixed;top:10px;left:10px;z-index:20;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid rgba(174,187,209,.35);background:rgba(5,7,10,.55);color:#aebbd1;font:700 14px/1 system-ui,sans-serif;text-decoration:none;opacity:.72;box-sizing:border-box">↻</a>
   <div id="resume-veil" class="resume-veil" aria-hidden="true"></div>
-  <main class="page">
+  <main class="page" style="padding:250px 12px 28px;box-sizing:border-box">
     <div id="list" class="account-list" aria-label="Dot Abyss テキストリスト"></div>
     <div id="starleap" aria-label="スターリープ テキストリスト"></div>
   </main>
