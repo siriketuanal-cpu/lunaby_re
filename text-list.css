@@ -18,18 +18,20 @@ body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
   opacity:0;
   pointer-events:none;
   transition:none;
-  will-change:opacity;
 }
+/* カバー中は完全不透明＋タップ止め（古い数字の透過／誤タップ防止） */
 .resume-veil.is-covering{
-  opacity:.96;
+  opacity:1;
+  pointer-events:auto;
 }
 .resume-veil.is-revealing{
   opacity:0;
+  pointer-events:none;
   transition:opacity 320ms cubic-bezier(.22,.61,.36,1);
+  will-change:opacity;
 }
 
-/* Android TWA / standalone のタスク復帰では、同期済みDOMを早めに見せる。
-   通常ブラウザは上の320msを維持。 */
+/* Android TWA / standalone：フェードはやや短め */
 @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui){
   .resume-veil.is-revealing{
     transition-duration:260ms;

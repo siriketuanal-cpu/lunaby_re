@@ -28,6 +28,8 @@ import {
   let refreshTimer = null;
   let resumeSyncTimer = null;
   let resumeRevealTimer = null;
+  let hiddenAt = 0;
+  let appReady = false;
   let lastResumeSyncAt = -Infinity;
   function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
 
@@ -451,18 +453,30 @@ import {
       return false;
     }
   })();
-  const RESUME_SYNC_DELAY = standaloneResumeMode ? 160 : 240;
   const RESUME_REVEAL_CLEANUP = standaloneResumeMode ? 300 : 360;
 
+  // 裏にいた時間で待ちを変える（短い切替は速く、長い凍結は余裕を見る）
+  function resumeSyncDelayMs(){
+    const gone = hiddenAt ? (Date.now() - hiddenAt) : 0;
+    if (standaloneResumeMode) {
+      if (gone > 0 && gone < 3000) return 160;   // すぐ戻った
+      if (gone >= 60000) return 240;             // 長時間凍結
+      return 190;                               // 通常のタスク復帰
+    }
+    if (gone > 0 && gone < 3000) return 200;
+    if (gone >= 60000) return 280;
+    return 240;
+  }
+
   function syncAfterResume(){
-    if (document.hidden) return;
+    // 冷起動中の visibility は復帰扱いしない（ベールを出さない）
+    if (!appReady || document.hidden) return;
     const now = Date.now();
     // 連続する visibility / pageshow をまとめ、二重復帰を防ぐ。
     if (now - lastResumeSyncAt < 320) return;
     lastResumeSyncAt = now;
 
-    // TWA/standalone はタスク復帰を優先し、待機を160msへ短縮。
-    // 通常ブラウザでは従来の240msを維持する。
+    const delay = resumeSyncDelayMs();
     beginResumeCover();
     if (resumeSyncTimer) clearTimeout(resumeSyncTimer);
     resumeSyncTimer = setTimeout(() => {
@@ -470,7 +484,7 @@ import {
       if (document.hidden) return;
       syncTimersAfterResume();
       revealAfterResume();
-    }, RESUME_SYNC_DELAY);
+    }, delay);
   }
 
 
@@ -714,6 +728,7 @@ import {
     });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
+        hiddenAt = Date.now();
         if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
         if (resumeSyncTimer) { clearTimeout(resumeSyncTimer); resumeSyncTimer = null; }
         if (resumeRevealTimer) { clearTimeout(resumeRevealTimer); resumeRevealTimer = null; }
@@ -725,7 +740,8 @@ import {
         if (typeof requestIdleCallback === 'function') requestIdleCallback(persist, { timeout: 400 });
         else setTimeout(persist, 0);
       } else {
-        syncAfterResume();
+        // 冷起動完了前は復帰同期しない
+        if (appReady) syncAfterResume();
       }
     });
     // bfcache 復帰（一部 Android / 戻る操作）でも同じ経路へ
@@ -749,4 +765,11 @@ import {
       paintIdleRow(index, now, { force:true });
     }
     scheduleRefresh();
+    // 冷起動完了。これ以前の visibility は復帰扱いにしない（ベールなし）
+    const veil = document.getElementById('resume-veil');
+    if (veil) veil.classList.remove('is-covering', 'is-revealing');
+    requestAnimationFrame(() => {
+      appReady = true;
+      hiddenAt = 0;
+    });
   }
