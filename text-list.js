@@ -1,30 +1,18 @@
 import {
   applyStam, createSlots, displaySnapshot, hasTimedProgress, isSlotEnabled, liveStam,
-  remainingAfter40, restartIdle, setLabel, setRank, formatClock, saveV2Store,
-  getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
-  applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
+  remainingAfter40, restartIdle, setLabel, setRank, formatClock, saveV2Store
 } from './lunaby-core.mjs';
 
   const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
   const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
   const escape = value => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
 
-  // starleap API を従来の namespace形に束ねる（呼び出し側の差分を最小化）
-  // false でスターリープUIを起動時に組まない（保存データは残す。戻すときは true）
-  const SL_UI_ENABLED = false;
-  const slRuntime = {
-    getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration,
-    applyStamina, applyFullRecovery, parseFullRecoveryInput, hasSLTimedProgress
-  };
-
+  // スターリープUIは廃止。state.sl は保存互換のため読み書きのみ残す。
   let state = { slots:createSlots(), sl:null };
   let storageEnvelope = {};
   let refs = [];
   let selected = null;
   let edit = null;
-  let slEdit = null;
-  let slRefs = null;
-  const slSnapshot = { stamina:{}, orb:{} };
   let refreshTimer = null;
   let resumeSyncTimer = null;
   let resumeRevealTimer = null;
@@ -36,68 +24,10 @@ import {
   function write(index){
     try { saveV2Store(localStorage, storageEnvelope, state.slots, index, state.sl); } catch (_) {}
   }
+  // SL UI removed
   function writeSL(){ try { saveV2Store(localStorage, storageEnvelope, state.slots, undefined, state.sl); } catch (_) {} }
-  function slMarkup(){
-    return '<section class="starleap-line" aria-label="スターリープ">'
-      + '<span class="sl-item" data-sl-task="stamina" aria-label="討伐依頼">'
-      + '<span class="sl-main"><span class="sl-cur"><span class="sl-value" data-sl-value="stamina"></span>'
-      + '<input class="sl-edit" data-sl-editor="stamina" type="tel" inputmode="numeric" autocomplete="off" hidden></span>'
-      + '<span class="sl-max" data-sl-max="stamina"></span></span>'
-      + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="stamina"></span></span></span>'
-      + '<span class="sl-item" data-sl-task="orb" aria-label="御大樹の恵み">'
-      + '<span class="sl-main"><span class="sl-value" data-sl-value="orb"></span></span>'
-      + '<span class="sl-plan-wrap"><span class="sl-plan" data-sl-plan="orb"></span>'
-      + '<input class="sl-edit" data-sl-editor="orb" type="text" inputmode="numeric" autocomplete="off" hidden></span></span>'
-      + '</section>';
-  }
-  function setHidden(element, value){ if (!element) return; const hidden = !!value; if (element.hidden !== hidden) element.hidden = hidden; }
-  function setClass(element, name, value){ if (!element) return; const enabled = !!value; if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled); }
-  function refreshSLItem(ref, isEditing, value, plan, maxText){
-    setClass(ref.root,'is-selected',isEditing);
-    if (ref.max) {
-      // スタミナ: 現在値セルに透明inputを重ねる（/max・計画は固定）
-      setHidden(ref.value, isEditing);
-      setHidden(ref.input, !isEditing);
-      if (!isEditing) setText(ref.value, value);
-      setText(ref.max, maxText || '');
-      setText(ref.plan, plan);
-    } else {
-      // オーブ: 玉は固定。計画セルに透明inputを重ねる
-      setText(ref.value, value);
-      setHidden(ref.plan, isEditing);
-      setHidden(ref.input, !isEditing);
-      if (!isEditing) setText(ref.plan, plan);
-    }
-  }
-  function refreshSL(now){
-    if (!SL_UI_ENABLED || !slRuntime || !slRefs || !state.sl) return;
-    const { getTimerInfo, SL_STAM_MAX, SL_STAM_STEP_MS, SL_ORB_MAX, SL_ORB_STEP_MS, formatSLDuration } = slRuntime;
-    const stamina = getTimerInfo(state.sl.stamina, SL_STAM_MAX, SL_STAM_STEP_MS, now, slSnapshot.stamina);
-    const orb = getTimerInfo(state.sl.orb, SL_ORB_MAX, SL_ORB_STEP_MS, now, slSnapshot.orb);
-    refreshSLItem(slRefs.stamina, slEdit==='stamina', String(stamina.current), stamina.running ? formatClock(stamina.fullAt) : (stamina.isFull ? 'MAX' : '—:—'), '/'+SL_STAM_MAX);
-    refreshSLItem(slRefs.orb, slEdit==='orb', '●'.repeat(orb.current)+'○'.repeat(SL_ORB_MAX-orb.current), orb.running ? (formatSLDuration(orb.nextIn)+'/'+formatSLDuration(orb.fullIn)) : (orb.isFull ? 'MAX' : '—:—'));
-  }
-  function beginSLEdit(type){ if(!SL_UI_ENABLED || !slRuntime || !slRefs || slEdit) return; if(edit) closeEdit(false); if(selected) clearSelectionVisual(selected.index, selected.task); selected=null; slEdit=type; refreshSL(Date.now()); const input=slRefs[type].input; input.value=''; input.focus({preventScroll:true}); }
-  function commitSLEdit(){ if(!SL_UI_ENABLED || !slRuntime || !slEdit) return; const type=slEdit; const input=slRefs[type].input; const now=Date.now(); if(type==='stamina'){ const digits=String(input.value||'').replace(/[^0-9]/g,''); if(digits) slRuntime.applyStamina(state.sl.stamina,Number(digits),now); } else { const remaining=slRuntime.parseFullRecoveryInput(input.value); if(remaining!==null) slRuntime.applyFullRecovery(state.sl.orb,remaining,now); } slEdit=null; refreshSL(now); scheduleRefresh(); writeSL(); }
-  function buildSL(){
-    const host=document.getElementById('starleap');
-    if(!host) return;
-    if(!SL_UI_ENABLED){
-      host.innerHTML='';
-      host.hidden=true;
-      host.className='';
-      slRefs=null;
-      return;
-    }
-    host.hidden=false;
-    host.className='';
-    host.innerHTML=slMarkup();
-    slRefs={};
-    for(const type of ['stamina','orb']){
-      const root=host.querySelector('[data-sl-task="'+type+'"]');
-      slRefs[type]={ root, value:root.querySelector('[data-sl-value]'), input:root.querySelector('[data-sl-editor]'), max:root.querySelector('[data-sl-max]'), plan:root.querySelector('[data-sl-plan]') };
-    }
-  }
+  function buildSL(){ /* no-op */ }
+  function refreshSL(){ /* no-op */ }
 
   function accountMarkup(slot, index){
     return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
@@ -276,12 +206,11 @@ import {
   }
   function scheduleRefresh(){
     if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
-    if (document.hidden || edit || slEdit) return;
+    if (document.hidden || edit) return;
     const now = Date.now();
-    const slTimed = !!(SL_UI_ENABLED && slRuntime && state.sl && slRuntime.hasSLTimedProgress(state.sl, now));
     let dotTimed = false;
     for (let index = 0; index < state.slots.length; index += 1) { if (refs[index] && hasTimedProgress(state.slots[index], now)) { dotTimed = true; break; } }
-    if (!dotTimed && !slTimed) return;
+    if (!dotTimed) return;
     const delay = 60000 - (Date.now() % 60000) + 24;
     refreshTimer = setTimeout(syncTimedSlots, delay);
   }
@@ -654,23 +583,21 @@ import {
 
   function setupEvents(){
     const list = document.querySelector('.page');
-    // タップで開く4つの「手入力」対象（名前・ランク・スタミナ・スターリープ）を1本の表にまとめる。
+    // タップで開く手入力（名前・ランク・スタミナ）
     const MANUAL_EDIT_TARGETS = [
       ['[data-name-edit]', el => beginEdit('name', Number(el.dataset.nameEdit))],
       ['[data-rank-edit]', el => beginEdit('rank', Number(el.dataset.rankEdit))],
       ['[data-stam-edit]', el => beginEdit('stam', Number(el.dataset.stamEdit))],
-      ['[data-sl-task]', el => beginSLEdit(el.dataset.slTask)],
     ];
-    // タップ操作はすべて pointerdown で完結（ドットアビス＋スターリープ共通）。
     list.addEventListener('pointerdown', event => {
       const target = event.target;
       if (target.matches('input')) {
-        if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor],[data-sl-editor]')) {
+        if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor]')) {
           target.focus({ preventScroll:true });
         }
         return;
       }
-      // ① 手入力（名前／ランク／スタミナ／スターリープ）
+      // ① 手入力（名前／ランク／スタミナ）
       for (const [selector, open] of MANUAL_EDIT_TARGETS) {
         const el = target.closest(selector);
         if (el) {
@@ -698,29 +625,16 @@ import {
       const input = event.target;
       if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
       if (input.matches('[data-rank-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
-      if (input.matches('[data-sl-editor="stamina"]')) input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,2);
-      if (input.matches('[data-sl-editor="orb"]')) {
-        const raw=String(input.value||'').replace(/：/g,':');
-        let next='';
-        let digits=0;
-        for(let i=0; i<raw.length; i++){
-          const char = raw[i];
-          if(char >= '0' && char <= '9' && digits<4){ next+=char; digits+=1; }
-          else if(char===':' && !next.includes(':')) next+=char;
-        }
-        input.value=next;
-      }
     });
     list.addEventListener('focusout', event => {
       const input = event.target;
-      if (slEdit && input.matches('[data-sl-editor]')) { commitSLEdit(); return; }
       if (!edit || !input.matches('input')) return;
       const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
       if (type !== edit.type || Number(input.dataset[type + 'Editor']) !== edit.index) return;
       closeEdit(false);
     });
     document.addEventListener('pointerdown', event => {
-      if (!selected || event.target.closest('[data-task]') || event.target.closest('[data-sl-task]')) return;
+      if (!selected || event.target.closest('[data-task]')) return;
       const index = selected.index;
       const task = selected.task;
       selected = null;
@@ -755,7 +669,7 @@ import {
     buildStaticList();
     setupEvents();
     buildSL();
-    // 初回：名前/ランクは markup 済み。タイマー行と SL だけ埋める。
+    // 初回：名前/ランクは markup 済み。タイマー行だけ埋める。
     // スタミナ最大値はここで一度だけ書く（以降はランク変更時のみ）。
     const now = Date.now();
     refreshSL(now);
