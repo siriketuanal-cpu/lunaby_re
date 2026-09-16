@@ -34,11 +34,353 @@
   <link rel="icon" type="image/png" sizes="192x192" href="lunaby-neko-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="lunaby-neko-512.png">
   <!-- 詳細スタイル。欠けても上の inline で余白・更新ボタンは維持される -->
-  <link rel="stylesheet" href="text-list.css" fetchpriority="high">
   <!-- パス固定キャッシュ（?rev= なし）。更新は LUNABY → REPAIR_SHELL のみ -->
-  <link rel="modulepreload" href="text-list-v2-only-entry.mjs" fetchpriority="high">
-  <link rel="modulepreload" href="text-list.js">
-  <link rel="modulepreload" href="lunaby-core.mjs">
+
+  <style id="lunaby-bundled-css">
+:root{color-scheme:dark;--bg:#05070a;--line:#273346;--line-soft:#182231;--ink:#e4ebf6;--muted:#8290a5;--cyan:#72dbea;--orange:#f1a66a;--violet:#c6b5ff;--green:#70eab2;--focus:#b9aaff;--group-moon:#6685b5;--group-lilac:#d8dee8;--group-tide:#68a39b;--timer-number-font:Roboto,system-ui,sans-serif;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+[hidden]{display:none!important;}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);overscroll-behavior-y:none;}
+/* このアプリは一画面に収まる前提。position:fixed でドキュメント自体を
+   スクロール不能にし、iOSの「フォーカスした入力欄を自動で画面内へ
+   スクロールする」ネイティブ挙動ごと無効化する（JS側での抑止が不要になる）。 */
+body{position:fixed;inset:0;overflow:hidden;touch-action:pan-x;}
+
+/* タスク凍結からの復帰時：DOM更新を覆ってから、ゆっくり画面へ戻す。
+   Android/TWAのコンポジタが「古い描画→新しい描画」と瞬間的に切り替わる
+   フラッシュを見せにくくするための復帰用ベール。 */
+.resume-veil{
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  background:#05070a;
+  opacity:0;
+  pointer-events:none;
+  transition:none;
+}
+/* カバー中は完全不透明＋タップ止め（古い数字の透過／誤タップ防止） */
+.resume-veil.is-covering{
+  opacity:1;
+  pointer-events:auto;
+}
+.resume-veil.is-revealing{
+  opacity:0;
+  pointer-events:none;
+  transition:opacity 320ms cubic-bezier(.22,.61,.36,1);
+  will-change:opacity;
+}
+
+/* Android TWA / standalone：フェードはやや短め */
+@media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui){
+  .resume-veil.is-revealing{
+    transition-duration:260ms;
+  }
+}
+
+.page,.page *{user-select:none;-webkit-user-select:none;}
+.page{position:relative;width:min(760px,100%);margin:0 auto;padding:250px 12px 28px;}
+.update-corner{
+  position:fixed;
+  top:10px;
+  left:10px;
+  z-index:20;
+  width:28px;
+  height:28px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:8px;
+  border:1px solid rgba(174,187,209,.35);
+  background:rgba(5,7,10,.55);
+  color:#aebbd1;
+  font:700 14px/1 system-ui,sans-serif;
+  text-decoration:none;
+  opacity:.72;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.update-corner:active{
+  color:var(--cyan);
+  border-color:var(--cyan);
+  opacity:1;
+}
+/* 下線はドットアビス側の締め（旧SL上辺と同じ太さ・色）。SL本体は出さない */
+.account-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;border-bottom:2px solid #52617a;padding-bottom:6px;}
+.account{min-width:0;max-width:100%;overflow:hidden;padding:6px 0 0;border-top:2px solid #52617a;}
+.account.group-0{border-top-color:var(--group-moon);}
+.account.group-1{border-top-color:var(--group-lilac);}
+.account.group-2{border-top-color:var(--group-tide);}
+/* 行全体はタップを透過させ、名前・ランク本体だけ受ける。
+   仕切りを外したあとも head と timer は別要素なので、head が空領域まで取ると
+   上方向に伸ばしたタイマー側ヒットが境界で消えて見えていた */
+.account-head{min-height:13px;padding:0 4px 0;display:flex;align-items:center;justify-content:space-between;color:#c9d4e5;font-weight:800;font-size:6px;line-height:1.1;text-align:left;position:relative;z-index:3;pointer-events:none;}
+.name-display{position:relative;z-index:3;min-width:0;max-width:58%;height:13px;cursor:text;touch-action:manipulation;font-weight:800;font-size:11px;line-height:13px;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;pointer-events:auto;}
+.name-display-text{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+/* 通常名：上方向のみヒット拡張（下は最大スタミナと被らないよう伸ばさない） */
+.name-display::before{content:'';position:absolute;top:-4px;bottom:0;left:-4px;right:-4px;}
+.name-display.is-placeholder{font-size:9px;line-height:13px;font-weight:700;color:#6f7d90;max-width:42%;}
+.name-display.is-placeholder::before{top:-2px;bottom:0;left:-2px;right:0;}
+.rank-display{position:relative;z-index:3;flex:none;box-sizing:border-box;height:13px;line-height:13px;color:var(--orange);font:800 11px/13px var(--timer-number-font);cursor:text;touch-action:manipulation;pointer-events:auto;}
+/* 下方向は最小限（放置・最大スタミナ上端を奪わない） */
+.rank-display::before{content:'';position:absolute;top:-6px;bottom:-2px;left:-4px;right:-4px;}
+.name-input,.rank-input{min-width:0;padding:0;border:0;outline:0;background:transparent;color:#fff;font:inherit;caret-color:transparent!important;appearance:none;-webkit-appearance:none;pointer-events:auto;}
+.name-input,.rank-input,.stam-edit{user-select:none;-webkit-user-select:none;touch-action:manipulation;}
+.name-input{width:62px;height:13px;min-height:0;max-height:13px;font-size:11px;line-height:13px;}
+.rank-input{box-sizing:border-box;width:5ch;height:13px;min-height:0;max-height:13px;line-height:13px;text-align:right;color:var(--orange);font:800 11px/13px var(--timer-number-font);}
+/* ===== タイマー行の位置（ここだけ触れば寄せ・余白を調整できる） =====
+   文字位置: side-shift（左）/ idle-side-shift（右・固定px）で調整
+   ヒット: ::before のみ（レイアウトに影響しない）
+   予定時刻: full-clock の inset
+   --- 今後の追記ルール ---
+   ・:has() は使わない
+   ・新規の grid / 1fr 追加は避ける（位置調整が不安定になりやすい実績あり）
+   ・既存の grid/flex 基盤は壊さない。触るなら最小変更
+   ・位置・ヒットは変数と ::before で足す
+*/
+.timer-row{
+  --clock-inset:6px;
+  --clock-size:22px;
+  --row-pad-x:4px;
+  --stam-side-shift:10px;          /* 左：予定時刻側からの固定寄せ */
+  --stam-flex-left:1;
+  --stam-flex-right:1;
+  --stam-edit-hit-extend:28px;
+  --stam-calc-gap-pull:-6px;
+  /* 右：予定時刻は右端にあるので、時計幅+inset+スタミナと同じ寄せ分だけ内側（中央方向）へ */
+  --idle-side-shift:calc(var(--clock-inset) + var(--clock-size) + var(--stam-side-shift));
+  --hit-top:-16px;                 /* head が透過するので上方向に伸ばせる */
+  --hit-bottom:-5px;
+  /* 数字サイズ固定（解像度依存を外す） */
+  --num-size:20px;
+  --stam-max-size:11px;            /* 二段：上段の最大スタミナ（余白縮小後に一〜二回り大きく） */
+  --stam-cur-size:var(--num-size); /* 二段：下段の現在値 */
+  --stam-box-cols:3.1ch;           /* 桁の中心揃え用の固定枠（1〜3桁で中心が動かない） */
+}
+.task-row{position:relative;width:100%;min-height:24px;padding:2px var(--row-pad-x) 0;border:0;background:transparent;color:var(--ink);text-align:left;font:inherit;}
+/* 左右半々で位置を固定。ヒット範囲だけ別レイヤで伸ばす（選択時も幅が変わらない） */
+.timer-row{position:relative;display:grid;grid-template-columns:1fr 1fr;align-items:center;column-gap:0;min-height:22px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;}
+.task-row:active{background:#080c12;}
+
+/* 全快予定時刻：左右端に固定表示（pointer-events:none → 下のヒットが受ける）
+   top は task-row の padding に合わせて少し下げ、現在値・放置タイマーと同じ高さ基準にする */
+.full-clock{position:absolute;top:calc(50% + 1.5px);z-index:0;transform:translateY(-50%);display:grid;grid-template-rows:9px 9px;align-items:center;justify-items:center;width:var(--clock-size);height:20px;font-family:var(--timer-number-font);font-variant-numeric:tabular-nums;line-height:9px;font-weight:800;letter-spacing:.02em;pointer-events:none;user-select:none;-webkit-user-select:none;}
+.full-clock-hour,.full-clock-minute{display:block;width:100%;text-align:center;}
+.full-clock-hour{font-size:9px;color:#91a5bb;}
+.full-clock-minute{font-size:9px;color:#a8b7c8;}
+.full-clock.is-selected{z-index:21;}
+/* スタミナ予定時刻：濃い青系・黒背景で沈みにくい明るめ */
+.full-clock-stam .full-clock-hour,
+.full-clock-stam .full-clock-minute{color:#7eb0e8;}
+/* 放置報酬側は淡い緑で差別化 */
+.full-clock-idle .full-clock-hour{color:#58b89a;}
+.full-clock-idle .full-clock-minute{color:#68c3a4;}
+.full-clock-stam{left:var(--clock-inset);}
+.full-clock-idle{right:var(--clock-inset);}
+
+/* 左半分：文字位置は --stam-*、ヒットは ::before のみ（レイアウト非干渉） */
+.stam-side{position:relative;left:var(--stam-side-shift);z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;}
+.stam-edit-gap{flex:var(--stam-flex-left) 1 0%;min-width:0;align-self:stretch;position:relative;cursor:text;touch-action:manipulation;}
+.stam-edit-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);right:0;left:calc(0px - var(--stam-edit-hit-extend));}
+/* スタミナ現在値を基準に中央揃え。最大値は absolute でフロー外に出し、現在値・放置・予定時刻の高さを一致させる */
+.stam-stack{
+  flex:0 0 auto;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+  width:var(--stam-box-cols);
+  min-width:var(--stam-box-cols);
+  max-width:var(--stam-box-cols);
+  font-size:var(--stam-cur-size);
+  min-height:22px;
+  padding:0;
+  margin:0;
+  overflow:visible;
+  cursor:pointer;
+  touch-action:manipulation;
+  z-index:2;
+}
+.stam-stack::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:-6px;right:-6px;}
+/* 最大値：現在値のすぐ上（レイアウト高さに影響させない） */
+.stam-stack > .task-max{
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:calc(100% + 1px);
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  margin:0;
+  padding:0;
+  border:0;
+  color:#51d8e8;
+  font-family:var(--timer-number-font);
+  font-weight:700;
+  font-size:var(--stam-max-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:.02em;
+  text-align:center;
+  white-space:nowrap;
+  opacity:.9;
+  pointer-events:none;
+}
+/* 下段：現在値 */
+.stam-stack > .stam-edit-zone{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:1em;
+  place-items:center;
+  box-sizing:border-box;
+  width:100%;
+  margin:0;
+  padding:0;
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.stam-stack > .stam-edit-zone::before{content:'';position:absolute;inset:0;}
+.stam-calc-gap{flex:var(--stam-flex-right) 1 0%;min-width:0;align-self:stretch;min-height:22px;margin-right:var(--stam-calc-gap-pull);position:relative;z-index:2;cursor:pointer;touch-action:manipulation;}
+.stam-calc-gap::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
+
+.task-value{display:inline-block;vertical-align:middle;line-height:1;letter-spacing:.01em;text-rendering:geometricPrecision;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;}
+.stam-current{
+  grid-area:1/1;
+  box-sizing:border-box;
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  height:1em;
+  margin:0;
+  padding:0;
+  border:0;
+  color:#b4becc;
+  font-family:var(--timer-number-font);
+  font-weight:800;
+  font-size:var(--stam-cur-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:0;
+  text-align:center;
+  text-rendering:geometricPrecision;
+  cursor:pointer;
+  white-space:nowrap;
+  overflow:hidden;
+}
+.stam-side.is-near-full .stam-current{color:#ff7070;}
+
+/* input はブラウザ既定の min-width で隣カードへ食い込みやすいので完全に枠内へ閉じ込める */
+.stam-edit,.stam-edit:focus{
+  grid-area:1/1;
+  box-sizing:border-box;
+  z-index:1;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  height:1em;
+  margin:0;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  outline:0!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  color:#b4becc;
+  -webkit-text-fill-color:#b4becc;
+  font-family:var(--timer-number-font);
+  font-weight:800;
+  font-size:var(--stam-cur-size);
+  line-height:1;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:"tnum" 1;
+  letter-spacing:0;
+  text-align:center;
+  text-rendering:geometricPrecision;
+  caret-color:transparent!important;
+  appearance:none;
+  -webkit-appearance:none;
+}
+.stam-side.is-near-full .stam-edit,.stam-side.is-near-full .stam-edit:focus{color:#ff7070;-webkit-text-fill-color:#ff7070;}
+/* 選択中・手入力中：暗転なし。数字の色だけで「ここを操作中」と分かる明るめ */
+.stam-edit-zone.is-editing .stam-edit,
+.stam-edit-zone.is-editing .stam-edit:focus,
+.stam-side.is-selected .stam-current{color:#f2f6fc;-webkit-text-fill-color:#f2f6fc;}
+.stam-side.is-selected .task-slash{color:#a8b6c8;}
+.stam-side.is-selected .task-max{color:#7ee8f5;}
+.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit,
+.stam-side.is-near-full .stam-edit-zone.is-editing .stam-edit:focus,
+.stam-side.is-near-full.is-selected .stam-current{color:#ff9a9a;-webkit-text-fill-color:#ff9a9a;}
+.stam-side.is-near-full.is-selected .task-max{color:#ffb0b0;}
+/* 40計算・手入力中：スタミナ左に ▶（absolute なので桁幅・レイアウトは動かさない） */
+.stam-side.is-selected .stam-stack::after,
+.stam-side.is-editing .stam-stack::after{
+  content:'▶';
+  position:absolute;
+  left:-0.9em;
+  top:50%;
+  transform:translateY(-50%);
+  font-size:11px;
+  line-height:1;
+  color:#c8ffe8;
+  -webkit-text-fill-color:#c8ffe8;
+  font-weight:800;
+  pointer-events:none;
+  z-index:3;
+}
+
+/* 満タン表示は左サイド全体に重ねる */
+.stam-full{position:absolute;z-index:3;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;color:#ff7070;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;cursor:text;white-space:nowrap;}
+.stam-full-time{display:inline-flex;align-items:baseline;}
+.stam-full-hour,.stam-full-minute{position:relative;display:inline-block;cursor:pointer;}
+.stam-full-hour{min-width:2ch;text-align:right;cursor:text;}
+.stam-full-hour::before,.stam-full-minute::before{content:'';position:absolute;top:-6px;bottom:-6px;}
+.stam-full-hour::before{left:-8px;right:-3px;}
+.stam-full-minute::before{left:-3px;right:-6px;}
+.stam-full-colon{pointer-events:none;}
+.stam-full-label{margin-left:3px;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;vertical-align:middle;}
+
+/* 右サイド：flex配置は維持。右余白だけ固定px（スタミナの side-shift と同じ決め方） */
+.idle-zone{position:relative;z-index:2;display:flex;align-items:center;min-width:0;min-height:22px;padding:0;cursor:pointer;touch-action:manipulation;}
+.idle-pre{flex:1 1 0%;min-width:0;align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-pre::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
+/* min-width でタイマー幅を確保 → 「受取」に変わっても右に寄らない */
+.idle-action{flex:0 0 auto;display:flex;align-items:center;justify-content:center;min-width:5.5ch;min-height:20px;cursor:pointer;touch-action:manipulation;position:relative;z-index:2;left:-8px;}
+.idle-action::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
+.idle-post{flex:0 0 var(--idle-side-shift);width:var(--idle-side-shift);min-width:var(--idle-side-shift);align-self:stretch;min-height:22px;cursor:pointer;position:relative;z-index:1;}
+.idle-post::before{content:'';position:absolute;top:var(--hit-top);bottom:var(--hit-bottom);left:0;right:0;}
+.task-value{margin:0;color:var(--violet);font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:.01em;text-rendering:geometricPrecision;white-space:nowrap;}
+.task-value.is-clock{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:-.04em;}
+.task-value.is-pending{font-size:13px;font-weight:700;letter-spacing:.02em;}
+.task-plan{margin-left:4px;color:#aab7c9;font:700 10px/1 var(--timer-number-font);white-space:nowrap;font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1;font-kerning:none;letter-spacing:.01em;text-rendering:geometricPrecision;}
+.task-plan.is-full{position:relative;display:inline-block;width:5ch;box-sizing:border-box;margin-left:0;color:#ff7070;font:800 var(--num-size)/1 var(--timer-number-font);letter-spacing:-.03em;text-align:center;white-space:nowrap;}
+.task-plan.is-full:not(:empty)::after{content:'満';position:absolute;left:calc(100% + 3px);top:50%;transform:translateY(-50%);margin:0;color:#e4b5ba;font:800 9px/1 var(--timer-number-font);letter-spacing:.04em;}
+.idle-zone.is-near-full .task-value,.idle-zone.is-near-full.is-selected .task-value{color:#ff7070;}
+.idle-zone.is-selected .task-value,
+.idle-zone.is-selected .task-plan,
+.idle-zone.is-selected .task-plan.is-full{
+  margin-left:0;text-align:center;font-size:14px;font-weight:800;letter-spacing:.02em;
+}
+/* 「受取」は value / plan どちらに出ても同じ薄黄で統一 */
+.idle-zone.is-selected .task-value,
+.idle-zone.is-selected .task-plan,
+.idle-zone.is-selected .task-plan.is-full{color:#ffe09a;}
+.idle-zone.is-selected .task-plan.is-full:not(:empty)::after{content:none;}
+
+/* スターリープ: 左寄せ + 数値の下に予定時刻 */
+.pure-v2-gate{display:grid;gap:5px;margin-top:10px;padding:10px 8px;border-top:2px solid #52617a;color:#aebbd1;font-size:10px;line-height:1.45;}
+.pure-v2-gate strong{color:#ffd581;font:800 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.06em;}
+.pure-v2-gate a{width:max-content;color:#9db9e7;font-size:10px;text-decoration:underline;text-underline-offset:2px;}
+@media (max-width:440px){.page{padding:230px 8px 24px;}.account-list{gap:6px 7px;}.task-row{min-height:26px;padding-left:3px;padding-right:3px;}}
+
+  </style>
 </head>
 <body>
   <!-- 更新入口: 画面左上の軽いリンク。経路は従来どおり update.html -->
@@ -47,8 +389,1140 @@
   <main class="page" style="padding:250px 12px 28px;box-sizing:border-box">
     <div id="list" class="account-list" aria-label="Dot Abyss テキストリスト"></div>
   </main>
-  <script type="module" src="text-list-v2-only-entry.mjs"></script>
   <!-- TWA通常起動ではSW登録を描画後のアイドルへ送る。登録済みなら何もしない。 -->
+
+  <script>
+/* === lunaby-core === */
+/* lunaby-core.mjs
+ * 通常起動用コアの統合モジュール。
+ * 再分離するときは各 SECTION ブロックを元ファイルに戻す。
+ *   SECTION abyss-runtime  → abyss-runtime-core.mjs
+ *   SECTION starleap-state → starleap-state.mjs
+ *   SECTION starleap-lite  → starleap-lite-core.mjs
+ *   SECTION v2-store       → lunaby-v2-store.mjs
+ * gate / first-launch は保険用のため本ファイルには含めない。
+ */
+
+// =============================================================================
+// SECTION: abyss-runtime  (was abyss-runtime-core.mjs)
+// =============================================================================
+const SLOT_COUNT = 6;
+const STAM_STEP_MS = 3 * 60 * 1000;
+const STAM_WARNING_MS = 2 * 60 * 60 * 1000;
+const IDLE_CAP_MS = 12 * 60 * 60 * 1000;
+const IDLE_LEAD_MS = 5 * 60 * 1000;
+const IDLE_WARNING_MINUTES = 2 * 60;
+const STAM_BASE = 240;
+const STAM_PER_RANK = 5;
+const displayClockCache = new WeakMap();
+
+const finite = (value, fallback) => { const number = Number(value); return Number.isFinite(number) ? number : fallback; };
+const integer = (value, fallback) => { const number = parseInt(String(value ?? '').trim(), 10); return Number.isFinite(number) ? number : fallback; };
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+const maxForRank = rank => Math.min(999, STAM_BASE + (clamp(Math.floor(finite(rank, 1)), 1, 200) - 1) * STAM_PER_RANK);
+const rankForMax = max => clamp(1 + Math.round((Math.max(STAM_BASE, finite(max, STAM_BASE)) - STAM_BASE) / STAM_PER_RANK), 1, 200);
+const formatClock = timestamp => {
+  const date = new Date(timestamp);
+  return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
+};
+const formatMinute = milliseconds => {
+  const minutes = Math.max(1, Math.ceil(Math.max(0, finite(milliseconds, 0)) / 60000));
+  return Math.floor(minutes / 60) + ':' + String(minutes % 60).padStart(2, '0');
+};
+
+const SLOT_DEFAULTS = Object.freeze({ label:'', rank:1, stamCurrent:0, stamMax:STAM_BASE, stamStart:null, stamRunning:false, idleStart:null, idleCapMs:IDLE_CAP_MS, idleRunning:false, enabled:true });
+function runtimeSlot(slot) {
+  Object.defineProperties(slot, {
+    dirty: { value:false, writable:true, enumerable:false },
+    stamFullAt: { value:null, writable:true, enumerable:false },
+    idleFullAt: { value:null, writable:true, enumerable:false }
+  });
+  refreshTimeline(slot);
+  return slot;
+}
+const markDirty = slot => { slot.dirty = true; return slot; };
+function refreshTimeline(slot) {
+  slot.stamFullAt = slot.stamRunning && slot.stamStart ? slot.stamStart + Math.max(0, slot.stamMax - slot.stamCurrent) * STAM_STEP_MS : null;
+  slot.idleFullAt = slot.idleRunning && slot.idleStart ? slot.idleStart + slot.idleCapMs : null;
+}
+const stamFullAtFor = slot => Object.prototype.hasOwnProperty.call(slot, 'stamFullAt') ? slot.stamFullAt : (slot.stamRunning && slot.stamStart ? slot.stamStart + Math.max(0, slot.stamMax - slot.stamCurrent) * STAM_STEP_MS : null);
+const idleFullAtFor = slot => Object.prototype.hasOwnProperty.call(slot, 'idleFullAt') ? slot.idleFullAt : (slot.idleRunning && slot.idleStart ? slot.idleStart + slot.idleCapMs : null);
+const emptySlot = () => runtimeSlot({ ...SLOT_DEFAULTS });
+const createSlots = () => Array.from({ length:SLOT_COUNT }, emptySlot);
+
+function normalizeSlot(source) {
+  const input = source && typeof source === 'object' ? source : SLOT_DEFAULTS;
+  const rank = input.rank != null ? clamp(integer(input.rank, SLOT_DEFAULTS.rank), 1, 200) : rankForMax(input.stamMax);
+  const stamMax = maxForRank(rank);
+  return runtimeSlot({
+    label: typeof input.label === 'string' ? input.label : SLOT_DEFAULTS.label,
+    rank,
+    stamCurrent: clamp(finite(input.stamCurrent, SLOT_DEFAULTS.stamCurrent), 0, stamMax),
+    stamMax,
+    stamStart: finite(input.stamStart, null), stamRunning: !!input.stamRunning,
+    idleStart: finite(input.idleStart, null), idleCapMs: finite(input.idleCapMs, IDLE_CAP_MS), idleRunning: !!input.idleRunning,
+    enabled: input.enabled !== false
+  });
+}
+function computeStam(slot, now) {
+  const current = clamp(finite(slot.stamCurrent, 0), 0, slot.stamMax);
+  if (!slot.stamRunning || !slot.stamStart) return { current, fullAt:null, isFull:current >= slot.stamMax };
+  const elapsed = Math.max(0, now - slot.stamStart);
+  const recovered = Math.floor(elapsed / STAM_STEP_MS);
+  const next = Math.min(slot.stamMax, current + recovered);
+  if (next >= slot.stamMax) return { current:slot.stamMax, fullAt:slot.stamStart + Math.max(0, slot.stamMax - current) * STAM_STEP_MS, isFull:true };
+  const nextIn = STAM_STEP_MS - (elapsed % STAM_STEP_MS);
+  return { current:next, fullAt:now + (slot.stamMax - next - 1) * STAM_STEP_MS + nextIn, isFull:false };
+}
+function computeIdle(slot, now) {
+  if (!slot.idleRunning || !slot.idleStart) return { value:'未開始', plan:'—:—', isFull:false, remaining:null };
+  const cap = finite(slot.idleCapMs, IDLE_CAP_MS);
+  const remaining = Math.max(0, cap - Math.max(0, now - slot.idleStart));
+  const fullAt = slot.idleStart + cap;
+  return { value:remaining ? formatMinute(remaining) : 'MAX', plan:formatClock(fullAt), isFull:remaining === 0, remaining };
+}
+
+function hasTimedProgress(slot, now) {
+  const stamActive = slot.stamRunning && slot.stamStart && slot.stamCurrent < slot.stamMax && now < stamFullAtFor(slot);
+  const idleActive = slot.idleRunning && slot.idleStart && now < idleFullAtFor(slot);
+  return !!(stamActive || idleActive);
+}
+
+function cachedClock(slot, key, timestamp) {
+  let cache = displayClockCache.get(slot);
+  if (!cache) { cache = {}; displayClockCache.set(slot, cache); }
+  if (cache[key] !== timestamp) { cache[key] = timestamp; cache[key + 'Text'] = formatClock(timestamp); }
+  return cache[key + 'Text'];
+}
+
+// 正規化済みの実行時slot専用。分単位の描画では数値変換・再正規化を行わない。
+function displaySnapshot(slot, now, view) {
+  const output = view || { stam:{}, idle:{} };
+  const stam = output.stam || (output.stam = {});
+  const idle = output.idle || (output.idle = {});
+  let stamCurrent = slot.stamCurrent;
+  let stamFullAt = null;
+  if (slot.stamRunning && slot.stamStart) {
+    const elapsed = Math.max(0, now - slot.stamStart);
+    stamCurrent = Math.min(slot.stamMax, stamCurrent + Math.floor(elapsed / STAM_STEP_MS));
+    stamFullAt = stamFullAtFor(slot);
+  }
+  const idleRunning = slot.idleRunning && slot.idleStart;
+  const idleRemaining = idleRunning ? Math.max(0, slot.idleCapMs - Math.max(0, now - slot.idleStart)) : null;
+  const idleMinutes = idleRemaining == null ? 0 : Math.max(1, Math.ceil(idleRemaining / 60000));
+  stam.current = stamCurrent;
+  stam.plan = stamFullAt ? cachedClock(slot, 'stam', stamFullAt) : '—:—';
+  stam.low = stamFullAt != null && stamFullAt > now && stamFullAt - now < STAM_WARNING_MS;
+  idle.value = idleRemaining == null ? '未開始' : (idleRemaining ? Math.floor(idleMinutes / 60) + ':' + String(idleMinutes % 60).padStart(2, '0') : 'MAX');
+  idle.plan = idleRunning ? cachedClock(slot, 'idle', idleFullAtFor(slot)) : '—:—';
+  idle.full = idleRemaining === 0;
+  idle.low = idleRemaining != null && idleRemaining > 0 && idleMinutes < IDLE_WARNING_MINUTES;
+  return output;
+}
+const liveStam = (slot, now) => slot.stamRunning ? computeStam(slot, now).current : slot.stamCurrent;
+const remainingAfter40 = current => Math.max(0, Math.floor(finite(current, 0))) % 40;
+function setLabel(slot, value) {
+  const label = String(value || '').trim();
+  if (slot.label === label) return false;
+  slot.label = label;
+  markDirty(slot);
+  return true;
+}
+function setRank(slot, value, now) {
+  const rank = clamp(Math.floor(finite(value, slot.rank)), 1, 200);
+  if (slot.rank === rank) return false;
+  if (slot.stamRunning && slot.stamStart) applyStam(slot, liveStam(slot, now), now);
+  slot.rank = rank;
+  slot.stamMax = maxForRank(rank);
+  slot.stamCurrent = Math.min(slot.stamCurrent, slot.stamMax);
+  refreshTimeline(slot);
+  markDirty(slot);
+  return true;
+}
+const isSlotEnabled = slot => !!slot && slot.enabled !== false;
+function applyStam(slot, current, now) {
+  const live = liveStam(slot, now);
+  slot.stamCurrent = clamp(integer(current, live), 0, slot.stamMax);
+  slot.stamStart = slot.stamRunning && slot.stamStart && !computeStam(slot, now).isFull
+    ? now - (Math.max(0, now - slot.stamStart) % STAM_STEP_MS)
+    : now;
+  slot.stamRunning = true;
+  refreshTimeline(slot);
+  markDirty(slot);
+}
+function restartIdle(slot, now) { slot.idleStart = now - IDLE_LEAD_MS; slot.idleRunning = true; refreshTimeline(slot); markDirty(slot); }
+
+// =============================================================================
+// SECTION: starleap-state  (was starleap-state.mjs)
+// =============================================================================
+const SL_STAM_MAX = 80;
+const SL_STAM_STEP_MS = 12 * 60 * 1000;
+const SL_ORB_MAX = 4;
+const SL_ORB_STEP_MS = 6 * 60 * 60 * 1000;
+
+function normalizeTimer(source, max) {
+  const input = source && typeof source === 'object' ? source : {};
+  const current = clamp(finite(input.current, 0), 0, max);
+  const start = finite(input.start, null);
+  return { current, start, running: !!input.running && !!start };
+}
+
+function createSLState(source) {
+  return { stamina: normalizeTimer(source && source.stamina, SL_STAM_MAX), orb: normalizeTimer(source && source.orb, SL_ORB_MAX) };
+}
+
+// =============================================================================
+// SECTION: starleap-lite  (was starleap-lite-core.mjs)
+// =============================================================================
+const isTimerActive = (timer, max, interval, now) => !!(timer.running && timer.start && timer.current < max && now < timer.start + (max - timer.current) * interval);
+
+function getTimerInfo(timer, max, interval, now, output) {
+  const result = output || {};
+  const current = clamp(finite(timer.current, 0), 0, max);
+  if (!timer.running || !timer.start) { result.current = current; result.running = false; result.isFull = current >= max; result.nextIn = null; result.fullIn = null; result.fullAt = null; return result; }
+  const elapsed = Math.max(0, now - timer.start);
+  const recovered = Math.floor(elapsed / interval);
+  const nextCurrent = Math.min(max, current + recovered);
+  const fullAt = timer.start + Math.max(0, max - current) * interval;
+  if (nextCurrent >= max) { result.current = max; result.running = false; result.isFull = true; result.nextIn = 0; result.fullIn = 0; result.fullAt = fullAt; return result; }
+  const nextIn = interval - (elapsed % interval);
+  const fullIn = (max - nextCurrent - 1) * interval + nextIn;
+  result.current = nextCurrent; result.running = true; result.isFull = false; result.nextIn = nextIn; result.fullIn = fullIn; result.fullAt = now + fullIn;
+  return result;
+}
+
+function formatSLDuration(milliseconds) { const totalMinutes = Math.max(1, Math.ceil(Math.max(0, finite(milliseconds, 0)) / 60000)); return Math.floor(totalMinutes / 60) + ':' + String(totalMinutes % 60).padStart(2, '0'); }
+
+function parseFullRecoveryInput(raw) {
+  const value = String(raw || '').trim().replace(/：/g, ':');
+  if (!value) return null;
+  let hours = 0; let minutes = 0;
+  if (value.includes(':')) { const parts = value.split(':'); if (parts.length !== 2 || parts.some(part => !/^\d+$/.test(part))) return null; hours = Number(parts[0]); minutes = Number(parts[1]); }
+  else if (/^\d+$/.test(value)) { if (value.length <= 2) minutes = Number(value); else { hours = Number(value.slice(0, -2)); minutes = Number(value.slice(-2)); } }
+  else return null;
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes) || hours < 0 || minutes < 0 || minutes > 59) return null;
+  const result = (hours * 60 + minutes) * 60000;
+  return result <= SL_ORB_MAX * SL_ORB_STEP_MS ? result : null;
+}
+
+function applyStamina(timer, value, now) { const current = clamp(integer(value, timer.current), 0, SL_STAM_MAX); timer.current = current; timer.running = current < SL_STAM_MAX; timer.start = timer.running ? now : null; return timer; }
+function applyFullRecovery(timer, milliseconds, now) { const fullIn = clamp(finite(milliseconds, 0), 0, SL_ORB_MAX * SL_ORB_STEP_MS); const missing = fullIn === 0 ? 0 : Math.ceil(fullIn / SL_ORB_STEP_MS); timer.current = SL_ORB_MAX - missing; if (!missing) { timer.running = false; timer.start = null; return timer; } const nextIn = fullIn - (missing - 1) * SL_ORB_STEP_MS; timer.running = true; timer.start = now - (SL_ORB_STEP_MS - nextIn); return timer; }
+function hasSLTimedProgress(state, now) { return isTimerActive(state.stamina, SL_STAM_MAX, SL_STAM_STEP_MS, now) || isTimerActive(state.orb, SL_ORB_MAX, SL_ORB_STEP_MS, now); }
+
+// =============================================================================
+// SECTION: v2-store  (was lunaby-v2-store.mjs)
+// dirty 前提で同一内容比較は省略。unpack の厳密検査は維持。
+// =============================================================================
+const V2_STORAGE_KEY = 'lunaby:state:v2';
+const V2_VERSION = 2;
+
+const STAM_RUNNING = 1;
+const IDLE_RUNNING = 2;
+const SLOT_DISABLED = 16;
+const SL_STAM_RUNNING = 1;
+const SL_ORB_RUNNING = 2;
+const SLOT_LABEL = 0;
+const SLOT_RANK = 1;
+const SLOT_STAM_CURRENT = 2;
+const SLOT_STAM_START = 3;
+const SLOT_IDLE_START = 4;
+const SLOT_FLAGS = 5;
+const SLOT_FIELDS = 6;
+const SL_STAM_CURRENT = 0;
+const SL_STAM_START = 1;
+const SL_ORB_CURRENT = 2;
+const SL_ORB_START = 3;
+const SL_FLAGS = 4;
+const SL_FIELDS = 5;
+
+const timestamp = value => {
+  const number = finite(value, 0);
+  return number > 0 && number < 9_000_000_000_000_000 ? Math.floor(number) : null;
+};
+const flag = (value, bit) => (Number.isInteger(value) && (value & bit) !== 0);
+
+function packSlot(slot) {
+  const flags = (slot.stamRunning ? STAM_RUNNING : 0)
+    | (slot.idleRunning ? IDLE_RUNNING : 0)
+    | (slot.enabled === false ? SLOT_DISABLED : 0);
+  const packed = new Array(SLOT_FIELDS);
+  packed[SLOT_LABEL] = slot.label;
+  packed[SLOT_RANK] = slot.rank;
+  packed[SLOT_STAM_CURRENT] = slot.stamCurrent;
+  packed[SLOT_STAM_START] = slot.stamStart || 0;
+  packed[SLOT_IDLE_START] = slot.idleStart || 0;
+  packed[SLOT_FLAGS] = flags;
+  return packed;
+}
+
+function unpackSlot(input) {
+  if (!Array.isArray(input) || input.length !== SLOT_FIELDS || typeof input[SLOT_LABEL] !== 'string' || !Number.isInteger(input[SLOT_FLAGS])) return null;
+  const flags = input[SLOT_FLAGS];
+  return normalizeSlot({
+    label: input[SLOT_LABEL],
+    rank: input[SLOT_RANK],
+    stamCurrent: input[SLOT_STAM_CURRENT],
+    stamStart: timestamp(input[SLOT_STAM_START]),
+    stamRunning: flag(flags, STAM_RUNNING),
+    idleStart: timestamp(input[SLOT_IDLE_START]),
+    idleRunning: flag(flags, IDLE_RUNNING),
+    enabled: !flag(flags, SLOT_DISABLED)
+  });
+}
+
+function packSL(sl) {
+  const flags = (sl.stamina.running ? SL_STAM_RUNNING : 0) | (sl.orb.running ? SL_ORB_RUNNING : 0);
+  const packed = new Array(SL_FIELDS);
+  packed[SL_STAM_CURRENT] = sl.stamina.current;
+  packed[SL_STAM_START] = sl.stamina.start || 0;
+  packed[SL_ORB_CURRENT] = sl.orb.current;
+  packed[SL_ORB_START] = sl.orb.start || 0;
+  packed[SL_FLAGS] = flags;
+  return packed;
+}
+
+function unpackSL(input) {
+  if (!Array.isArray(input) || input.length !== SL_FIELDS || !Number.isInteger(input[SL_FLAGS])) return null;
+  const flags = input[SL_FLAGS];
+  return createSLState({
+    stamina: { current: input[SL_STAM_CURRENT], start: timestamp(input[SL_STAM_START]), running: flag(flags, SL_STAM_RUNNING) },
+    orb: { current: input[SL_ORB_CURRENT], start: timestamp(input[SL_ORB_START]), running: flag(flags, SL_ORB_RUNNING) }
+  });
+}
+
+function parseV2(storage) {
+  let value = null;
+  try { value = JSON.parse(storage.getItem(V2_STORAGE_KEY) || 'null'); } catch (_) { return null; }
+  if (!value || value.v !== V2_VERSION || !Array.isArray(value.s) || value.s.length !== SLOT_COUNT) return null;
+  const slots = value.s.map(unpackSlot);
+  const sl = unpackSL(value.l);
+  return slots.every(Boolean) && sl ? { envelope:value, slots, sl } : null;
+}
+
+function packState(slots, sl) {
+  return { v:V2_VERSION, s:slots.map(packSlot), l:packSL(sl) };
+}
+
+function makeLoaded(envelope, slots, sl, source, migrated) {
+  return { envelope, slots, sl, source, migrated };
+}
+
+function loadExistingV2Store(storage) {
+  const v2 = parseV2(storage);
+  return v2 ? makeLoaded(v2.envelope, v2.slots, v2.sl, 'v2', false) : null;
+}
+
+function saveV2Store(storage, envelope, slots, changedIndex, sl) {
+  const target = envelope && envelope.v === V2_VERSION ? envelope : packState(slots, sl);
+  let changed = false;
+  const indexes = Number.isInteger(changedIndex) && changedIndex >= 0 && changedIndex < slots.length
+    ? [changedIndex]
+    : slots.map((_, index) => index);
+
+  for (const index of indexes) {
+    const slot = slots[index];
+    if (!slot || !slot.dirty) continue;
+    target.s[index] = packSlot(slot);
+    slot.dirty = false;
+    changed = true;
+  }
+
+  if (sl) {
+    // SL は dirty フラグが無いため、5要素の簡易比較のみ（同一ならスキップ）
+    const nextSL = packSL(sl);
+    const prev = target.l;
+    if (!prev || prev.length !== nextSL.length || nextSL.some((value, i) => value !== prev[i])) {
+      target.l = nextSL;
+      changed = true;
+    }
+  }
+
+  if (!changed) return false;
+  storage.setItem(V2_STORAGE_KEY, JSON.stringify(target));
+  return true;
+}
+
+
+/* === text-list === */
+let startLunaby;
+{
+const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+  const num = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
+  const escape = value => String(value).replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+
+  // スターリープUIは廃止。state.sl は保存互換のため読み書きのみ残す。
+  let state = { slots:createSlots(), sl:null };
+  let storageEnvelope = {};
+  let refs = [];
+  let selected = null;
+  let edit = null;
+  let refreshTimer = null;
+  let resumeSyncTimer = null;
+  let resumeRevealTimer = null;
+  let hiddenAt = 0;
+  let appReady = false;
+  let lastResumeSyncAt = -Infinity;
+  function applyLoaded(loaded){ storageEnvelope = loaded.envelope; state.slots = loaded.slots; state.sl = loaded.sl; }
+
+  function write(index){
+    try { saveV2Store(localStorage, storageEnvelope, state.slots, index, state.sl); } catch (_) {}
+  }
+  // SL UI removed
+  function writeSL(){ try { saveV2Store(localStorage, storageEnvelope, state.slots, undefined, state.sl); } catch (_) {} }
+  function buildSL(){ /* no-op */ }
+  function refreshSL(){ /* no-op */ }
+
+  function setHidden(element, value){
+    if (!element) return;
+    const hidden = !!value;
+    if (element.hidden !== hidden) element.hidden = hidden;
+  }
+  function setClass(element, name, value){
+    if (!element) return;
+    const enabled = !!value;
+    if (element.classList.contains(name) !== enabled) element.classList.toggle(name, enabled);
+  }
+
+  function accountMarkup(slot, index){
+    return '<section class="account group-' + Math.floor(index / 2) + '" data-slot="' + index + '">' +
+      '<div class="account-head">' +
+        '<span class="name-display' + (String(slot.label || '').trim() ? '' : ' is-placeholder') + '" data-name-edit="' + index + '"><span class="name-display-text">' + escape(String(slot.label || '').trim() ? slot.label : '名前') + '</span></span>' +
+        '<input class="name-input" data-name-editor="' + index + '" value="' + escape(slot.label) + '" hidden autocomplete="off" spellcheck="false">' +
+        '<span class="rank-display" data-rank-edit="' + index + '">Lv.' + slot.rank + '</span>' +
+        '<input class="rank-input" data-rank-editor="' + index + '" value="' + slot.rank + '" hidden inputmode="numeric" autocomplete="off" maxlength="3">' +
+      '</div>' +
+      '<div class="task-row timer-row compact-data" data-i="' + index + '">' +
+        '<div class="full-clock full-clock-stam" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
+        '<div class="full-clock full-clock-idle" aria-hidden="true"><span class="full-clock-hour"></span><span class="full-clock-minute"></span></div>' +
+        '<div class="stam-side" data-i="' + index + '" data-task="stam">' +
+          '<span class="stam-edit-gap" data-stam-edit="' + index + '" aria-hidden="true"></span>' +
+          '<span class="stam-stack" data-stam-confirm="' + index + '">' +
+            '<span class="task-max" data-stam-number="' + index + '"></span>' +
+            '<span class="stam-edit-zone">' +
+              '<span class="stam-current stam-number" data-stam-number="' + index + '"></span>' +
+              '<input class="stam-edit" data-stam-editor="' + index + '" type="tel" inputmode="numeric" autocomplete="off" spellcheck="false" maxlength="3" hidden>' +
+            '</span>' +
+          '</span>' +
+          '<span class="stam-calc-gap" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
+          '<span class="stam-full" hidden><span class="stam-full-time"><span class="stam-full-hour" data-stam-edit="' + index + '"></span><span class="stam-full-colon" aria-hidden="true">:</span><span class="stam-full-minute" data-stam-confirm="' + index + '"></span></span><span class="stam-full-label" aria-hidden="true"></span></span>' +
+        '</div>' +
+        '<div class="idle-zone" data-i="' + index + '" data-task="idle">' +
+          '<span class="idle-pre" data-stam-confirm="' + index + '" aria-hidden="true"></span>' +
+          '<span class="idle-action" data-task="idle" data-i="' + index + '"><strong class="task-value"></strong><span class="task-plan"></span></span>' +
+          '<span class="idle-post" data-task="idle" data-i="' + index + '" aria-hidden="true"></span>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+  }
+
+  function buildStaticList(){
+    const list = document.getElementById('list');
+    const visibleIndices = state.slots.reduce((indices, slot, index) => { if (isSlotEnabled(slot)) indices.push(index); return indices; }, []);
+    list.innerHTML = visibleIndices.map(index => accountMarkup(state.slots[index], index)).join('');
+    refs = new Array(state.slots.length);
+    for (const index of visibleIndices) {
+      const root = list.querySelector('[data-slot="' + index + '"]');
+      const stamRow = root.querySelector('.stam-side');
+      const idleRow = root.querySelector('.idle-zone');
+      refs[index] = {
+        root,
+        nameDisplay:root.querySelector('[data-name-edit]'), nameDisplayText:root.querySelector('.name-display-text'), nameInput:root.querySelector('[data-name-editor]'),
+        rankDisplay:root.querySelector('[data-rank-edit]'), rankInput:root.querySelector('[data-rank-editor]'),
+        stamRow, stamNumber:stamRow.querySelector('.stam-number'), stamInput:stamRow.querySelector('[data-stam-editor]'),
+        stamMax:stamRow.querySelector('.task-max'), stamSlash:null, stamCalc:stamRow.querySelector('.stam-stack'), stamCalcGap:stamRow.querySelector('.stam-calc-gap'), stamFull:stamRow.querySelector('.stam-full'), stamFullLabel:stamRow.querySelector('.stam-full-label'), stamFullHour:stamRow.querySelector('.stam-full-hour'), stamFullMinute:stamRow.querySelector('.stam-full-minute'),
+        stamFullClock:root.querySelector('.full-clock-stam'), stamFullClockHour:root.querySelector('.full-clock-stam .full-clock-hour'), stamFullClockMinute:root.querySelector('.full-clock-stam .full-clock-minute'),
+        idleFullClock:root.querySelector('.full-clock-idle'), idleFullClockHour:root.querySelector('.full-clock-idle .full-clock-hour'), idleFullClockMinute:root.querySelector('.full-clock-idle .full-clock-minute'),
+        idleRow, idleValue:idleRow.querySelector('.task-value'), idlePlan:idleRow.querySelector('.task-plan'),
+        snapshot:{ stam:{ current:0, plan:'—:—' }, idle:{ value:'未開始', plan:'—:—', full:false, low:false } }
+      };
+    }
+  }
+
+  function setText(element, value){
+    if (!element) return;
+    const text = String(value == null ? '' : value);
+    if (element.textContent !== text) element.textContent = text;
+  }
+  function setSelected(element, value){ setClass(element, 'is-selected', value); }
+  function editIs(type, index){ return edit && edit.type === type && edit.index === index; }
+  function fullAtLabel(plan){ const [hour, minute] = String(plan || '').trim().split(':'); return /^\d{1,2}$/.test(hour) && /^\d{2}$/.test(minute) ? String(Number(hour)) + ':' + minute : ''; }
+  function fullTimeParts(plan){ const [hour, minute] = String(fullAtLabel(plan) || '—:—').split(':'); return { hour:hour || '—', minute:minute || '—' }; }
+
+  // スタミナ行だけ描画（名前・ランク・放置は触らない）
+  // includeMax: ランク変更時など最大値の文字も更新する
+  // force: 差分スキップせず必ず描画（確定・復帰用）
+  // options.snapshot / prev*: 同一 tick で displaySnapshot を二重に呼ばないための受け渡し
+  function paintStamRow(index, now, options){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    const includeMax = !!(options && options.includeMax);
+    const force = !!(options && options.force);
+    const busy = editIs('stam', index) || (selected && selected.index === index && selected.task === 'stam');
+    const prevCurrent = options && 'prevStamCurrent' in options
+      ? options.prevStamCurrent
+      : ref.snapshot.stam.current;
+    const prevLow = options && 'prevStamLow' in options
+      ? !!options.prevStamLow
+      : !!ref.snapshot.stam.low;
+    const snapshot = options && options.snapshot
+      ? options.snapshot
+      : displaySnapshot(slot, now, ref.snapshot);
+    if (busy && !force) return;
+    const stamFull = snapshot.stam.current >= slot.stamMax;
+    const wasFull = prevCurrent >= slot.stamMax;
+    if (!force && !includeMax && snapshot.stam.current === prevCurrent && stamFull === wasFull && !!snapshot.stam.low === prevLow) return;
+    setSelected(ref.stamRow, false);
+    setClass(ref.stamFullClock, 'is-selected', false);
+    setClass(ref.stamInput.parentElement, 'is-editing', false);
+    setClass(ref.stamRow, 'is-editing', false);
+    setHidden(ref.stamInput, true);
+    setHidden(ref.stamNumber, stamFull);
+    setHidden(ref.stamSlash, stamFull);
+    setHidden(ref.stamMax, stamFull);
+    setHidden(ref.stamCalc, stamFull);
+    setHidden(ref.stamCalcGap, stamFull);
+    setHidden(ref.stamFull, !stamFull);
+    if (!stamFull) setText(ref.stamNumber, snapshot.stam.current);
+    // 最大値はランク変更・初回だけ更新（40計算/手入力確定では触らない）
+    if (includeMax) setText(ref.stamMax, slot.stamMax);
+    const stamClock = fullTimeParts(snapshot.stam.plan);
+    if (stamFull) {
+      setText(ref.stamFullHour, stamClock.hour);
+      setText(ref.stamFullMinute, stamClock.minute);
+      setText(ref.stamFullLabel, '満');
+    }
+    const stamClockVisible = /^\d{1,2}$/.test(stamClock.hour) && /^\d{2}$/.test(stamClock.minute);
+    setHidden(ref.stamFullClock, !stamClockVisible || stamFull);
+    if (stamClockVisible && !stamFull) {
+      setText(ref.stamFullClockHour, String(stamClock.hour).padStart(2, '0'));
+      setText(ref.stamFullClockMinute, stamClock.minute);
+    }
+    setClass(ref.stamRow, 'is-near-full', snapshot.stam.low);
+  }
+  // 放置行だけ描画（名前・ランク・スタミナは触らない）
+  function paintIdleRow(index, now, options){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    const force = !!(options && options.force);
+    const busy = selected && selected.index === index && selected.task === 'idle';
+    const prevValue = options && 'prevIdleValue' in options
+      ? options.prevIdleValue
+      : ref.snapshot.idle.value;
+    const prevFull = options && 'prevIdleFull' in options
+      ? !!options.prevIdleFull
+      : !!ref.snapshot.idle.full;
+    const prevLow = options && 'prevIdleLow' in options
+      ? !!options.prevIdleLow
+      : !!ref.snapshot.idle.low;
+    const snapshot = options && options.snapshot
+      ? options.snapshot
+      : displaySnapshot(slot, now, ref.snapshot);
+    if (busy && !force) return;
+    if (!force && snapshot.idle.value === prevValue && snapshot.idle.full === prevFull && !!snapshot.idle.low === prevLow) return;
+    setSelected(ref.idleRow, false);
+    setClass(ref.idleFullClock, 'is-selected', false);
+    const idleValue = snapshot.idle.value;
+    const idleClock = /^\d{1,2}:\d{2}$/.test(idleValue);
+    setText(ref.idleValue, idleClock && /^\d:/.test(idleValue) ? '\u2007' + idleValue : idleValue);
+    setClass(ref.idleValue, 'is-clock', idleClock);
+    setClass(ref.idleValue, 'is-pending', idleValue === '未開始');
+    setHidden(ref.idleValue, snapshot.idle.full);
+    setText(ref.idlePlan, snapshot.idle.full ? fullAtLabel(snapshot.idle.plan) : '');
+    setClass(ref.idlePlan, 'is-full', snapshot.idle.full);
+    setClass(ref.idleRow, 'is-near-full', snapshot.idle.low);
+    const idleFullTime = fullTimeParts(snapshot.idle.plan);
+    const idleFullClockVisible = /^\d{1,2}$/.test(idleFullTime.hour) && /^\d{2}$/.test(idleFullTime.minute);
+    setHidden(ref.idleFullClock, !idleFullClockVisible || snapshot.idle.full);
+    if (idleFullClockVisible && !snapshot.idle.full) {
+      setText(ref.idleFullClockHour, String(idleFullTime.hour).padStart(2, '0'));
+      setText(ref.idleFullClockMinute, idleFullTime.minute);
+    }
+  }
+  function paintName(index){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    setHidden(ref.nameDisplay, false);
+    setHidden(ref.nameInput, true);
+    const blank = !String(slot.label || '').trim();
+    setText(ref.nameDisplayText, blank ? '名前' : slot.label);
+    setClass(ref.nameDisplay, 'is-placeholder', blank);
+  }
+  function paintRank(index){
+    const ref = refs[index];
+    const slot = state.slots[index];
+    if (!ref || !slot) return;
+    setHidden(ref.rankDisplay, false);
+    setHidden(ref.rankInput, true);
+    setText(ref.rankDisplay, 'Lv.' + slot.rank);
+  }
+  function scheduleRefresh(){
+    if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+    if (document.hidden || edit) return;
+    const now = Date.now();
+    let dotTimed = false;
+    for (let index = 0; index < state.slots.length; index += 1) { if (refs[index] && hasTimedProgress(state.slots[index], now)) { dotTimed = true; break; } }
+    if (!dotTimed) return;
+    const delay = 60000 - (Date.now() % 60000) + 24;
+    refreshTimer = setTimeout(syncTimedSlots, delay);
+  }
+  function syncTimedSlots(){
+    const now = Date.now();
+    refreshSL(now);
+    for (let index = 0; index < state.slots.length; index += 1) {
+      const slot = state.slots[index];
+      const ref = refs[index];
+      if (!ref) continue;
+      if (!slot.idleRunning && !slot.stamRunning) continue;
+      // 同一 snapshot を共有するため、更新前の値を先に撮ってから1回だけ displaySnapshot する。
+      // （先に放置を描くと stam.current が先に進み、スタミナが「変化なし」でスキップされる不具合を防ぐ）
+      const prevStamCurrent = ref.snapshot.stam.current;
+      const prevStamLow = !!ref.snapshot.stam.low;
+      const prevIdleValue = ref.snapshot.idle.value;
+      const prevIdleFull = !!ref.snapshot.idle.full;
+      const prevIdleLow = !!ref.snapshot.idle.low;
+      const snapshot = displaySnapshot(slot, now, ref.snapshot);
+      if (slot.idleRunning) {
+        paintIdleRow(index, now, { snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
+      }
+      if (slot.stamRunning) {
+        paintStamRow(index, now, { snapshot, prevStamCurrent, prevStamLow });
+      }
+    }
+    scheduleRefresh();
+  }
+  // 復帰時：内部時刻はすぐ合わせ、DOM は「変化した行だけ」を1フレームにまとめて書く。
+  // force 全描画や選択クリアの force 再描画は、値が同じでも hidden/class を触って点滅しやすい。
+  function syncTimersAfterResume(){
+    const now = Date.now();
+    // 選択・編集は状態だけ外す（ここでは force 再描画しない）
+    const hadSelected = selected;
+    const hadEdit = edit;
+    if (selected) selected = null;
+    if (edit) {
+      const idx = edit.index;
+      edit = null;
+      // input を閉じる最小処理（行全体の force はしない）
+      const ref = refs[idx];
+      if (ref) {
+        setHidden(ref.nameInput, true);
+        setHidden(ref.nameDisplay, false);
+        setHidden(ref.rankInput, true);
+        setHidden(ref.rankDisplay, false);
+        setHidden(ref.stamInput, true);
+        setClass(ref.stamInput.parentElement, 'is-editing', false);
+        setClass(ref.stamRow, 'is-editing', false);
+      }
+      paintName(idx);
+      paintRank(idx);
+    }
+    // スナップショット計算は同期で行い、DOM 書き込みだけ rAF に載せる
+    const jobs = [];
+    for (let index = 0; index < state.slots.length; index += 1) {
+      const ref = refs[index];
+      if (!ref) continue;
+      const slot = state.slots[index];
+      if (!slot.stamRunning && !slot.idleRunning) continue;
+      const prevStamCurrent = ref.snapshot.stam.current;
+      const prevStamLow = !!ref.snapshot.stam.low;
+      const prevIdleValue = ref.snapshot.idle.value;
+      const prevIdleFull = !!ref.snapshot.idle.full;
+      const prevIdleLow = !!ref.snapshot.idle.low;
+      const snapshot = displaySnapshot(slot, now, ref.snapshot);
+      if (slot.stamRunning) {
+        jobs.push({ kind:'stam', index, snapshot, prevStamCurrent, prevStamLow });
+      }
+      if (slot.idleRunning) {
+        jobs.push({ kind:'idle', index, snapshot, prevIdleValue, prevIdleFull, prevIdleLow });
+      }
+    }
+    // 選択中だった行は、プレビュー数字/ハイライト解除のため必ず force で戻す
+    // （値が同じでも差分スキップされると40プレビューが残る）
+    if (hadSelected && refs[hadSelected.index]) {
+      const index = hadSelected.index;
+      const kind = hadSelected.task === 'idle' ? 'idle' : 'stam';
+      for (let i = jobs.length - 1; i >= 0; i -= 1) {
+        if (jobs[i].index === index && jobs[i].kind === kind) jobs.splice(i, 1);
+      }
+      const ref = refs[index];
+      const slot = state.slots[index];
+      if (slot && ref) {
+        const snapshot = displaySnapshot(slot, now, ref.snapshot);
+        if (kind === 'idle') {
+          jobs.push({
+            kind:'idle', index, snapshot,
+            prevIdleValue: snapshot.idle.value,
+            prevIdleFull: !!snapshot.idle.full,
+            prevIdleLow: !!snapshot.idle.low,
+            force:true
+          });
+        } else {
+          jobs.push({
+            kind:'stam', index, snapshot,
+            prevStamCurrent: snapshot.stam.current,
+            prevStamLow: !!snapshot.stam.low,
+            force:true
+          });
+        }
+      }
+    }
+    const runJobs = () => {
+      if (document.hidden) return;
+      for (const job of jobs) {
+        if (job.kind === 'stam') {
+          paintStamRow(job.index, now, {
+            snapshot: job.snapshot,
+            prevStamCurrent: job.prevStamCurrent,
+            prevStamLow: job.prevStamLow,
+            force: !!job.force
+          });
+        } else {
+          paintIdleRow(job.index, now, {
+            snapshot: job.snapshot,
+            prevIdleValue: job.prevIdleValue,
+            prevIdleFull: job.prevIdleFull,
+            prevIdleLow: job.prevIdleLow,
+            force: !!job.force
+          });
+        }
+      }
+      refreshSL(now);
+      scheduleRefresh();
+    };
+    // ブラウザの描画フレームに乗せて、途中経過の再フローを減らす
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(runJobs);
+    else runJobs();
+  }
+
+  function beginResumeCover(){
+    const veil = document.getElementById('resume-veil');
+    if (!veil) return;
+    veil.classList.remove('is-revealing');
+    veil.classList.add('is-covering');
+  }
+
+  function revealAfterResume(){
+    const veil = document.getElementById('resume-veil');
+    if (!veil) return;
+    if (resumeRevealTimer) clearTimeout(resumeRevealTimer);
+    // DOM更新を1フレーム確定させてからベールをモード別の時間で外す。
+    requestAnimationFrame(() => {
+      if (document.hidden) return;
+      // class切替を確実に別描画に分離する。
+      requestAnimationFrame(() => {
+        if (document.hidden) return;
+        veil.classList.remove('is-covering');
+        veil.classList.add('is-revealing');
+        resumeRevealTimer = setTimeout(() => {
+          resumeRevealTimer = null;
+          veil.classList.remove('is-revealing');
+        }, RESUME_REVEAL_CLEANUP);
+      });
+    });
+  }
+
+  // TWA / standalone は Android のタスク復帰を主対象にする。
+  // 通常ブラウザでは従来の安全側タイミングを維持する。
+  const standaloneResumeMode = (() => {
+    try {
+      return !!(window.matchMedia && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches
+      ));
+    } catch (_) {
+      return false;
+    }
+  })();
+  const RESUME_REVEAL_CLEANUP = standaloneResumeMode ? 300 : 360;
+
+  // 裏にいた時間で待ちを変える（短い切替は速く、長い凍結は余裕を見る）
+  function resumeSyncDelayMs(){
+    const gone = hiddenAt ? (Date.now() - hiddenAt) : 0;
+    if (standaloneResumeMode) {
+      if (gone > 0 && gone < 3000) return 160;   // すぐ戻った
+      if (gone >= 60000) return 240;             // 長時間凍結
+      return 190;                               // 通常のタスク復帰
+    }
+    if (gone > 0 && gone < 3000) return 200;
+    if (gone >= 60000) return 280;
+    return 240;
+  }
+
+  function syncAfterResume(){
+    // 冷起動中の visibility は復帰扱いしない（ベールを出さない）
+    if (!appReady || document.hidden) return;
+    const now = Date.now();
+    // 連続する visibility / pageshow をまとめ、二重復帰を防ぐ。
+    if (now - lastResumeSyncAt < 320) return;
+    lastResumeSyncAt = now;
+
+    const delay = resumeSyncDelayMs();
+    beginResumeCover();
+    if (resumeSyncTimer) clearTimeout(resumeSyncTimer);
+    resumeSyncTimer = setTimeout(() => {
+      resumeSyncTimer = null;
+      if (document.hidden) return;
+      syncTimersAfterResume();
+      revealAfterResume();
+    }, delay);
+  }
+
+
+  function beginEdit(type, index){
+    if (edit) closeEdit(false);
+    if (selected) {
+      const prevIdx = selected.index;
+      const prevTask = selected.task;
+      selected = null;
+      clearSelectionVisual(prevIdx, prevTask);
+    }
+    edit = { type, index, original:type === 'stam' ? liveStam(state.slots[index], Date.now()) : null };
+    const ref = refs[index];
+    if (type === 'name') {
+      setHidden(ref.nameDisplay, true);
+      setHidden(ref.nameInput, false);
+    } else if (type === 'rank') {
+      setHidden(ref.rankDisplay, true);
+      setHidden(ref.rankInput, false);
+    } else {
+      // 満表示中でも手入力に入れるよう、満UIを閉じて input を出す
+      setHidden(ref.stamFull, true);
+      setHidden(ref.stamNumber, true);
+      setHidden(ref.stamSlash, false);
+      setHidden(ref.stamMax, false);
+      setHidden(ref.stamCalc, false);
+      setHidden(ref.stamCalcGap, false);
+      setHidden(ref.stamInput, false);
+      setText(ref.stamMax, state.slots[index].stamMax);
+      setClass(ref.stamInput.parentElement, 'is-editing', true);
+      setClass(ref.stamRow, 'is-editing', true);
+      setSelected(ref.stamRow, false);
+      setClass(ref.stamFullClock, 'is-selected', true);
+    }
+    const input = type === 'name' ? ref.nameInput : type === 'rank' ? ref.rankInput : ref.stamInput;
+    // 名前は既存文字を表示。ランク/スタミナは空欄から入力
+    input.value = type === 'name' ? state.slots[index].label : '';
+    input.focus({ preventScroll:true });
+  }
+  function closeEdit(cancel){
+    if (!edit) return;
+    const active = edit;
+    const ref = refs[active.index];
+    const input = active.type === 'name' ? ref.nameInput : active.type === 'rank' ? ref.rankInput : ref.stamInput;
+    if (!cancel) commitEdit(active, input.value);
+    else {
+      edit = null;
+      if (active.type === 'name') paintName(active.index);
+      else if (active.type === 'rank') paintRank(active.index);
+      else paintStamRow(active.index, Date.now(), { force:true, includeMax:true });
+      scheduleRefresh();
+    }
+  }
+  function commitEdit(active, raw){
+    const slot = state.slots[active.index];
+    const now = Date.now();
+    let changedIndex = null;
+    if (active.type === 'name') {
+      if (setLabel(slot, raw)) changedIndex = active.index;
+      edit = null;
+      paintName(active.index);
+    } else if (active.type === 'rank') {
+      const digits = String(raw || '').replace(/[^0-9]/g, '');
+      if (digits) {
+        const rank = clamp(Math.floor(num(digits, slot.rank)), 1, 200);
+        if (setRank(slot, rank, now)) changedIndex = active.index;
+      }
+      edit = null;
+      paintRank(active.index);
+      // ランク変更で最大スタミナ・現在値クランプが変わりうる
+      paintStamRow(active.index, now, { force:true, includeMax:true });
+    } else {
+      const digits = String(raw || '').replace(/[^0-9]/g, '');
+      if (digits) {
+        const value = clamp(Math.floor(num(digits, active.original)), 0, slot.stamMax);
+        applyStam(slot, value, now);
+        changedIndex = active.index;
+      }
+      edit = null;
+      // 手入力確定：現在値・満了表示のみ（最大値は変更なし）
+      paintStamRow(active.index, now, { force:true });
+    }
+    scheduleRefresh();
+    if (changedIndex != null) write(changedIndex);
+  }
+
+  // 1回目タップ：選択表示だけ。解除は paint*Row に任せる。
+  function paintIdleSelection(index){
+    const ref = refs[index];
+    if (!ref) return;
+    const snapshot = displaySnapshot(state.slots[index], Date.now(), ref.snapshot);
+    setSelected(ref.idleRow, true);
+    setClass(ref.idleFullClock, 'is-selected', true);
+    if (snapshot.idle.full) {
+      setText(ref.idlePlan, '受取');
+      setHidden(ref.idleValue, true);
+      setClass(ref.idlePlan, 'is-full', true);
+    } else if (snapshot.idle.value !== '未開始') {
+      setText(ref.idleValue, '受取');
+      setClass(ref.idleValue, 'is-clock', false);
+      setClass(ref.idleValue, 'is-pending', false);
+      setHidden(ref.idleValue, false);
+      setText(ref.idlePlan, '');
+    }
+  }
+  // 40計算待機：基本は現在値＋選択色のみ。
+  // 満のときだけ「満UI → 数字プレビュー」の表示切替が必要なので visibility を触る。
+  // displaySnapshot は使わず liveStam だけ見て最小描画を維持（長時間放置後の初回反応を軽くする）。
+  function paintStamSelection(index, previewValue){
+    const ref = refs[index];
+    if (!ref) return;
+    const slot = state.slots[index];
+    const stamFull = liveStam(slot, Date.now()) >= slot.stamMax;
+    setSelected(ref.stamRow, true);
+    setClass(ref.stamFullClock, 'is-selected', true);
+    if (stamFull) {
+      setHidden(ref.stamFull, true);
+      setHidden(ref.stamNumber, false);
+      setHidden(ref.stamSlash, false);
+      setHidden(ref.stamMax, false);
+      setHidden(ref.stamCalc, false);
+      setHidden(ref.stamCalcGap, false);
+    }
+    setText(ref.stamNumber, previewValue);
+  }
+  function clearSelectionVisual(index, task){
+    if (!Number.isFinite(index) || !refs[index]) return;
+    const now = Date.now();
+    if (task === 'idle') paintIdleRow(index, now, { force:true });
+    else if (task === 'stam') paintStamRow(index, now, { force:true });
+  }
+  function selectTask(index, task){
+    const previousIndex = selected ? selected.index : NaN;
+    const previousTask = selected ? selected.task : null;
+    const previewValue = task === 'stam'
+      ? remainingAfter40(liveStam(state.slots[index], Date.now()))
+      : null;
+    selected = task === 'stam'
+      ? { index, task, value:previewValue }
+      : { index, task };
+    if (Number.isFinite(previousIndex) && (previousIndex !== index || previousTask !== task)) {
+      clearSelectionVisual(previousIndex, previousTask);
+    }
+    if (task === 'idle') paintIdleSelection(index);
+    else paintStamSelection(index, previewValue);
+  }
+  function confirmTask(index, task){
+    const slot = state.slots[index];
+    const now = Date.now();
+    if (task === 'stam') applyStam(slot, selected.value, now);
+    else if (task === 'idle') restartIdle(slot, now);
+    // UIを先に確定してから永続化。localStorage が端末で遅いと
+    // 保存が終わるまで画面遷移が遅延して体感が悪くなるため。
+    selected = null;
+    if (task === 'stam') paintStamRow(index, now, { force:true });
+    else paintIdleRow(index, now, { force:true });
+    scheduleRefresh();
+    // localStorage.setItem は同期I/Oで詰まることがあるため、確定タップの描画が
+    // 実際に画面へコミットされるのを待ってから書き込む（rAF→setTimeout(0)で1フレーム後ろへ）。
+    requestAnimationFrame(() => setTimeout(() => write(index), 0));
+  }
+  function activate(index, task){
+    const same = selected && selected.index === index && selected.task === task;
+    if (!same) selectTask(index, task);
+    else confirmTask(index, task);
+  }
+
+  function setupEvents(){
+    const list = document.querySelector('.page');
+    // タップで開く手入力（名前・ランク・スタミナ）
+    const MANUAL_EDIT_TARGETS = [
+      ['[data-name-edit]', el => beginEdit('name', Number(el.dataset.nameEdit))],
+      ['[data-rank-edit]', el => beginEdit('rank', Number(el.dataset.rankEdit))],
+      ['[data-stam-edit]', el => beginEdit('stam', Number(el.dataset.stamEdit))],
+    ];
+    list.addEventListener('pointerdown', event => {
+      const target = event.target;
+      if (target.matches('input')) {
+        if (target.matches('[data-name-editor],[data-rank-editor],[data-stam-editor]')) {
+          target.focus({ preventScroll:true });
+        }
+        return;
+      }
+      // ① 手入力（名前／ランク／スタミナ）
+      for (const [selector, open] of MANUAL_EDIT_TARGETS) {
+        const el = target.closest(selector);
+        if (el) {
+          event.preventDefault();
+          open(el);
+          return;
+        }
+      }
+      // ② 40計算（スタミナの確定式タップ）
+      const stamConfirm = target.closest('[data-stam-confirm]');
+      if (stamConfirm) {
+        event.preventDefault();
+        activate(Number(stamConfirm.dataset.stamConfirm), 'stam');
+        return;
+      }
+      // ③ 放置報酬の受取
+      const row = target.closest('[data-task]');
+      if (row && row.dataset.task !== 'stam') {
+        event.preventDefault();
+        activate(Number(row.dataset.i), row.dataset.task);
+        return;
+      }
+    });
+    list.addEventListener('input', event => {
+      const input = event.target;
+      if (input.matches('[data-stam-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
+      if (input.matches('[data-rank-editor]')) { input.value=String(input.value||'').replace(/[^0-9]/g,'').slice(0,3); }
+    });
+    list.addEventListener('focusout', event => {
+      const input = event.target;
+      if (!edit || !input.matches('input')) return;
+      const type = input.matches('[data-name-editor]') ? 'name' : input.matches('[data-rank-editor]') ? 'rank' : input.matches('[data-stam-editor]') ? 'stam' : '';
+      if (type !== edit.type || Number(input.dataset[type + 'Editor']) !== edit.index) return;
+      closeEdit(false);
+    });
+    document.addEventListener('pointerdown', event => {
+      if (!selected || event.target.closest('[data-task]')) return;
+      const index = selected.index;
+      const task = selected.task;
+      selected = null;
+      clearSelectionVisual(index, task);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+        if (refreshTimer) { clearTimeout(refreshTimer); refreshTimer = null; }
+        if (resumeSyncTimer) { clearTimeout(resumeSyncTimer); resumeSyncTimer = null; }
+        if (resumeRevealTimer) { clearTimeout(resumeRevealTimer); resumeRevealTimer = null; }
+        const veil = document.getElementById('resume-veil');
+        if (veil) veil.classList.remove('is-covering', 'is-revealing');
+        // 保存は必要だが、重い同期I/Oで復帰直後の描画とぶつかりやすいので
+        // 可能ならアイドルに回す（非対応環境は即時）。
+        const persist = () => { try { write(); } catch (_) {} };
+        if (typeof requestIdleCallback === 'function') requestIdleCallback(persist, { timeout: 400 });
+        else setTimeout(persist, 0);
+      } else {
+        // 冷起動完了前は復帰同期しない
+        if (appReady) syncAfterResume();
+      }
+    });
+    // bfcache 復帰（一部 Android / 戻る操作）でも同じ経路へ
+    window.addEventListener('pageshow', event => {
+      if (event.persisted) syncAfterResume();
+    });
+  }
+
+  startLunaby = function startLunaby(loaded) {
+    applyLoaded(loaded);
+    buildStaticList();
+    setupEvents();
+    buildSL();
+    // 初回：名前/ランクは markup 済み。タイマー行だけ埋める。
+    // スタミナ最大値はここで一度だけ書く（以降はランク変更時のみ）。
+    const now = Date.now();
+    refreshSL(now);
+    for (let index = 0; index < state.slots.length; index += 1) {
+      if (!refs[index]) continue;
+      paintStamRow(index, now, { force:true, includeMax:true });
+      paintIdleRow(index, now, { force:true });
+    }
+    scheduleRefresh();
+    // 冷起動完了。これ以前の visibility は復帰扱いにしない（ベールなし）
+    const veil = document.getElementById('resume-veil');
+    if (veil) veil.classList.remove('is-covering', 'is-revealing');
+    requestAnimationFrame(() => {
+      appReady = true;
+      hiddenAt = 0;
+    });
+  }
+
+}
+
+
+/* === gate === */
+function renderV2OnlyGate(onInitialize) {
+  const list = document.getElementById('list');
+  const starleap = document.getElementById('starleap');
+  if (list) {
+    list.innerHTML = '<section class="pure-v2-gate" aria-live="polite"><strong>v2専用候補</strong><span>有効なv2保存がないため起動していません。</span><a href="#initialize" data-v2-initialize>初回起動する</a></section>';
+    const action = list.querySelector('[data-v2-initialize]');
+    if (action && typeof onInitialize === 'function') action.addEventListener('click', event => { event.preventDefault(); onInitialize(); }, { once:true });
+  }
+  if (starleap) starleap.textContent = '';
+}
+
+// 保存データ自体はあるのに起動処理側で例外が出たケース用。
+// 「初回起動する」ボタンを出すと、同じ起動処理を再実行して同じエラーで
+// 何も起きないように見えるだけなので、ここでは別メッセージだけを出す。
+function renderStartupError() {
+  const list = document.getElementById('list');
+  const starleap = document.getElementById('starleap');
+  if (list) {
+    list.innerHTML = '<section class="pure-v2-gate" aria-live="polite"><strong>起動エラー</strong><span>保存データは見つかっていますが、起動処理でエラーが発生しました。コード側の問題の可能性があります（詳細はブラウザのコンソールを確認してください）。</span></section>';
+  }
+  if (starleap) starleap.textContent = '';
+}
+
+
+/* === first-launch === */
+/** Initial-launch-only module. Do not import from normal runtime paths. */
+const packInitialSlot = slot => [slot.label, slot.rank, slot.stamCurrent, slot.stamStart || 0, slot.idleStart || 0, 0];
+
+function initializeV2Store(storage) {
+  const existing = loadExistingV2Store(storage);
+  if (existing) return existing;
+  let stored = null;
+  try { stored = storage.getItem(V2_STORAGE_KEY); } catch (_) { return null; }
+  if (stored !== null && stored !== '') return null;
+  const slots = Array.from({ length:SLOT_COUNT }, () => normalizeSlot());
+  const sl = createSLState();
+  const envelope = { v:V2_VERSION, s:slots.map(packInitialSlot), l:[sl.stamina.current, sl.stamina.start || 0, sl.orb.current, sl.orb.start || 0, 0] };
+  try { storage.setItem(V2_STORAGE_KEY, JSON.stringify(envelope)); } catch (_) {}
+  return { envelope, slots, sl, source:'initial', migrated:false };
+}
+
+
+
+/* === entry === */
+
+const requestPersistence = () => {
+  if (!(navigator.storage && navigator.storage.persist)) return;
+  navigator.storage.persist().catch(() => {});
+};
+if (typeof requestIdleCallback === 'function') requestIdleCallback(requestPersistence, { timeout: 1500 });
+else setTimeout(requestPersistence, 0);
+
+const renderGate = onInitialize => renderV2OnlyGate(onInitialize);
+const renderError = () => renderStartupError();
+
+const initializeAndStart = () => {
+  try {
+    const initial = initializeV2Store(localStorage);
+    if (initial) startLunaby(initial);
+    else renderGate(initializeAndStart);
+  } catch (error) {
+    console.error('[lunaby] initializeAndStart failed', error);
+    renderGate(initializeAndStart);
+  }
+};
+
+try {
+  const existing = loadExistingV2Store(localStorage);
+  if (existing) startLunaby(existing);
+  else renderGate(initializeAndStart);
+} catch (error) {
+  console.error('[lunaby] boot failed', error);
+  try { renderError(); } catch (_) {}
+}
+
+  </script>
   <script>
     if ('serviceWorker' in navigator) {
       const registerSW = () => navigator.serviceWorker.getRegistration('./').then(registration => {

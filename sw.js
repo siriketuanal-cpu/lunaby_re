@@ -4,16 +4,11 @@ const CACHE_NAME = 'lunaby-static-v1-flex2-gap';
 const STAGING_CACHE_NAME = 'lunaby-static-staging-v1';
 const SHELL = [
   './index.html',
-  './text-list.css',
-  './text-list-v2-only-entry.mjs',
-  './text-list-v2-only-gate.mjs',
-  './text-list.js',
-  './lunaby-core.mjs',
-  './lunaby-v2-first-launch.mjs',
   './manifest.json',
   './lunaby-neko-192.png',
   './lunaby-neko-512.png',
-  './lunaby-neko-maskable-512.png'
+  './lunaby-neko-maskable-512.png',
+  './update.html'
 ];
 const INDEX_URL = new URL('./index.html', self.location).href;
 
